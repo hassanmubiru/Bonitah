@@ -38,5 +38,13 @@ export default tseslint.config(
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
+  {
+    // CommonJS tooling config files (e.g. jest.config.js) use `module.exports`.
+    // ESM sources live in `.mjs`/`.ts`; no `.js` file in the repo uses ESM.
+    files: ['**/*.js', '**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+    },
+  },
   prettier,
 );

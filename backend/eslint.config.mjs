@@ -30,4 +30,12 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
+  {
+    // CommonJS tooling config files (e.g. jest.config.js) use `module.exports`.
+    // ESM `.js` files are not used in the backend; ESM lives in `.mjs`.
+    files: ['**/*.js', '**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+    },
+  },
 ];
