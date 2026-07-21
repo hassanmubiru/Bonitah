@@ -11,12 +11,12 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
 ## Tasks
 
 - [ ] 1. Establish monorepo structure and shared package
-  - [-] 1.1 Initialize the monorepo workspace and top-level directories
+  - [x] 1.1 Initialize the monorepo workspace and top-level directories
     - Create the workspace package manager config and the exact top-level directories: `contracts/`, `frontend/`, `backend/`, `shared/`, `docs/`, `docker/`, `.github/workflows/`, `scripts/`, `deployment/`, `tests/`
     - Add root strict TypeScript base config, ESLint + Prettier config, and workspace scripts (lint, test, build)
     - _Requirements: 17.1, 17.2, 17.3_
 
-  - [~] 1.2 Build the shared package (types, schemas, address registry)
+  - [-] 1.2 Build the shared package (types, schemas, address registry)
     - Define shared TypeScript types, per-network deployed-address registry (Base Sepolia 84532), and zod schemas for API request/response contracts
     - Set up `abitype`/viem-based ABI typing placeholders to be populated after contract build
     - _Requirements: 17.1, 1.1, 14.3_
@@ -26,7 +26,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 14.3, 14.4_
 
 - [ ] 2. Set up the Foundry contracts project and shared contract primitives
-  - [~] 2.1 Initialize the Foundry project and cross-cutting base
+  - [-] 2.1 Initialize the Foundry project and cross-cutting base
     - Create `foundry.toml` with `fuzz.runs >= 100` and invariant runs; install OpenZeppelin upgradeable contracts
     - Implement a shared roles/errors base library (DEFAULT_ADMIN, PAUSER, VERIFIER, UPGRADER, TREASURY, REPUTATION, ISSUER roles) and UUPS scaffolding
     - _Requirements: 14.5, 14.6, 14.8, 9.8_
@@ -179,7 +179,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 17.1, 1.1_
 
 - [ ] 10. Establish backend foundation (NestJS)
-  - [~] 10.1 Initialize the NestJS app and cross-cutting infrastructure
+  - [-] 10.1 Initialize the NestJS app and cross-cutting infrastructure
     - Scaffold the app, env-var config with validation, structured JSON logging (request IDs, no secrets/PII), global `HttpExceptionFilter`, and `HealthModule` (DB/Redis/RPC checks)
     - _Requirements: 16.2, 16.7, 14.2_
 
@@ -422,7 +422,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Run lint -> test -> build within 30 minutes; fail and report the failing step, blocking deployment on failure
     - _Requirements: 16.3, 16.4, 15.6, 15.7, 15.8_
 
-  - [~] 23.4 Configure Husky, Commitlint, and secret scanning
+  - [-] 23.4 Configure Husky, Commitlint, and secret scanning
     - Add commit-message validation, pre-commit quality checks within 120s, and a staged-secret scan that blocks commits
     - _Requirements: 16.8, 17.6, 17.7_
 
