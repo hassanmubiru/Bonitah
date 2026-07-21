@@ -1,4 +1,6 @@
 node_modules
+# Kiro spec documents are authored/managed separately
+.kiro
 dist
 build
 .next
