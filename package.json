@@ -15,7 +15,9 @@
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --if-present run typecheck",
     "test": "pnpm -r --if-present run test",
-    "build": "pnpm -r --if-present run build"
+    "build": "pnpm -r --if-present run build",
+    "prepare": "husky",
+    "secret-scan": "node scripts/secret-scan.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",
