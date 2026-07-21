@@ -14,15 +14,11 @@ export const BASE_SEPOLIA_CHAIN_ID = 84532;
  * obscure runtime fault later (Req 16.7).
  */
 export const envSchema = z.object({
-  NODE_ENV: z
-    .enum(['development', 'test', 'production'])
-    .default('development'),
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
   PORT: z.coerce.number().int().positive().max(65535).default(3001),
 
-  LOG_LEVEL: z
-    .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
-    .default('info'),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
   /** Comma-separated allowed CORS origins. */
   CORS_ORIGINS: z.string().default('http://localhost:3000'),

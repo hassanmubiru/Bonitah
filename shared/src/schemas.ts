@@ -31,9 +31,7 @@ export const hashSchema = z
   .regex(/^0x[0-9a-fA-F]{64}$/, 'must be a 0x-prefixed 32-byte hash');
 
 /** Arbitrary-length 0x-prefixed hex string (e.g. a signature). */
-export const hexSchema = z
-  .string()
-  .regex(/^0x[0-9a-fA-F]*$/, 'must be a 0x-prefixed hex string');
+export const hexSchema = z.string().regex(/^0x[0-9a-fA-F]*$/, 'must be a 0x-prefixed hex string');
 
 /** Non-negative integer encoded as a decimal string (uint256-safe). */
 export const decimalStringSchema = z
@@ -47,10 +45,9 @@ export const roleSchema = z.enum(['USER', 'VERIFIER', 'ADMIN']);
 export const chainIdSchema = z
   .number()
   .int()
-  .refine(
-    (id): boolean => (SUPPORTED_CHAIN_IDS as readonly number[]).includes(id),
-    { message: 'unsupported chain id' },
-  );
+  .refine((id): boolean => (SUPPORTED_CHAIN_IDS as readonly number[]).includes(id), {
+    message: 'unsupported chain id',
+  });
 
 /** BFN contract name. */
 export const contractNameSchema = z.enum(CONTRACT_NAMES);

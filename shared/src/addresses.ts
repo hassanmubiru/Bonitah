@@ -67,10 +67,7 @@ export function getDeployment(chainId: SupportedChainId): NetworkDeployment {
  * @throws if the contract has not yet been deployed (address is the zero address)
  * so callers never read financial state from an unconfigured contract (Req 1.1).
  */
-export function getContractAddress(
-  chainId: SupportedChainId,
-  contract: ContractName,
-): Address {
+export function getContractAddress(chainId: SupportedChainId, contract: ContractName): Address {
   const address = DEPLOYMENTS[chainId].contracts[contract];
   if (!isDeployed(address)) {
     throw new Error(

@@ -107,9 +107,7 @@ export function redactSensitive(value: unknown, seen = new WeakSet<object>()): u
 
   const result: Record<string, unknown> = {};
   for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
-    result[key] = isSensitiveKey(key)
-      ? REDACTION_PLACEHOLDER
-      : redactSensitive(entry, seen);
+    result[key] = isSensitiveKey(key) ? REDACTION_PLACEHOLDER : redactSensitive(entry, seen);
   }
   return result;
 }

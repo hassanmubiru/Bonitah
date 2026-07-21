@@ -1,0 +1,154 @@
+// Bonitah Financial Network (BFN) - Prisma schema
+//
+// The blockchain (Base Sepolia) is the single source of truth for all
+// financial state. This database stores ONLY off-chain data plus a clearly
+// provenanced cache of blockchain events and read values (Req 1.3, 1.4, 12.2).
+//
+// No financial balance is ever stored here as an authoritative value; cached
+// financial values always carry their source contract address and block number
+// and are treated as stale after 30 seconds (Req 1.4, 1.5).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Least-privilege role set for off-chain authorization decisions (Req 2.10, 14).
+enum Role {
+  USER
+  VERIFIER
+  ADMIN
+}
+
+model User {
+  id            String           @id @default(cuid())
+  walletAddress String           @unique // lowercased checksum key
+  role          Role             @default(USER) // Req 2.10 least-privilege default
+  displayName   String?
+  createdAt     DateTime         @default(now())
+  conversations Conversation[]
+  progress      LessonProgress[]
+  notifications Notification[]
+
+  @@index([walletAddress])
+}
+
+model AuthNonce {
+  id        String   @id @default(cuid())
+  nonce     String   @unique
+  address   String
+  used      Boolean  @default(false) // single-use (Req 2.7)
+  expiresAt DateTime // expiry (Req 2.4, 2.6)
+  createdAt DateTime @default(now())
+
+  @@index([address])
+}
+
+// Off-chain educational content (Req 8.1, 8.6)
+model Course {
+  id        String   @id @default(cuid())
+  title     String
+  onChainId String   @unique // bytes32 courseId reference
+  lessons   Lesson[]
+}
+
+model Lesson {
+  id          String           @id @default(cuid())
+  courseId    String
+  course      Course           @relation(fields: [courseId], references: [id])
+  title       String
+  order       Int
+  contentType String // article | video | quiz
+  contentUrl  String
+  progress    LessonProgress[]
+
+  @@index([courseId])
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  lessonId    String
+  user        User     @relation(fields: [userId], references: [id])
+  lesson      Lesson   @relation(fields: [lessonId], references: [id])
+  completedAt DateTime @default(now())
+
+  @@unique([userId, lessonId]) // dedupe completion (Req 8.8)
+}
+
+model LearningStreak {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  currentStreak Int      @default(0) // consecutive days (Req 8.2)
+  lastActiveDay DateTime
+}
+
+// Cached blockchain events - DERIVED data with provenance (Req 12.2, 1.4)
+model CachedEvent {
+  id              String   @id @default(cuid())
+  contractAddress String // provenance (Req 12.2)
+  eventName       String
+  walletAddress   String? // subject for tx history (Req 12.3)
+  transactionHash String // provenance
+  blockNumber     BigInt // provenance + ordering
+  blockHash       String // reorg detection (Req 12.5)
+  logIndex        Int
+  payload         Json // decoded args
+  createdAt       DateTime @default(now())
+
+  @@unique([transactionHash, logIndex]) // idempotent indexing (Req 12.6)
+  @@index([walletAddress, blockNumber]) // paged desc history (Req 12.3)
+  @@index([contractAddress, blockNumber])
+}
+
+model IndexerState {
+  id               String   @id @default("singleton")
+  lastIndexedBlock BigInt // resume point (Req 12.6)
+  lastIndexedHash  String
+  updatedAt        DateTime @updatedAt
+}
+
+// Read-through cached financial values with provenance (Req 1.4)
+model CachedReadValue {
+  id              String   @id @default(cuid())
+  cacheKey        String   @unique
+  contractAddress String // source contract (Req 1.4)
+  blockNumber     BigInt // derived-from block (Req 1.4)
+  value           String // stringified numeric
+  fetchedAt       DateTime // staleness anchor (Req 1.4, 1.5 = 30s)
+
+  @@index([cacheKey])
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  messages  Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  role           String // user | assistant
+  content        String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

@@ -57,4 +57,14 @@ export class EnvService {
   get chainId(): number {
     return this.get('CHAIN_ID');
   }
+
+  /** HMAC secret used to sign and verify session JWTs (Req 2.7, 14.1). */
+  get jwtSecret(): string {
+    return this.get('JWT_SECRET');
+  }
+
+  /** Configured session lifetime string (e.g. `24h`); parsed by the auth module. */
+  get jwtExpiresIn(): string {
+    return this.get('JWT_EXPIRES_IN');
+  }
 }

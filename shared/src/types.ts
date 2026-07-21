@@ -12,11 +12,7 @@ import type { Address, Hash, Hex } from 'viem';
 
 /** The five BFN smart contracts deployed to Base Sepolia. */
 export type ContractName =
-  | 'Registry'
-  | 'SavingsVault'
-  | 'CommunityTreasury'
-  | 'Education'
-  | 'Governance';
+  'Registry' | 'SavingsVault' | 'CommunityTreasury' | 'Education' | 'Governance';
 
 /** All BFN contract names as a runtime-iterable list. */
 export const CONTRACT_NAMES = [

@@ -6,10 +6,10 @@ import { LoggerModule } from 'nestjs-pino';
 
 import { ConfigModule } from '../config/config.module';
 import { EnvService } from '../config/env.service';
+import { REQUEST_ID_HEADER } from './logging.constants';
 import { PINO_REDACT_PATHS, REDACTION_PLACEHOLDER } from './redaction';
 
-/** Header used to propagate a correlation/request id across services. */
-export const REQUEST_ID_HEADER = 'x-request-id';
+export { REQUEST_ID_HEADER } from './logging.constants';
 
 /**
  * Structured logging module.
@@ -26,40 +26,16 @@ export const REQUEST_ID_HEADER = 'x-request-id';
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [EnvService],
-      useFactory: (env: EnvService) => ({
-        pinoHttp: {
-          level: env.logLevel,
-          // Correlation id: reuse inbound header when valid, else generate one.
-          genReqId: (req: IncomingMessage, res: ServerResponse) => {
-            const existing = req.headers[REQUEST_ID_HEADER];
-            const id =
-              typeof existing === 'string' && existing.length > 0
-                ? existing
-                : randomUUID();
-            res.setHeader(REQUEST_ID_HEADER, id);
-            return id;
-          },
-          // Whitelist serializers: only safe, non-sensitive fields are logged.
-          serializers: {
-            req: (req: { id: string; method: string; url: string }) => ({
-              id: req.id,
-              method: req.method,
-              url: req.url,
-            }),
-            res: (res: { statusCode: number }) => ({
-              statusCode: res.statusCode,
-            }),
-          },
-          redact: {
-            paths: [...PINO_REDACT_PATHS],
-            censor: REDACTION_PLACEHOLDER,
-          },
-          // Human-readable output in development; raw JSON everywhere else so
-          // production log pipelines ingest structured data.
-          transport:
-            env.isProduction || env.nodeEnv === 'test'
-              ? undefined
-              : {
+      useFactory: (env: EnvService) => {
+        // Human-readable output in development; raw JSON everywhere else so
+        // production log pipelines ingest structured data. The `transport` key
+        // is omitted entirely (not set to `undefined`) to satisfy strict
+        // `exactOptionalPropertyTypes`.
+        const prettyTransport =
+          env.isProduction || env.nodeEnv === 'test'
+            ? {}
+            : {
+                transport: {
                   target: 'pino-pretty',
                   options: {
                     singleLine: true,
@@ -67,8 +43,38 @@ export const REQUEST_ID_HEADER = 'x-request-id';
                     translateTime: 'SYS:standard',
                   },
                 },
-        },
-      }),
+              };
+
+        return {
+          pinoHttp: {
+            level: env.logLevel,
+            // Correlation id: reuse inbound header when valid, else generate one.
+            genReqId: (req: IncomingMessage, res: ServerResponse): string => {
+              const existing = req.headers[REQUEST_ID_HEADER];
+              const id =
+                typeof existing === 'string' && existing.length > 0 ? existing : randomUUID();
+              res.setHeader(REQUEST_ID_HEADER, id);
+              return id;
+            },
+            // Whitelist serializers: only safe, non-sensitive fields are logged.
+            serializers: {
+              req: (req: { id: string; method: string; url: string }) => ({
+                id: req.id,
+                method: req.method,
+                url: req.url,
+              }),
+              res: (res: { statusCode: number }) => ({
+                statusCode: res.statusCode,
+              }),
+            },
+            redact: {
+              paths: [...PINO_REDACT_PATHS],
+              censor: REDACTION_PLACEHOLDER,
+            },
+            ...prettyTransport,
+          },
+        };
+      },
     }),
   ],
 })
