@@ -6,18 +6,18 @@ single source of truth for all financial state.
 
 ## Monorepo structure
 
-| Directory            | Purpose                                                                 |
-| -------------------- | ----------------------------------------------------------------------- |
+| Directory            | Purpose                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------- |
 | `contracts/`         | Foundry project: Registry, SavingsVault, CommunityTreasury, Education, Governance. |
-| `frontend/`          | Next.js app (App Router, TypeScript, Tailwind, wagmi/viem/RainbowKit).  |
-| `backend/`           | NestJS API, SIWE auth, event indexer, AI assistant, IPFS service.       |
-| `shared/`            | Shared TypeScript types, ABIs, contract addresses, and zod schemas.     |
-| `docs/`              | README, API docs, contract docs, deployment and developer guides.       |
-| `docker/`            | Dockerfiles and `docker-compose.yml`.                                   |
-| `.github/workflows/` | CI workflows (lint, test, build).                                       |
-| `scripts/`           | Tooling, codegen, secret scanning, coverage aggregation.                |
-| `deployment/`        | Base Sepolia deployment scripts and recorded contract addresses.        |
-| `tests/`             | Cross-cutting and end-to-end test suites.                               |
+| `frontend/`          | Next.js app (App Router, TypeScript, Tailwind, wagmi/viem/RainbowKit).             |
+| `backend/`           | NestJS API, SIWE auth, event indexer, AI assistant, IPFS service.                  |
+| `shared/`            | Shared TypeScript types, ABIs, contract addresses, and zod schemas.                |
+| `docs/`              | README, API docs, contract docs, deployment and developer guides.                  |
+| `docker/`            | Dockerfiles and `docker-compose.yml`.                                              |
+| `.github/workflows/` | CI workflows (lint, test, build).                                                  |
+| `scripts/`           | Tooling, codegen, secret scanning, coverage aggregation.                           |
+| `deployment/`        | Base Sepolia deployment scripts and recorded contract addresses.                   |
+| `tests/`             | Cross-cutting and end-to-end test suites.                                          |
 
 ## Prerequisites
 
