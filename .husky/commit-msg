@@ -1,0 +1,5 @@
+# BFN commit-msg hook (Req 17.6, 17.7)
+# Validates the commit message against the Conventional Commits convention.
+# On failure the commit is rejected and staged changes are preserved unchanged.
+
+pnpm exec commitlint --edit "$1" || exit 1

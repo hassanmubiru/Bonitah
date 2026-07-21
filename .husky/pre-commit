@@ -1,0 +1,10 @@
+# BFN pre-commit hook (Req 16.8, 17.6, 17.7)
+# Runs staged-file quality checks and a staged-secret scan. Both must complete
+# well within the 120s budget. Any failure exits non-zero and blocks the commit
+# while leaving the staged changes unchanged.
+
+# 1) Block commits that would introduce secrets.
+node scripts/secret-scan.mjs || exit 1
+
+# 2) Lint + format only the staged files (fast, scoped to the diff).
+pnpm exec lint-staged || exit 1
