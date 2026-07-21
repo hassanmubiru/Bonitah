@@ -151,7 +151,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 4. THE Frontend SHALL render interactive charts using data derived from Base_Sepolia blockchain data.
 5. IF on-chain data cannot be retrieved, THEN THE Frontend SHALL display an error state and SHALL NOT display placeholder financial values.
 
-### Requirement 8b: Frontend Application Pages and Presentation
+### Requirement 9: Frontend Application Pages and Presentation
 
 **User Story:** As a user, I want a complete, accessible, and professional interface, so that I can use every BFN feature comfortably on any device.
 
@@ -164,7 +164,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 5. THE Frontend SHALL meet WCAG 2.1 Level AA accessibility criteria for perceivable, operable, understandable, and robust content.
 6. WHERE a page displays admin functionality, THE Frontend SHALL restrict access to Users holding the Admin role.
 
-### Requirement 9: Transaction Signing by the Connected Wallet
+### Requirement 10: Transaction Signing by the Connected Wallet
 
 **User Story:** As a user, I want to sign every transaction myself, so that no party can move my funds without my authorization.
 
@@ -175,7 +175,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 3. THE Frontend SHALL submit every blockchain transaction to Base_Sepolia.
 4. THE System SHALL NOT hold custody of User private keys.
 
-### Requirement 10: Backend Off-Chain Data Management
+### Requirement 11: Backend Off-Chain Data Management
 
 **User Story:** As a user, I want the backend to store supporting content and history, so that the application is fast and rich without duplicating on-chain balances.
 
@@ -189,7 +189,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 6. THE Backend SHALL validate every incoming request payload against a defined schema before processing.
 7. IF a request payload fails validation, THEN THE Backend SHALL reject the request with a validation error describing the invalid fields.
 
-### Requirement 11: AI Financial Advisor (Read-Only)
+### Requirement 12: AI Financial Advisor (Read-Only)
 
 **User Story:** As a user, I want AI-driven financial guidance, so that I can make better decisions about budgeting, saving, and investing.
 
@@ -202,7 +202,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 5. WHEN the AI_Advisor generates Portfolio insights, THE AI_Advisor SHALL base the insights on on-chain data read from Base_Sepolia.
 6. THE Backend SHALL store AI conversation history as Off_Chain_Data.
 
-### Requirement 12: Educational Platform
+### Requirement 13: Educational Platform
 
 **User Story:** As a learner, I want structured educational content with progress tracking, so that I can build financial knowledge over time.
 
@@ -214,7 +214,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 4. THE System SHALL track each User learning streak based on consecutive days of learning activity.
 5. WHEN a User meets an achievement condition, THE System SHALL award the achievement through the Education_Contract.
 
-### Requirement 13: Community Social Features
+### Requirement 14: Community Social Features
 
 **User Story:** As a community member, I want social features around savings circles, so that I can collaborate and stay motivated.
 
@@ -226,7 +226,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 4. THE System SHALL display a community leaderboard ranked by on-chain contribution activity.
 5. WHEN a member votes on a treasury action, THE System SHALL submit the vote to the CommunityTreasury_Contract signed by the Connected_Wallet.
 
-### Requirement 14: Investment Pools
+### Requirement 15: Investment Pools
 
 **User Story:** As an investor, I want transparent investment pools with clear ownership tracking, so that I can invest with the community and trust the accounting.
 
@@ -238,7 +238,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 4. THE System SHALL provide a yield distribution architecture capable of distributing future yields proportionally to ownership shares.
 5. THE System SHALL read every Investment_Pool balance from deployed smart contracts on Base_Sepolia.
 
-### Requirement 15: IPFS File Storage
+### Requirement 16: IPFS File Storage
 
 **User Story:** As a user, I want certificates and documents stored on decentralized storage, so that they are durable and verifiable without exposing sensitive data.
 
@@ -249,7 +249,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 3. THE System SHALL NOT store sensitive personal information in publicly accessible IPFS_Store content.
 4. WHEN the Frontend displays IPFS-stored content, THE Frontend SHALL retrieve the content using the recorded IPFS_Hash.
 
-### Requirement 16: API Security and Access Control
+### Requirement 17: API Security and Access Control
 
 **User Story:** As a stakeholder, I want every endpoint protected and access least-privileged, so that the system resists abuse.
 
@@ -261,7 +261,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 4. THE Backend SHALL grant each role the minimum permissions required for its function.
 5. IF an endpoint receives a request exceeding the configured rate limit, THEN THE Backend SHALL reject the request with a rate-limit error.
 
-### Requirement 17: Testing and Coverage
+### Requirement 18: Testing and Coverage
 
 **User Story:** As a maintainer, I want comprehensive automated tests, so that changes are verified and regressions are caught.
 
@@ -273,7 +273,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 4. THE System SHALL include end-to-end tests covering primary user journeys.
 5. WHEN the test suite runs in the continuous integration pipeline, THE System SHALL report code coverage metrics.
 
-### Requirement 18: DevOps and Deployment
+### Requirement 19: DevOps and Deployment
 
 **User Story:** As an operator, I want containerized builds and automated pipelines, so that BFN can be deployed reliably.
 
@@ -285,7 +285,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 4. THE System SHALL manage environment-specific configuration through environment variables and SHALL NOT commit secrets to the repository.
 5. THE System SHALL provide deployment scripts for deploying smart contracts to Base_Sepolia and for deploying the Frontend and Backend.
 
-### Requirement 19: Documentation
+### Requirement 20: Documentation
 
 **User Story:** As a developer, I want thorough documentation, so that I can understand, build, and deploy BFN.
 
@@ -297,7 +297,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 4. THE System SHALL provide smart contract documentation derived from NatSpec.
 5. THE System SHALL provide a deployment guide, an environment setup guide, and a developer guide.
 
-### Requirement 20: Code Quality and Architecture
+### Requirement 21: Code Quality and Architecture
 
 **User Story:** As a maintainer, I want strict standards and clean architecture, so that the codebase stays maintainable.
 
@@ -309,7 +309,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 4. IF a commit message does not conform to the configured convention, THEN THE System SHALL reject the commit.
 5. THE System SHALL organize code using feature-based folders, dependency injection, and separation of concerns aligned with SOLID principles.
 
-### Requirement 21: Monorepo Structure and Deliverables
+### Requirement 22: Monorepo Structure and Deliverables
 
 **User Story:** As a contributor, I want a well-organized monorepo, so that each part of BFN has a clear home.
 
@@ -321,7 +321,7 @@ This document defines the requirements for BFN using EARS patterns and INCOSE qu
 4. THE System SHALL place all documentation deliverables in the `docs/` directory.
 5. THE System SHALL place Docker and Docker Compose configuration in the `docker/` directory and continuous integration workflows in the `.github/` directory.
 
-### Requirement 22: Blockchain as the Source of Truth
+### Requirement 23: Blockchain as the Source of Truth
 
 **User Story:** As a user, I want the blockchain to be the authoritative source for all balances, so that displayed values are always trustworthy.
 
