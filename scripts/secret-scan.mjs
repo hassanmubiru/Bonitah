@@ -133,12 +133,13 @@ function isPlaceholder(line) {
 }
 
 function getStagedFiles() {
-  const out = execFileSync(
-    'git',
-    ['diff', '--cached', '--name-only', '--diff-filter=ACM'],
-    { encoding: 'utf8' },
-  );
-  return out.split('\n').map((f) => f.trim()).filter(Boolean);
+  const out = execFileSync('git', ['diff', '--cached', '--name-only', '--diff-filter=ACM'], {
+    encoding: 'utf8',
+  });
+  return out
+    .split('\n')
+    .map((f) => f.trim())
+    .filter(Boolean);
 }
 
 function readStagedContent(file) {
@@ -178,20 +179,18 @@ function main() {
   const usingExplicit = explicit.length > 0;
   const files = usingExplicit ? explicit : getStagedFiles();
 
-  const scannable = files.filter(
-    (f) => !IGNORED_PATH_PATTERNS.some((re) => re.test(f)),
-  );
+  const scannable = files.filter((f) => !IGNORED_PATH_PATTERNS.some((re) => re.test(f)));
 
   const findings = [];
   for (const file of scannable) {
-    const content = usingExplicit
-      ? safeReadFile(file)
-      : readStagedContent(file);
+    const content = usingExplicit ? safeReadFile(file) : readStagedContent(file);
     findings.push(...scanContent(file, content));
   }
 
   if (findings.length > 0) {
-    console.error('\n\u001b[31m✖ Secret scan failed: potential secret(s) detected in staged changes.\u001b[0m\n');
+    console.error(
+      '\n\u001b[31m✖ Secret scan failed: potential secret(s) detected in staged changes.\u001b[0m\n',
+    );
     for (const f of findings) {
       console.error(`  ${f.file}:${f.line}  →  ${f.rule}`);
     }

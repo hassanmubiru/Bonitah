@@ -46,5 +46,24 @@ export default tseslint.config(
       sourceType: 'commonjs',
     },
   },
+  {
+    // Node-executed JS/MJS scripts and config files. TS files get no-undef
+    // handling from typescript-eslint, so this only affects plain JS family.
+    files: ['**/*.js', '**/*.cjs', '**/*.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+      },
+    },
+  },
   prettier,
 );

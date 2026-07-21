@@ -10,13 +10,13 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
 
 ## Tasks
 
-- [ ] 1. Establish monorepo structure and shared package
+- [x] 1. Establish monorepo structure and shared package
   - [x] 1.1 Initialize the monorepo workspace and top-level directories
     - Create the workspace package manager config and the exact top-level directories: `contracts/`, `frontend/`, `backend/`, `shared/`, `docs/`, `docker/`, `.github/workflows/`, `scripts/`, `deployment/`, `tests/`
     - Add root strict TypeScript base config, ESLint + Prettier config, and workspace scripts (lint, test, build)
     - _Requirements: 17.1, 17.2, 17.3_
 
-  - [-] 1.2 Build the shared package (types, schemas, address registry)
+  - [x] 1.2 Build the shared package (types, schemas, address registry)
     - Define shared TypeScript types, per-network deployed-address registry (Base Sepolia 84532), and zod schemas for API request/response contracts
     - Set up `abitype`/viem-based ABI typing placeholders to be populated after contract build
     - _Requirements: 17.1, 1.1, 14.3_
@@ -26,18 +26,18 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 14.3, 14.4_
 
 - [ ] 2. Set up the Foundry contracts project and shared contract primitives
-  - [-] 2.1 Initialize the Foundry project and cross-cutting base
+  - [x] 2.1 Initialize the Foundry project and cross-cutting base
     - Create `foundry.toml` with `fuzz.runs >= 100` and invariant runs; install OpenZeppelin upgradeable contracts
     - Implement a shared roles/errors base library (DEFAULT_ADMIN, PAUSER, VERIFIER, UPGRADER, TREASURY, REPUTATION, ISSUER roles) and UUPS scaffolding
     - _Requirements: 14.5, 14.6, 14.8, 9.8_
 
-  - [~] 2.2 Define contract interfaces and a mock ERC20 test token
+  - [ ] 2.2 Define contract interfaces and a mock ERC20 test token
     - Add `IRegistry`, `ISavingsVault`, `ICommunityTreasury`, `IEducation`, `IGovernance` interfaces with events and custom errors
     - Implement a mock ERC20 stablecoin for tests and configurable token wiring
     - _Requirements: 4.5, 13.1, 13.2, 13.6, 13.9_
 
 - [ ] 3. Implement the Registry contract
-  - [~] 3.1 Implement `Registry.sol`
+  - [ ] 3.1 Implement `Registry.sol`
     - Implement `register`, `updateProfile`, `verifyUser` (VERIFIER_ROLE), `increaseReputation` (REPUTATION_ROLE), views, custom errors, events, and UUPS `_authorizeUpgrade`
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.6, 3.7, 3.10, 8.7, 13.1, 14.5, 14.8_
 
@@ -58,7 +58,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 13.1, 15.1, 15.2, 15.3_
 
 - [ ] 4. Implement the SavingsVault contract
-  - [~] 4.1 Implement deposit/withdraw core in `SavingsVault.sol`
+  - [ ] 4.1 Implement deposit/withdraw core in `SavingsVault.sol`
     - Implement `deposit`, `withdraw`, `availableBalance` with `SafeERC20`, `ReentrancyGuard`, `Pausable`, registration checks, and events
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 13.2, 13.3_
 
@@ -70,7 +70,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 12: Invalid vault operations revert without state change**
     - **Validates: Requirements 4.4, 4.7, 4.8, 4.9**
 
-  - [~] 4.4 Implement goals and locked savings in `SavingsVault.sol`
+  - [ ] 4.4 Implement goals and locked savings in `SavingsVault.sol`
     - Implement `createGoal`, `contributeToGoal`, `lockFunds`, `withdrawLocked`, `portfolioValue`, MIN/MAX lock constants, and goal/lock events
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 13.4, 13.5_
 
@@ -87,7 +87,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 4.6, 13.2, 13.3, 13.4, 13.5, 15.1, 15.2, 15.3_
 
 - [ ] 5. Implement the CommunityTreasury contract
-  - [~] 5.1 Implement savings circles in `CommunityTreasury.sol`
+  - [ ] 5.1 Implement savings circles in `CommunityTreasury.sol`
     - Implement `createCircle`, `joinCircle`, `contribute`, `proposeAction`, `vote`, threshold-based execution, per-member contribution history, `nonReentrant` on value moves, and events
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11, 13.6, 13.7, 13.8_
 
@@ -103,7 +103,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 17: Treasury action executes exactly at threshold**
     - **Validates: Requirements 6.7**
 
-  - [~] 5.5 Implement investment pools in `CommunityTreasury.sol`
+  - [ ] 5.5 Implement investment pools in `CommunityTreasury.sol`
     - Implement `contributeToPool`, `ownershipShare` (ppm), `yieldDistribution`, and timestamped contribution history
     - _Requirements: 7.1, 7.2, 7.3, 7.6, 13.7_
 
@@ -120,7 +120,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 6.8, 13.6, 13.7, 13.8, 15.1, 15.2, 15.3_
 
 - [ ] 6. Implement the Education contract
-  - [~] 6.1 Implement `Education.sol`
+  - [ ] 6.1 Implement `Education.sol`
     - Implement `issueCertificate` (ISSUER_ROLE, non-empty hash, duplicate guard), `awardBadge`, `recordAchievement`, and `Registry.increaseReputation` wiring via REPUTATION_ROLE; emit events
     - _Requirements: 8.3, 8.4, 8.5, 8.7, 8.9, 8.10, 13.9, 14.5, 14.8_
 
@@ -133,7 +133,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 13.9, 15.1, 15.2, 15.3_
 
 - [ ] 7. Implement the Governance contract
-  - [~] 7.1 Implement `Governance.sol`
+  - [ ] 7.1 Implement `Governance.sol`
     - Implement `propose`, `castVote` (weighted, active-only, no double vote), `finalize`, `outcomeOf`, `executeTreasury` (TREASURY_ROLE), `votingPowerOf`, UUPS upgrade, and events
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 13.8, 14.5, 14.8_
 
@@ -166,28 +166,28 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 33: Exactly one event per successful state change; none on revert**
     - **Validates: Requirements 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8, 13.9, 13.10**
 
-  - [~] 8.4 Checkpoint - contracts test suite
+  - [ ] 8.4 Checkpoint - contracts test suite
     - Ensure all contract tests pass and coverage meets >=90% line/branch; ask the user if questions arise.
 
 - [ ] 9. Deployment scripts and shared ABI/address emission
-  - [~] 9.1 Implement Foundry Base Sepolia deployment scripts
+  - [ ] 9.1 Implement Foundry Base Sepolia deployment scripts
     - Deploy all five contracts behind UUPS proxies, wire roles, record deployed addresses to `deployment/` and `shared/`, and fail non-zero naming the failed contract with no partial-success report
     - _Requirements: 16.5, 16.6_
 
-  - [~] 9.2 Emit typed ABIs and addresses into the shared package
+  - [ ] 9.2 Emit typed ABIs and addresses into the shared package
     - Generate ABI + address exports into `shared/` for frontend and backend consumption
     - _Requirements: 17.1, 1.1_
 
 - [ ] 10. Establish backend foundation (NestJS)
-  - [-] 10.1 Initialize the NestJS app and cross-cutting infrastructure
+  - [x] 10.1 Initialize the NestJS app and cross-cutting infrastructure
     - Scaffold the app, env-var config with validation, structured JSON logging (request IDs, no secrets/PII), global `HttpExceptionFilter`, and `HealthModule` (DB/Redis/RPC checks)
     - _Requirements: 16.2, 16.7, 14.2_
 
-  - [~] 10.2 Define the Prisma schema and migrations
+  - [ ] 10.2 Define the Prisma schema and migrations
     - Implement all models (`User`, `AuthNonce`, `Course`, `Lesson`, `LessonProgress`, `LearningStreak`, `CachedEvent`, `IndexerState`, `CachedReadValue`, `Conversation`, `Message`, `Notification`) and generate migrations
     - _Requirements: 1.3, 1.4, 2.7, 8.1, 8.2, 8.8, 10.4, 12.2, 12.6_
 
-  - [~] 10.3 Implement global validation and auth guards
+  - [ ] 10.3 Implement global validation and auth guards
     - Wire `ZodValidationPipe`, `JwtAuthGuard`, and `RolesGuard` so non-public endpoints require a valid JWT and role checks
     - _Requirements: 14.1, 14.2, 14.3, 14.4_
 
@@ -196,7 +196,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Validates: Requirements 14.3, 14.4**
 
 - [ ] 11. Implement the Auth module (SIWE)
-  - [~] 11.1 Implement SIWE nonce, verification, JWT, and roles
+  - [ ] 11.1 Implement SIWE nonce, verification, JWT, and roles
     - Implement `/auth/nonce`, `/auth/verify`, `/auth/logout`; single-use expiry-bounded nonces, signature/address verification, JWT issuance (<=24h), and least-privilege default role assignment
     - _Requirements: 2.4, 2.6, 2.7, 2.8, 2.9, 2.10, 10.6, 14.1_
 
@@ -221,7 +221,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 2.5, 2.6, 2.8, 2.9_
 
 - [ ] 12. Implement the ChainRead read-through cache module
-  - [~] 12.1 Implement provenanced read-through cache with staleness
+  - [ ] 12.1 Implement provenanced read-through cache with staleness
     - Read financial values from Base Sepolia via viem, cache with `{contractAddress, blockNumber, fetchedAt}` and 30s TTL, refresh when stale/absent, and never serve stale/placeholder on read failure
     - _Requirements: 1.4, 1.5, 1.7, 7.5, 10.9, 11.1_
 
@@ -238,7 +238,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 1.7, 10.9_
 
 - [ ] 13. Implement the Event_Indexer module
-  - [~] 13.1 Implement the indexer worker
+  - [ ] 13.1 Implement the indexer worker
     - Poll finalized head, `getLogs` from last+1, idempotent upsert on `(txHash, logIndex)` with provenance, reorg detection/repair, and gapless resume with backoff on network loss
     - _Requirements: 12.1, 12.2, 12.5, 12.6, 13.10_
 
@@ -255,7 +255,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 12.1, 12.2_
 
 - [ ] 14. Implement the Transactions and Analytics modules
-  - [~] 14.1 Implement transaction history and analytics endpoints
+  - [ ] 14.1 Implement transaction history and analytics endpoints
     - Implement `/transactions` (own-wallet scope, descending block, <=100/page, empty set for none) and `/analytics/portfolio` provenanced series
     - _Requirements: 11.1, 12.3, 12.4_
 
@@ -268,7 +268,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 12.3, 12.4_
 
 - [ ] 15. Implement the IPFS module
-  - [~] 15.1 Implement the IPFS service
+  - [ ] 15.1 Implement the IPFS service
     - Accept <=10 docs/request at <=10MB each, validate/exclude PII fields, pin content, return CID on success, and return storage error with no CID on failure
     - _Requirements: 3.5, 3.8, 3.9, 8.4_
 
@@ -281,7 +281,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 3.9, 8.9_
 
 - [ ] 16. Implement the Education and Certificate backend modules
-  - [~] 16.1 Implement the Education module
+  - [ ] 16.1 Implement the Education module
     - Implement courses/lessons content, lesson-completion with dedupe, course progress, and consecutive-day learning streak in off-chain data
     - _Requirements: 8.1, 8.2, 8.6, 8.8_
 
@@ -289,7 +289,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 21: Learning streak equals consecutive-day count**
     - **Validates: Requirements 8.2**
 
-  - [~] 16.3 Implement the Certificate orchestration module
+  - [ ] 16.3 Implement the Certificate orchestration module
     - Implement `/education/courses/:id/certificate`: verify completion, store metadata via IPFS, then call `Education.issueCertificate`; on IPFS failure leave prior state unchanged
     - _Requirements: 8.3, 8.4, 8.9_
 
@@ -298,7 +298,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 8.3, 8.4, 8.9, 8.10_
 
 - [ ] 17. Implement the AI Assistant module
-  - [~] 17.1 Implement the AI assistant service
+  - [ ] 17.1 Implement the AI assistant service
     - Validate question length (<=2000), read on-chain figures read-only via ChainRead (unavailable on failure, never fabricated), scope the OpenAI system prompt, enforce a 30s timeout with retained history, and persist conversation history
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.8, 10.9_
 
@@ -314,15 +314,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Assert 503 with retained history on timeout/unavailable and unavailable-figure handling on read failure
     - _Requirements: 10.8, 10.9_
 
-  - [~] 17.5 Checkpoint - backend test suite
+  - [ ] 17.5 Checkpoint - backend test suite
     - Ensure all backend tests pass and coverage meets >=80% line; ask the user if questions arise.
 
 - [ ] 18. Establish frontend foundation (Next.js)
-  - [~] 18.1 Initialize the Next.js app and providers
+  - [ ] 18.1 Initialize the Next.js app and providers
     - Scaffold App Router with strict TS, Tailwind, and shadcn/ui; configure `WagmiProvider` + `RainbowKitProvider` (Base Sepolia only), TanStack Query client, and `ThemeProvider`
     - _Requirements: 2.1, 2.3, 11.7, 17.2_
 
-  - [~] 18.2 Implement theming, accessibility, and responsive base
+  - [ ] 18.2 Implement theming, accessibility, and responsive base
     - Light default on first visit, theme switch across pages without reload within 1s, session persistence; keyboard focus with visible ring and accessible labels; responsive breakpoints (320-767, 768-1023, >=1024)
     - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7_
 
@@ -331,7 +331,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 19.1, 19.2, 19.5, 19.6, 19.7_
 
 - [ ] 19. Implement the frontend on-chain read layer
-  - [~] 19.1 Implement read hooks with retry/timeout and state machine
+  - [ ] 19.1 Implement read hooks with retry/timeout and state machine
     - Wrap viem reads with 10s per-attempt timeout and up to 3 retries; expose `{ data, isLoading, isError, refetch }`; render loading/error/retry states with no placeholder financial values
     - _Requirements: 1.2, 1.6, 1.7, 7.4, 7.5, 11.4, 11.5, 11.6_
 
@@ -344,7 +344,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 11.4, 11.5, 11.6_
 
 - [ ] 20. Implement the frontend authentication flow
-  - [~] 20.1 Implement `useSiweAuth`, network guard, and `/auth` page
+  - [ ] 20.1 Implement `useSiweAuth`, network guard, and `/auth` page
     - Orchestrate nonce -> SIWE message -> sign -> verify -> store JWT; prompt Base Sepolia switch before on-chain actions; handle connect/decline errors
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
@@ -353,47 +353,47 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 2.2, 2.3, 2.5_
 
 - [ ] 21. Implement the frontend pages
-  - [~] 21.1 Implement Landing and 404 pages
+  - [ ] 21.1 Implement Landing and 404 pages
     - Static theme-aware landing hero and not-found route
     - _Requirements: 11.7_
 
-  - [~] 21.2 Implement the Dashboard page
+  - [ ] 21.2 Implement the Dashboard page
     - Display savings, locked, goals, community contributions, achievements, and portfolio growth from on-chain reads; recent transactions (<=50, most-recent-first); charts from real data only
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.7_
 
-  - [~] 21.3 Implement the Savings page
+  - [ ] 21.3 Implement the Savings page
     - Deposit/withdraw flows wired to SavingsVault with signed transactions and live reads
     - _Requirements: 4.2, 4.3, 11.7_
 
-  - [~] 21.4 Implement the Goals page
+  - [ ] 21.4 Implement the Goals page
     - Create goal, contribute, and lock/withdraw-locked flows wired to SavingsVault
     - _Requirements: 5.1, 5.2, 5.3, 5.5, 11.7_
 
-  - [~] 21.5 Implement the Community page
+  - [ ] 21.5 Implement the Community page
     - Create/join circles, contribute, and vote flows wired to CommunityTreasury
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 11.7_
 
-  - [~] 21.6 Implement the Investments page
+  - [ ] 21.6 Implement the Investments page
     - Pool contribution, ownership share, and yield display from on-chain state with error-on-failure
     - _Requirements: 7.1, 7.4, 7.5, 11.7_
 
-  - [~] 21.7 Implement the Education page
+  - [ ] 21.7 Implement the Education page
     - Courses/progress from backend and certificates from the Education contract
     - _Requirements: 8.1, 8.3, 11.7_
 
-  - [~] 21.8 Implement the AI Assistant page
+  - [ ] 21.8 Implement the AI Assistant page
     - Chat UI calling `/ai/chat`; recommended actions require wallet signing in the frontend
     - _Requirements: 10.1, 10.5, 11.7_
 
-  - [~] 21.9 Implement the Profile page
+  - [ ] 21.9 Implement the Profile page
     - Profile, verification, and reputation from Registry + IPFS; profile-doc upload
     - _Requirements: 3.3, 3.5, 3.7, 11.7_
 
-  - [~] 21.10 Implement the Settings page
+  - [ ] 21.10 Implement the Settings page
     - Theme and preference controls persisted for the session
     - _Requirements: 19.1, 19.3, 11.7_
 
-  - [~] 21.11 Implement the Admin page (role-gated)
+  - [ ] 21.11 Implement the Admin page (role-gated)
     - Admin-only operations gated by role with unauthorized access blocked
     - _Requirements: 14.9, 11.7_
 
@@ -406,44 +406,44 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Cover account creation, authentication, initiating a transaction, and viewing transaction history
     - _Requirements: 15.5_
 
-  - [~] 22.2 Checkpoint - frontend test suite
+  - [ ] 22.2 Checkpoint - frontend test suite
     - Ensure all frontend tests pass and coverage meets >=80% line; ask the user if questions arise.
 
 - [ ] 23. Implement DevOps tooling
-  - [~] 23.1 Create multi-stage Dockerfiles for frontend and backend
+  - [ ] 23.1 Create multi-stage Dockerfiles for frontend and backend
     - Produce runnable images for both services
     - _Requirements: 16.1_
 
-  - [~] 23.2 Create the Docker Compose configuration
+  - [ ] 23.2 Create the Docker Compose configuration
     - Start frontend, backend, PostgreSQL, and Redis with healthchecks reaching healthy within 120s
     - _Requirements: 16.2_
 
-  - [~] 23.3 Create the GitHub Actions CI workflow
+  - [ ] 23.3 Create the GitHub Actions CI workflow
     - Run lint -> test -> build within 30 minutes; fail and report the failing step, blocking deployment on failure
     - _Requirements: 16.3, 16.4, 15.6, 15.7, 15.8_
 
-  - [-] 23.4 Configure Husky, Commitlint, and secret scanning
+  - [x] 23.4 Configure Husky, Commitlint, and secret scanning
     - Add commit-message validation, pre-commit quality checks within 120s, and a staged-secret scan that blocks commits
     - _Requirements: 16.8, 17.6, 17.7_
 
 - [ ] 24. Write documentation
-  - [~] 24.1 Write the README and environment/developer guide
+  - [ ] 24.1 Write the README and environment/developer guide
     - Platform description, ordered local setup steps, description of every top-level directory, required tools/versions, env vars, and per-service build/start commands
     - _Requirements: 18.1, 18.6_
 
-  - [~] 24.2 Write the API documentation
+  - [ ] 24.2 Write the API documentation
     - Document every REST endpoint: method, path, params/body, response body, auth requirement, and error conditions/responses
     - _Requirements: 18.2, 18.3_
 
-  - [~] 24.3 Write the contract documentation
+  - [ ] 24.3 Write the contract documentation
     - Document every contract's public/external functions, events, and roles generated from NatSpec
     - _Requirements: 18.4_
 
-  - [~] 24.4 Write the deployment guide
+  - [ ] 24.4 Write the deployment guide
     - Prerequisites and ordered steps for Base Sepolia contract deployment and service deployment
     - _Requirements: 18.5_
 
-- [~] 25. Final checkpoint
+- [ ] 25. Final checkpoint
   - Ensure all suites pass across contracts, backend, and frontend and CI is green; ask the user if questions arise.
 
 ## Notes
