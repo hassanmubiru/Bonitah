@@ -21,17 +21,17 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Set up `abitype`/viem-based ABI typing placeholders to be populated after contract build
     - _Requirements: 17.1, 1.1, 14.3_
 
-  - [ ]* 1.3 Write unit tests for shared zod schemas
+  - [x]* 1.3 Write unit tests for shared zod schemas
     - Test schema acceptance/rejection for representative valid and invalid payloads
     - _Requirements: 14.3, 14.4_
 
-- [ ] 2. Set up the Foundry contracts project and shared contract primitives
+- [x] 2. Set up the Foundry contracts project and shared contract primitives
   - [x] 2.1 Initialize the Foundry project and cross-cutting base
     - Create `foundry.toml` with `fuzz.runs >= 100` and invariant runs; install OpenZeppelin upgradeable contracts
     - Implement a shared roles/errors base library (DEFAULT_ADMIN, PAUSER, VERIFIER, UPGRADER, TREASURY, REPUTATION, ISSUER roles) and UUPS scaffolding
     - _Requirements: 14.5, 14.6, 14.8, 9.8_
 
-  - [ ] 2.2 Define contract interfaces and a mock ERC20 test token
+  - [x] 2.2 Define contract interfaces and a mock ERC20 test token
     - Add `IRegistry`, `ISavingsVault`, `ICommunityTreasury`, `IEducation`, `IGovernance` interfaces with events and custom errors
     - Implement a mock ERC20 stablecoin for tests and configurable token wiring
     - _Requirements: 4.5, 13.1, 13.2, 13.6, 13.9_
@@ -178,16 +178,16 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Generate ABI + address exports into `shared/` for frontend and backend consumption
     - _Requirements: 17.1, 1.1_
 
-- [ ] 10. Establish backend foundation (NestJS)
+- [x] 10. Establish backend foundation (NestJS)
   - [x] 10.1 Initialize the NestJS app and cross-cutting infrastructure
     - Scaffold the app, env-var config with validation, structured JSON logging (request IDs, no secrets/PII), global `HttpExceptionFilter`, and `HealthModule` (DB/Redis/RPC checks)
     - _Requirements: 16.2, 16.7, 14.2_
 
-  - [ ] 10.2 Define the Prisma schema and migrations
+  - [x] 10.2 Define the Prisma schema and migrations
     - Implement all models (`User`, `AuthNonce`, `Course`, `Lesson`, `LessonProgress`, `LearningStreak`, `CachedEvent`, `IndexerState`, `CachedReadValue`, `Conversation`, `Message`, `Notification`) and generate migrations
     - _Requirements: 1.3, 1.4, 2.7, 8.1, 8.2, 8.8, 10.4, 12.2, 12.6_
 
-  - [ ] 10.3 Implement global validation and auth guards
+  - [x] 10.3 Implement global validation and auth guards
     - Wire `ZodValidationPipe`, `JwtAuthGuard`, and `RolesGuard` so non-public endpoints require a valid JWT and role checks
     - _Requirements: 14.1, 14.2, 14.3, 14.4_
 
@@ -318,7 +318,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Ensure all backend tests pass and coverage meets >=80% line; ask the user if questions arise.
 
 - [ ] 18. Establish frontend foundation (Next.js)
-  - [ ] 18.1 Initialize the Next.js app and providers
+  - [x] 18.1 Initialize the Next.js app and providers
     - Scaffold App Router with strict TS, Tailwind, and shadcn/ui; configure `WagmiProvider` + `RainbowKitProvider` (Base Sepolia only), TanStack Query client, and `ThemeProvider`
     - _Requirements: 2.1, 2.3, 11.7, 17.2_
 

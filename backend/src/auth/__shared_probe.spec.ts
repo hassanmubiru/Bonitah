@@ -1,4 +1,4 @@
-import { nonceRequestSchema } from '@bfn/shared/schemas';
+import { nonceRequestSchema } from '@bfn/shared';
 
 describe('shared import probe', () => {
   it('imports a shared zod schema', () => {

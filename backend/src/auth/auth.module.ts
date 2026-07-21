@@ -1,6 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { TokenService } from './token.service';
@@ -20,8 +22,10 @@ import { TokenService } from './token.service';
  */
 @Global()
 @Module({
+  controllers: [AuthController],
   providers: [
     TokenService,
+    AuthService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

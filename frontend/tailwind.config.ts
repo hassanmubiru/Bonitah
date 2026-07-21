@@ -13,9 +13,20 @@ const config: Config = {
   darkMode: ['class'],
   content: ['./src/app/**/*.{ts,tsx}', './src/components/**/*.{ts,tsx}', './src/lib/**/*.{ts,tsx}'],
   theme: {
+    // Explicit breakpoints tuned to the supported viewport ranges (Req 19.5):
+    // base (unprefixed) covers mobile 320-767, `md` opens tablet at 768, and
+    // `lg` opens desktop at 1024. `sm`/`xl`/`2xl` remain available for finer
+    // layout control without shifting the tablet/desktop boundaries.
+    screens: {
+      sm: '480px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1400px',
+    },
     container: {
       center: true,
-      padding: '2rem',
+      padding: '1rem',
       screens: {
         '2xl': '1400px',
       },

@@ -60,4 +60,30 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /*
+   * Guard against horizontal scrolling across the supported viewport ranges
+   * (mobile 320-767, tablet 768-1023, desktop >=1024) (Req 19.5).
+   */
+  html,
+  body {
+    @apply overflow-x-hidden;
+    max-width: 100%;
+  }
+
+  /*
+   * Baseline visible focus indicator for every keyboard-focusable interactive
+   * element (Req 19.6). Component primitives (e.g. Button) may layer their own
+   * focus styles on top; this guarantees a visible ring even for plain
+   * anchors, inputs, and elements with an explicit tabindex.
+   */
+  a[href]:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [tabindex]:not([tabindex='-1']):focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
 }
