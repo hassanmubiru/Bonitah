@@ -7,19 +7,41 @@ import { ThemeToggle } from '@/components/theme-toggle';
  * apply across every page without a reload (Req 19.2). The inner container is
  * width-constrained and horizontally padded to avoid overflow at the smallest
  * supported viewport (320px, Req 19.5).
+ *
+ * Enhanced accessibility features:
+ * - Skip to main content link for screen readers (Req 19.7)
+ * - Proper landmark roles and ARIA labels (Req 19.7)
+ * - Keyboard-accessible navigation (Req 19.6)
  */
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
-        <Link
-          href="/"
-          className="rounded-md text-sm font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        >
-          Bonitah Financial Network
-        </Link>
-        <ThemeToggle />
-      </div>
-    </header>
+    <>
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
+      >
+        Skip to main content
+      </a>
+
+      <header
+        className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        role="banner"
+      >
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
+          <Link
+            href="/"
+            className="rounded-md text-sm font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            aria-label="Bonitah Financial Network - Go to homepage"
+          >
+            Bonitah Financial Network
+          </Link>
+
+          <nav role="navigation" aria-label="Theme settings">
+            <ThemeToggle />
+          </nav>
+        </div>
+      </header>
+    </>
   );
 }

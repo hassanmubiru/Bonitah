@@ -11,9 +11,10 @@ import { Button } from '@/components/ui/button';
  *
  * - next-themes sets a class on <html>, so switching applies across every page
  *   without a reload and effectively instantly (well within the 1s budget, Req 19.2).
- * - The selection is persisted by next-themes and re-applied on navigation (Req 19.3, 19.4).
+ * - The selection is persisted by next-themes in localStorage and re-applied on navigation (Req 19.3, 19.4).
  * - Rendered as a shadcn/ui Button so it is keyboard-focusable with a visible
  *   focus ring (Req 19.6) and carries an `aria-label` (Req 19.7).
+ * - Enhanced with proper ARIA attributes and keyboard support
  *
  * `mounted` gates theme-dependent output until after hydration to avoid a
  * server/client mismatch (the server has no knowledge of the persisted theme).
@@ -37,10 +38,15 @@ export function ThemeToggle() {
       variant="outline"
       size="icon"
       aria-label={label}
+      aria-pressed={isDark}
       title={label}
       onClick={() => setTheme(nextTheme)}
     >
-      {isDark ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}
+      {isDark ? (
+        <Moon aria-hidden="true" className="h-4 w-4" />
+      ) : (
+        <Sun aria-hidden="true" className="h-4 w-4" />
+      )}
       <span className="sr-only">{label}</span>
     </Button>
   );

@@ -76,6 +76,11 @@
    * element (Req 19.6). Component primitives (e.g. Button) may layer their own
    * focus styles on top; this guarantees a visible ring even for plain
    * anchors, inputs, and elements with an explicit tabindex.
+   * 
+   * Enhanced accessibility includes:
+   * - Visible focus rings on all interactive elements
+   * - Sufficient contrast for focus indicators
+   * - Keyboard navigation support
    */
   a[href]:focus-visible,
   button:focus-visible,
@@ -83,7 +88,39 @@
   select:focus-visible,
   textarea:focus-visible,
   summary:focus-visible,
+  [role='button']:focus-visible,
+  [role='link']:focus-visible,
   [tabindex]:not([tabindex='-1']):focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /*
+   * Enhanced keyboard navigation support (Req 19.6, 19.7)
+   * Ensure all interactive elements are reachable and clearly marked
+   */
+  [role='button'],
+  [role='link'] {
+    @apply cursor-pointer;
+  }
+
+  /* Improve text contrast and readability (accessibility enhancement) */
+  body {
+    @apply antialiased;
+  }
+
+  /* Smooth theme transitions within the 1s requirement (Req 19.2) */
+  * {
+    @apply transition-colors duration-300;
+  }
+
+  /* Skip to content link for screen readers (accessibility enhancement) */
+  .sr-only {
+    @apply absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .sr-only:focus {
+    @apply relative m-0 h-auto w-auto overflow-visible whitespace-normal p-1;
+    clip: auto;
   }
 }
