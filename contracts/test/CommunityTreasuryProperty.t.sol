@@ -59,79 +59,64 @@ contract CommunityTreasuryPropertyTest is Test {
         uint256 _actionAmount,
         uint8 _voterCount
     ) public {
-        // Bound parameters to valid ranges first
-        uint8 boundedMemberCount = uint8(bound(_memberCount, 2, 20)); // Reasonable test range
-        uint8 boundedApprovalThreshold = uint8(bound(_approvalThreshold, 1, 100));
-        uint256 boundedActionAmount = bound(_actionAmount, MIN_CONTRIBUTION, MAX_CONTRIBUTION);
-        uint8 boundedVoterCount = uint8(bound(_voterCount, 0, boundedMemberCount)); // Bound to memberCount
+        // Bound parameters to valid ranges using modulo for deterministic behavior
+        uint256 memberCount = 2 + (_memberCount % 19); // 2-20 members (reasonable test range)
+        uint256 approvalThreshold = 1 + (_approvalThreshold % 100); // 1-100%
+        uint256 actionAmount = 1e18 + (_actionAmount % (MAX_CONTRIBUTION - 1e18)); // 1e18 to MAX_CONTRIBUTION  
+        uint256 voterCount = _voterCount % (memberCount + 1); // 0 to memberCount
         
-        BoundedParams memory params = BoundedParams({
-            memberCount: boundedMemberCount,
-            approvalThreshold: boundedApprovalThreshold,
-            actionAmount: boundedActionAmount,
-            voterCount: boundedVoterCount
-        });
-        
-        // Create circle with the specified parameters
+        // Create circle with bounded parameters
         vm.prank(creator);
-        uint256 poolId = treasury.createCircle(params.memberCount, params.approvalThreshold);
+        uint256 poolId = treasury.createCircle(memberCount, uint8(approvalThreshold));
         
         // Generate member addresses and add them to the circle
-        address[] memory members = new address[](params.memberCount);
+        address[] memory members = new address[](memberCount);
         members[0] = creator; // Creator is already a member
         
-        for (uint256 i = 1; i < params.memberCount; i++) {
+        for (uint256 i = 1; i < memberCount; i++) {
             members[i] = makeAddr(string(abi.encodePacked("member", i)));
             vm.prank(members[i]);
             treasury.joinCircle(poolId);
         }
         
-        // Fund the treasury with enough balance for the action
-        uint256 totalFunding = params.actionAmount + 1e18; // Extra buffer
-        for (uint256 i = 0; i < params.memberCount; i++) {
+        // Fund the treasury - each member contributes enough to cover the action
+        for (uint256 i = 0; i < memberCount; i++) {
             token.mint(members[i], INITIAL_BALANCE);
             vm.prank(members[i]);
             token.approve(address(treasury), INITIAL_BALANCE);
-            
-            // Each member contributes to fund the treasury
-            uint256 contribution = totalFunding / params.memberCount;
-            if (i == 0) contribution += totalFunding % params.memberCount; // Handle remainder
-            
             vm.prank(members[i]);
-            treasury.contribute(poolId, contribution);
+            treasury.contribute(poolId, actionAmount);
         }
         
         // Propose a treasury action
         vm.prank(creator);
-        uint256 actionId = treasury.proposeAction(poolId, recipient, params.actionAmount);
+        uint256 actionId = treasury.proposeAction(poolId, recipient, actionAmount);
         
-        // Calculate required approvals for the threshold
-        uint256 requiredApprovals = (params.memberCount * params.approvalThreshold + 99) / 100;
+        // Calculate required approvals using the contract's threshold formula
+        uint256 requiredApprovals = (memberCount * approvalThreshold + 99) / 100;
         
-        // Have the specified number of members vote
-        uint256 actualVotes = 0;
-        for (uint256 i = 0; i < params.voterCount && i < params.memberCount; i++) {
+        // Cast the specified number of votes
+        for (uint256 i = 0; i < voterCount && i < memberCount; i++) {
             vm.prank(members[i]);
             treasury.vote(actionId);
-            actualVotes++;
         }
         
-        // Check the action state
+        // Verify the action state
         ICommunityTreasury.TreasuryAction memory action = treasury.getAction(actionId);
         
-        // **Core Property Verification**
-        if (actualVotes >= requiredApprovals) {
-            // Action should be executed
+        // **Core Property Verification (Requirement 6.7)**
+        if (voterCount >= requiredApprovals) {
+            // Action should be executed when votes reach or exceed threshold
             assertTrue(action.executed, "Action should be executed when votes >= threshold");
-            assertEq(token.balanceOf(recipient), params.actionAmount, "Recipient should receive action amount");
+            assertEq(token.balanceOf(recipient), actionAmount, "Recipient should receive action amount");
         } else {
-            // Action should NOT be executed
+            // Action should NOT be executed when votes are below threshold
             assertFalse(action.executed, "Action should NOT be executed when votes < threshold");
             assertEq(token.balanceOf(recipient), 0, "Recipient should not receive tokens");
         }
         
-        // Verify vote count matches expectations
-        assertEq(action.approvals, actualVotes, "Action approvals should match actual vote count");
+        // Verify vote count matches what we cast
+        assertEq(action.approvals, voterCount, "Action approvals should match actual vote count");
     }
     
     /// @notice Test edge case: single member circle with 100% threshold
