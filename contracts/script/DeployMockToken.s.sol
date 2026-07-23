@@ -21,7 +21,7 @@ contract DeployMockToken is Script {
         
         vm.startBroadcast(deployerPrivateKey);
         
-        MockERC20 token = new MockERC20();
+        MockERC20 token = new MockERC20("Bonitah Test USD", "bUSD", 6);
         
         vm.stopBroadcast();
         

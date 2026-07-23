@@ -2,12 +2,14 @@
 pragma solidity ^0.8.24;
 
 import {Script, console} from "forge-std/Script.sol";
-import {Registry} from "../src/Registry.sol";
+import {Registry, IRegistry} from "../src/Registry.sol";
 import {SavingsVault} from "../src/SavingsVault.sol";
 import {CommunityTreasury} from "../src/CommunityTreasury.sol";
 import {Education} from "../src/Education.sol";
 import {Governance} from "../src/Governance.sol";
 import {MockERC20} from "../src/mocks/MockERC20.sol";
+import {BFNRoles} from "../src/base/BFNRoles.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title VerifyDeployment
@@ -55,12 +57,12 @@ contract VerifyDeployment is Script {
         Registry registry = Registry(REGISTRY_ADDRESS);
         
         // Check basic functionality
-        require(registry.supportsInterface(type(Registry).interfaceId), "Registry: Interface not supported");
+        require(registry.supportsInterface(type(IRegistry).interfaceId), "Registry: Interface not supported");
         
         // Check role configuration
         bytes32 adminRole = registry.DEFAULT_ADMIN_ROLE();
-        bytes32 verifierRole = registry.VERIFIER_ROLE();
-        bytes32 reputationRole = registry.REPUTATION_ROLE();
+        bytes32 verifierRole = BFNRoles.VERIFIER_ROLE;
+        bytes32 reputationRole = BFNRoles.REPUTATION_ROLE;
         
         console.log("  Admin role exists:", adminRole != bytes32(0));
         console.log("  Verifier role exists:", verifierRole != bytes32(0));
@@ -75,15 +77,15 @@ contract VerifyDeployment is Script {
         SavingsVault vault = SavingsVault(SAVINGS_VAULT_ADDRESS);
         
         // Check token configuration
-        address vaultToken = vault.token();
-        require(vaultToken == TOKEN_ADDRESS, "SavingsVault: Token mismatch");
+        IERC20 vaultToken = vault.token();
+        require(address(vaultToken) == TOKEN_ADDRESS, "SavingsVault: Token mismatch");
         
         // Check registry wiring
-        address vaultRegistry = vault.registry();
-        require(vaultRegistry == REGISTRY_ADDRESS, "SavingsVault: Registry mismatch");
+        IRegistry vaultRegistry = vault.registry();
+        require(address(vaultRegistry) == REGISTRY_ADDRESS, "SavingsVault: Registry mismatch");
         
-        console.log("  Token address:", vaultToken);
-        console.log("  Registry address:", vaultRegistry);
+        console.log("  Token address:", address(vaultToken));
+        console.log("  Registry address:", address(vaultRegistry));
         console.log("  Is paused:", vault.paused());
         
         console.log("SavingsVault verification passed");
@@ -95,15 +97,10 @@ contract VerifyDeployment is Script {
         CommunityTreasury treasury = CommunityTreasury(COMMUNITY_TREASURY_ADDRESS);
         
         // Check token configuration
-        address treasuryToken = treasury.token();
-        require(treasuryToken == TOKEN_ADDRESS, "CommunityTreasury: Token mismatch");
+        IERC20 treasuryToken = treasury.token();
+        require(address(treasuryToken) == TOKEN_ADDRESS, "CommunityTreasury: Token mismatch");
         
-        // Check registry wiring  
-        address treasuryRegistry = treasury.registry();
-        require(treasuryRegistry == REGISTRY_ADDRESS, "CommunityTreasury: Registry mismatch");
-        
-        console.log("  Token address:", treasuryToken);
-        console.log("  Registry address:", treasuryRegistry);
+        console.log("  Token address:", address(treasuryToken));
         
         console.log("CommunityTreasury verification passed");
     }
@@ -113,13 +110,8 @@ contract VerifyDeployment is Script {
         
         Education education = Education(EDUCATION_ADDRESS);
         
-        // Check registry wiring
-        address educationRegistry = education.registry();
-        require(educationRegistry == REGISTRY_ADDRESS, "Education: Registry mismatch");
-        
         // Check role configuration
-        bytes32 issuerRole = education.ISSUER_ROLE();
-        console.log("  Registry address:", educationRegistry);
+        bytes32 issuerRole = BFNRoles.ISSUER_ROLE;
         console.log("  Issuer role exists:", issuerRole != bytes32(0));
         
         console.log("Education verification passed");
@@ -129,12 +121,6 @@ contract VerifyDeployment is Script {
         console.log("Verifying Governance...");
         
         Governance governance = Governance(GOVERNANCE_ADDRESS);
-        
-        // Check registry wiring
-        address governanceRegistry = governance.registry();
-        require(governanceRegistry == REGISTRY_ADDRESS, "Governance: Registry mismatch");
-        
-        console.log("  Registry address:", governanceRegistry);
         
         console.log("Governance verification passed");
     }
@@ -154,7 +140,7 @@ contract VerifyDeployment is Script {
         console.log("  Decimals:", decimals);
         console.log("  Total supply:", totalSupply);
         
-        require(decimals == 18, "Token: Invalid decimals");
+        require(decimals == 6, "Token: Invalid decimals");
         require(totalSupply > 0, "Token: No total supply");
         
         console.log("Token verification passed");
@@ -167,7 +153,7 @@ contract VerifyDeployment is Script {
         Education education = Education(EDUCATION_ADDRESS);
         
         // Verify Education has REPUTATION_ROLE on Registry
-        bytes32 reputationRole = registry.REPUTATION_ROLE();
+        bytes32 reputationRole = BFNRoles.REPUTATION_ROLE;
         bool hasReputationRole = registry.hasRole(reputationRole, EDUCATION_ADDRESS);
         
         console.log("  Education has REPUTATION_ROLE:", hasReputationRole);

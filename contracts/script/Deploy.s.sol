@@ -10,6 +10,8 @@ import {CommunityTreasury} from "../src/CommunityTreasury.sol";
 import {Education} from "../src/Education.sol";
 import {Governance} from "../src/Governance.sol";
 import {MockERC20} from "../src/mocks/MockERC20.sol";
+import {BFNRoles} from "../src/base/BFNRoles.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title Deploy
@@ -48,7 +50,7 @@ contract Deploy is Script {
         vm.startBroadcast(deployerPrivateKey);
         
         // 1. Deploy mock ERC20 token for testing
-        token = new MockERC20();
+        token = new MockERC20("Bonitah Test USD", "bUSD", 6);
         console.log("MockERC20 deployed at:", address(token));
         
         // 2. Deploy implementation contracts
@@ -84,7 +86,7 @@ contract Deploy is Script {
         // CommunityTreasury proxy  
         bytes memory treasuryInitData = abi.encodeCall(
             CommunityTreasury.initialize,
-            (deployer, registryProxy, address(token))
+            (deployer, IERC20(address(token)))
         );
         communityTreasuryProxy = address(new ERC1967Proxy(address(communityTreasury), treasuryInitData));
         
@@ -126,7 +128,7 @@ contract Deploy is Script {
         
         // Grant REPUTATION_ROLE to Education contract on Registry
         Registry(registryProxy).grantRole(
-            Registry(registryProxy).REPUTATION_ROLE(),
+            BFNRoles.REPUTATION_ROLE,
             educationProxy
         );
         
@@ -151,8 +153,16 @@ contract Deploy is Script {
         console.log("");
     }
     
-    function _updateSharedPackage() internal {
+    function _updateSharedPackage() internal view {
         console.log("To update the shared package, run:");
-        console.log("node scripts/update-addresses.js", block.chainid, registryProxy, savingsVaultProxy, communityTreasuryProxy, educationProxy, governanceProxy, address(token), block.number);
+        console.log("node scripts/update-addresses.js");
+        console.log("  Chain ID:", block.chainid);
+        console.log("  Registry:", registryProxy);
+        console.log("  SavingsVault:", savingsVaultProxy);
+        console.log("  CommunityTreasury:", communityTreasuryProxy);
+        console.log("  Education:", educationProxy);
+        console.log("  Governance:", governanceProxy);
+        console.log("  Token:", address(token));
+        console.log("  Block:", block.number);
     }
 }

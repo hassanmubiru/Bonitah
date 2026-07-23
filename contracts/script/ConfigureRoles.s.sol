@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {Script, console} from "forge-std/Script.sol";
 import {Registry} from "../src/Registry.sol";
 import {Education} from "../src/Education.sol";
+import {BFNRoles} from "../src/base/BFNRoles.sol";
 
 /**
  * @title ConfigureRoles
@@ -41,7 +42,7 @@ contract ConfigureRoles is Script {
         Education education = Education(EDUCATION_ADDRESS);
         
         // Grant VERIFIER_ROLE to verification account
-        bytes32 verifierRole = registry.VERIFIER_ROLE();
+        bytes32 verifierRole = BFNRoles.VERIFIER_ROLE;
         if (!registry.hasRole(verifierRole, VERIFIER_ACCOUNT)) {
             registry.grantRole(verifierRole, VERIFIER_ACCOUNT);
             console.log("Granted VERIFIER_ROLE to:", VERIFIER_ACCOUNT);
@@ -50,7 +51,7 @@ contract ConfigureRoles is Script {
         }
         
         // Grant ISSUER_ROLE to certificate issuer account
-        bytes32 issuerRole = education.ISSUER_ROLE();
+        bytes32 issuerRole = BFNRoles.ISSUER_ROLE;
         if (!education.hasRole(issuerRole, ISSUER_ACCOUNT)) {
             education.grantRole(issuerRole, ISSUER_ACCOUNT);
             console.log("Granted ISSUER_ROLE to:", ISSUER_ACCOUNT);
