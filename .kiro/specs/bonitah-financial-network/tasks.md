@@ -95,15 +95,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 15: Savings circle creation and membership rules**
     - **Validates: Requirements 6.1, 6.2, 6.9, 6.11**
 
-  - [ ] 5.3 Write property test for contributions and history
+  - [x] 5.3 Write property test for contributions and history
     - **Property 16: Circle contributions and per-member history**
     - **Validates: Requirements 6.3, 6.6, 6.5**
 
-  - [ ] 5.4 Write property test for treasury action threshold
+  - [x] 5.4 Write property test for treasury action threshold
     - **Property 17: Treasury action executes exactly at threshold**
     - **Validates: Requirements 6.7**
 
-  - [ ] 5.5 Implement investment pools in `CommunityTreasury.sol`
+  - [x] 5.5 Implement investment pools in `CommunityTreasury.sol`
     - Implement `contributeToPool`, `ownershipShare` (ppm), `yieldDistribution`, and timestamped contribution history
     - _Requirements: 7.1, 7.2, 7.3, 7.6, 13.7_
 
@@ -119,16 +119,16 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Assert `PoolCreated`/`ContributionMade`/`VoteCast`/`ActionExecuted` args, one revert test per custom error, and a reentrancy-attack test
     - _Requirements: 6.8, 13.6, 13.7, 13.8, 15.1, 15.2, 15.3_
 
-- [ ] 6. Implement the Education contract
+- [x] 6. Implement the Education contract
   - [x] 6.1 Implement `Education.sol`
     - Implement `issueCertificate` (ISSUER_ROLE, non-empty hash, duplicate guard), `awardBadge`, `recordAchievement`, and `Registry.increaseReputation` wiring via REPUTATION_ROLE; emit events
     - _Requirements: 8.3, 8.4, 8.5, 8.7, 8.9, 8.10, 13.9, 14.5, 14.8_
 
-  - [ ] 6.2 Write property test for certificate and achievement proofs
+  - [x] 6.2 Write property test for certificate and achievement proofs
     - **Property 22: Certificate and achievement proofs recorded once**
     - **Validates: Requirements 8.3, 8.5**
 
-  - [ ] 6.3 Write unit, event, and revert tests for Education
+  - [x] 6.3 Write unit, event, and revert tests for Education
     - Assert `CertificateIssued`/`BadgeAwarded`/`AchievementRecorded` args and one revert test per custom error
     - _Requirements: 13.9, 15.1, 15.2, 15.3_
 
