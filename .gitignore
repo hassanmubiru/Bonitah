@@ -10,6 +10,10 @@ out/
 .next/
 *.tsbuildinfo
 
+# Compiled JS from TypeScript
+shared/src/*.js
+shared/src/*.js.map
+
 # Test / coverage
 coverage/
 .nyc_output/
