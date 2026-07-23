@@ -22,6 +22,7 @@ frontend/src/**/*.js.map
 # Test / coverage
 coverage/
 .nyc_output/
+lcov.info
 
 # Foundry
 contracts/out/

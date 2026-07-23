@@ -54,8 +54,6 @@ contract CommunityTreasury is
     error InvalidRecipient();
     /// @notice Reverts when a referenced treasury action does not exist.
     error UnknownAction(uint256 actionId);
-    /// @notice Reverts when the pool feature has not yet been implemented (reserved for Req 7 task).
-    error PoolNotImplemented();
 
     // --- Storage ---
 
@@ -79,8 +77,13 @@ contract CommunityTreasury is
     /// @dev actionId => voter => has-voted flag (Req 6.10).
     mapping(uint256 => mapping(address => bool)) private _voted;
 
-    /// @dev Reserved storage slots for future upgrades (e.g. Req 7 pool state).
-    uint256[45] private __gap;
+    /// @dev Investment pool storage: poolId => total pool contributions (Req 7.1)
+    mapping(uint256 => uint256) private _poolTotalContributions;
+    /// @dev Investment pool storage: poolId => member => cumulative member contributions (Req 7.1)
+    mapping(uint256 => mapping(address => uint256)) private _memberTotalContributions;
+
+    /// @dev Reserved storage slots for future upgrades.
+    uint256[43] private __gap;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -224,25 +227,58 @@ contract CommunityTreasury is
         return (memberCount * threshold + 99) / 100;
     }
 
-    // --- Investment pools (Req 7) — reserved for a subsequent task ---
+    // --- Investment pools (Req 7) ---
 
     /// @inheritdoc ICommunityTreasury
-    /// @dev Reserved: investment-pool contributions are implemented in the Req 7 task and will
-    ///      reuse the shared `Contribution`/history data model defined in this contract.
-    function contributeToPool(uint256, uint256) external pure {
-        revert PoolNotImplemented();
+    /// @dev Investment pool contribution: members can contribute to pools and ownership shares
+    ///      are computed as proportional to total contributions (Req 7.1, 7.2). Emits
+    ///      `ContributionMade` event (Req 13.7). Uses shared contribution history (Req 7.3).
+    ///      `nonReentrant` guards the value move and `whenNotPaused` for admin control.
+    function contributeToPool(uint256 poolId, uint256 amount) external nonReentrant whenNotPaused {
+        if (amount == 0) revert ZeroAmount(); // Req 7.2
+        if (!_members[poolId][msg.sender]) revert NotMember(msg.sender, poolId);
+
+        // Update pool and member contribution totals (Req 7.1)
+        _poolTotalContributions[poolId] += amount;
+        _memberTotalContributions[poolId][msg.sender] += amount;
+        
+        // Record timestamped contribution in history (Req 7.3 - shared with circles)
+        _history[poolId][msg.sender].push(Contribution({amount: amount, timestamp: block.timestamp}));
+
+        // Transfer tokens using SafeERC20
+        token.safeTransferFrom(msg.sender, address(this), amount);
+
+        // Emit ContributionMade event (Req 13.7)
+        emit ContributionMade(msg.sender, poolId, amount);
     }
 
     /// @inheritdoc ICommunityTreasury
-    /// @dev Reserved: ownership-share computation is implemented in the Req 7 task.
-    function ownershipShare(uint256, address) external pure returns (uint256) {
-        revert PoolNotImplemented();
+    /// @dev Ownership share computation in parts-per-million (ppm) as the ratio of member's
+    ///      cumulative contributions to total pool contributions (Req 7.1). Returns 0 if
+    ///      no contributions have been made to the pool.
+    function ownershipShare(uint256 poolId, address member) external view returns (uint256) {
+        uint256 totalContributions = _poolTotalContributions[poolId];
+        if (totalContributions == 0) {
+            return 0; // No contributions made yet
+        }
+        
+        uint256 memberContributions = _memberTotalContributions[poolId][member];
+        // Return ownership share in parts-per-million (ppm): memberContributions * 1e6 / totalContributions
+        return (memberContributions * 1e6) / totalContributions;
     }
 
     /// @inheritdoc ICommunityTreasury
-    /// @dev Reserved: yield distribution is implemented in the Req 7 task.
-    function yieldDistribution(uint256, address, uint256) external pure returns (uint256) {
-        revert PoolNotImplemented();
+    /// @dev Yield distribution proportional to ownership share (Req 7.6). Computes the
+    ///      yield amount owed to a member based on their proportional ownership share.
+    function yieldDistribution(uint256 poolId, address member, uint256 totalYield) external view returns (uint256) {
+        uint256 totalContributions = _poolTotalContributions[poolId];
+        if (totalContributions == 0 || totalYield == 0) {
+            return 0; // No contributions or no yield to distribute
+        }
+        
+        uint256 memberContributions = _memberTotalContributions[poolId][member];
+        // Return proportional yield: (memberContributions * totalYield) / totalContributions
+        return (memberContributions * totalYield) / totalContributions;
     }
 
     // --- Views ---
@@ -285,6 +321,16 @@ contract CommunityTreasury is
     /// @notice Number of treasury actions proposed so far.
     function actionCount() external view returns (uint256) {
         return _actionCount;
+    }
+
+    /// @notice Total contributions made to a pool (for investment pools).
+    function poolTotalContributions(uint256 poolId) external view returns (uint256) {
+        return _poolTotalContributions[poolId];
+    }
+
+    /// @notice Total contributions made by a member to a pool (for investment pools).
+    function memberTotalContributions(uint256 poolId, address member) external view returns (uint256) {
+        return _memberTotalContributions[poolId][member];
     }
 
     // --- Admin ---
