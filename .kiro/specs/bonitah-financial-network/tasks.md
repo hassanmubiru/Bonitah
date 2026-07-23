@@ -145,11 +145,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 24: Proposal outcome is determined by recorded votes**
     - **Validates: Requirements 9.4, 9.5, 9.6**
 
-  - [ ] 7.4 Write property test for upgrade state preservation
+  - [-] 7.4 Write property test for upgrade state preservation
     - **Property 25: Upgrade preserves governance state**
     - **Validates: Requirements 9.8**
 
-  - [ ] 7.5 Write unit, event, and revert tests for Governance
+  - [-] 7.5 Write unit, event, and revert tests for Governance
     - Assert `ProposalCreated`/`VoteCast`/`ProposalFinalized` args and one revert test per custom error
     - _Requirements: 13.8, 15.1, 15.2, 15.3_
 
@@ -200,15 +200,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `/auth/nonce`, `/auth/verify`, `/auth/logout`; single-use expiry-bounded nonces, signature/address verification, JWT issuance (<=24h), and least-privilege default role assignment
     - _Requirements: 2.4, 2.6, 2.7, 2.8, 2.9, 2.10, 10.6, 14.1_
 
-  - [ ] 11.2 Write property test for nonce single-use and expiry
+  - [-] 11.2 Write property test for nonce single-use and expiry
     - **Property 4: SIWE nonces are single-use and expiry-bounded**
     - **Validates: Requirements 2.4, 2.6, 2.7, 2.8**
 
-  - [ ] 11.3 Write property test for session JWT acceptance
+  - [-] 11.3 Write property test for session JWT acceptance
     - **Property 5: Sessions are accepted iff the JWT is valid and unexpired**
     - **Validates: Requirements 2.7, 2.9, 14.1, 14.2**
 
-  - [ ] 11.4 Write property test for least-privilege default role
+  - [-] 11.4 Write property test for least-privilege default role
     - **Property 6: New wallets default to least-privilege role**
     - **Validates: Requirements 2.10**
 
