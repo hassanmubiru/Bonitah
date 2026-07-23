@@ -157,7 +157,7 @@ contract VerifyDeployment is Script {
         require(decimals == 18, "Token: Invalid decimals");
         require(totalSupply > 0, "Token: No total supply");
         
-        console.log("Token verification passed ✓");
+        console.log("Token verification passed");
     }
     
     function _verifyCrossContractWiring() internal view {
@@ -176,6 +176,6 @@ contract VerifyDeployment is Script {
             console.log("  Warning: Education contract needs REPUTATION_ROLE on Registry");
         }
         
-        console.log("Cross-contract wiring verification passed ✓");
+        console.log("Cross-contract wiring verification passed");
     }
 }
