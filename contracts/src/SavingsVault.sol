@@ -47,15 +47,26 @@ contract SavingsVault is
 
     /// @notice Total tokens a user has deposited into their vault (Req 4.1, 4.2).
     mapping(address => uint256) public depositedBalance;
-    /// @notice Portion of a user's deposited balance held in time-locks (wired in task 4.4).
-    /// @dev Defined now so `availableBalance` excludes locked funds throughout (Req 4.3).
+    /// @notice Portion of a user's deposited balance held in time-locks.
+    /// @dev Available balance is deposited balance minus this value (Req 4.3).
     mapping(address => uint256) public lockedTotal;
 
-    /// @notice Reverts for interface functions completed in task 4.4 (goals and locks).
-    error NotYetImplemented();
+    /// @notice Lock duration constants: minimum 1 day, maximum 5 years (Req 5.3, 5.8).
+    uint256 public constant MIN_LOCK = 1 days;
+    uint256 public constant MAX_LOCK = 5 * 365 days;
 
-    /// @dev Storage gap reserved for goal/lock state added in task 4.4 without breaking layout.
-    uint256[45] private __gap;
+    /// @notice Counter for generating unique goal IDs per user.
+    mapping(address => uint256) public nextGoalId;
+    /// @notice Counter for generating unique lock IDs per user.
+    mapping(address => uint256) public nextLockId;
+
+    /// @notice User's savings goals by goal ID.
+    mapping(address => mapping(uint256 => Goal)) public goals;
+    /// @notice User's locked savings by lock ID.
+    mapping(address => mapping(uint256 => Lock)) public locks;
+
+    /// @dev Storage gap for future upgrades (reduced from 45 to accommodate new state).
+    uint256[38] private __gap;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
