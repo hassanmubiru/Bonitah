@@ -206,13 +206,51 @@ contract SavingsVault is
     }
 
     /// @inheritdoc ISavingsVault
-    function lockFunds(uint256 /*amount*/, uint256 /*duration*/) external pure {
-        revert NotYetImplemented();
+    /// @dev Locks funds for a duration between MIN_LOCK and MAX_LOCK. Reverts `VaultPaused` 
+    ///      while paused, `NotRegisteredUser` for unregistered callers, `ZeroAmount` for zero 
+    ///      amount, `InvalidLockDuration` for out-of-range duration, and 
+    ///      `InsufficientAvailableBalance` when amount exceeds available balance (Req 5.3, 5.8). 
+    ///      Emits `FundsLocked`. Uses `nonReentrant` for safety.
+    function lockFunds(uint256 amount, uint256 duration) external nonReentrant whenNotPaused {
+        if (!registry.isRegistered(msg.sender)) revert NotRegisteredUser(msg.sender);
+        if (amount == 0) revert ZeroAmount();
+        if (duration < MIN_LOCK || duration > MAX_LOCK) revert InvalidLockDuration(duration);
+
+        uint256 available = availableBalance(msg.sender);
+        if (amount > available) revert InsufficientAvailableBalance(amount, available);
+
+        uint256 lockId = nextLockId[msg.sender]++;
+        uint256 expiry = block.timestamp + duration;
+
+        locks[msg.sender][lockId] = Lock({
+            amount: amount,
+            expiry: expiry,
+            released: false
+        });
+
+        lockedTotal[msg.sender] += amount;
+
+        emit FundsLocked(msg.sender, lockId, amount, expiry);
     }
 
     /// @inheritdoc ISavingsVault
-    function withdrawLocked(uint256 /*lockId*/) external pure {
-        revert NotYetImplemented();
+    /// @dev Releases a matured lock back to available balance. Reverts `VaultPaused` while 
+    ///      paused, `NotRegisteredUser` for unregistered callers, and `LockNotExpired` when 
+    ///      attempted before expiry timestamp (Req 5.4, 5.5). Emits `LockReleased`. Uses 
+    ///      `nonReentrant` for safety.
+    function withdrawLocked(uint256 lockId) external nonReentrant whenNotPaused {
+        if (!registry.isRegistered(msg.sender)) revert NotRegisteredUser(msg.sender);
+
+        Lock storage lock = locks[msg.sender][lockId];
+        if (lock.amount == 0) revert ZeroAmount(); // Lock doesn't exist
+        if (lock.released) revert ZeroAmount(); // Already released
+        if (block.timestamp < lock.expiry) revert LockNotExpired(block.timestamp, lock.expiry);
+
+        uint256 amount = lock.amount;
+        lock.released = true;
+        lockedTotal[msg.sender] -= amount;
+
+        emit LockReleased(msg.sender, lockId, amount);
     }
 
     /// @inheritdoc ISavingsVault
