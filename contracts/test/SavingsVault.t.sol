@@ -237,21 +237,27 @@ contract SavingsVaultTest is Test {
         assertEq(vault.availableBalance(user1), DEPOSIT_AMOUNT * 2 - WITHDRAW_AMOUNT);
     }
     
-    /// @notice Test goal functions revert with NotYetImplemented (Task 4.4)
-    function testGoalFunctionsNotImplemented() public {
-        vm.expectRevert(abi.encodeWithSelector(SavingsVault.NotYetImplemented.selector));
+    /// @notice Test goal functions are now implemented (goals were implemented in task 4.4)
+    function testGoalFunctionsImplemented() public {
+        // Deposit first so we have balance
         vm.prank(user1);
-        vault.createGoal(1000, block.timestamp + 30 days);
+        vault.deposit(DEPOSIT_AMOUNT);
         
-        vm.expectRevert(abi.encodeWithSelector(SavingsVault.NotYetImplemented.selector));
+        // Create goal should work
+        vm.prank(user1);
+        uint256 goalId = vault.createGoal(1000, block.timestamp + 30 days);
+        assertEq(goalId, 0, "First goal should have ID 0");
+        
+        // Contribute to goal should work
         vm.prank(user1);
         vault.contributeToGoal(0, 100);
-        
-        vm.expectRevert(abi.encodeWithSelector(SavingsVault.NotYetImplemented.selector));
         vm.prank(user1);
         vault.lockFunds(100, 30 days);
         
-        vm.expectRevert(abi.encodeWithSelector(SavingsVault.NotYetImplemented.selector));
+        // Lock funds should work
+        vm.prank(user1);
+        uint256 lockId = vault.lockFunds(200, 1 days);
+        assertEq(lockId, 0, "First lock should have ID 0");
         vm.prank(user1);
         vault.withdrawLocked(0);
     }

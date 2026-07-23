@@ -1,8 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { SiweMessage } from 'siwe';
-import { generatePrivateKey, privateKeyToAccount, createWalletClient, http } from 'viem';
-import { base } from 'viem/chains';
+import { privateKeyToAccount } from 'viem/accounts';
 import * as fc from 'fast-check';
 
 import { EnvService } from '../config/env.service';
@@ -15,12 +14,6 @@ describe('AuthService', () => {
   let service: AuthService;
   let prisma: PrismaService;
   let tokenService: TokenService;
-
-  // Test database cleanup helper
-  const cleanupNonces = async () => {
-    await prisma.authNonce.deleteMany({});
-    await prisma.user.deleteMany({});
-  };
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -75,7 +68,9 @@ describe('AuthService', () => {
           // Generate test data: valid Ethereum addresses and wallet keys
           fc.record({
             address: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-            privateKey: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}` as `0x${string}`),
+            privateKey: fc.hexaString({ minLength: 64, maxLength: 64 })
+              .filter(s => s !== '0'.repeat(64) && s !== 'f'.repeat(64)) // Exclude invalid keys
+              .map(s => `0x${s}` as `0x${string}`),
             // Test both expired and valid nonces
             isExpiredNonce: fc.boolean(),
             // Test concurrent usage attempts
@@ -101,7 +96,7 @@ describe('AuthService', () => {
 
             // Issue a nonce
             const nonceRequest: NonceRequest = { address };
-            const nonceResponse = await service.issueNonce(nonceRequest);
+            await service.issueNonce(nonceRequest);
             
             // Verify nonce was created with correct properties
             expect(prisma.authNonce.create).toHaveBeenCalledWith({
@@ -268,7 +263,9 @@ describe('AuthService', () => {
         fc.asyncProperty(
           fc.record({
             address: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-            privateKey: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}` as `0x${string}`),
+            privateKey: fc.hexaString({ minLength: 64, maxLength: 64 })
+              .filter(s => s !== '0'.repeat(64) && s !== 'f'.repeat(64)) // Exclude invalid keys
+              .map(s => `0x${s}` as `0x${string}`),
             // Test edge cases around expiry
             secondsUntilExpiry: fc.integer({ min: -300, max: 300 }), // -5min to +5min
           }),

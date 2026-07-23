@@ -7,9 +7,8 @@ import type { Request } from 'express';
 import { EnvService } from '../config/env.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { TokenService } from './token.service';
-import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 import type { ExecutionContext } from '@nestjs/common';
-import type { AuthenticatedUser } from './auth.types';
+import type { AuthenticatedUser, Role } from './auth.types';
 
 /**
  * Property 5: Sessions are accepted iff the JWT is valid and unexpired
@@ -57,7 +56,7 @@ describe('Property 5: Session JWT acceptance', () => {
         // Generate valid wallet addresses and roles
         fc.record({
           address: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-          role: fc.constantFrom('USER', 'VERIFIER', 'ADMIN'),
+          role: fc.constantFrom<Role>('USER', 'VERIFIER', 'ADMIN'),
           expiresInSeconds: fc.integer({ min: 1, max: 24 * 60 * 60 }), // 1 second to 24 hours (Req 2.7)
         }),
         ({ address, role, expiresInSeconds }) => {
@@ -92,7 +91,7 @@ describe('Property 5: Session JWT acceptance', () => {
       fc.property(
         fc.record({
           address: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-          role: fc.constantFrom('USER', 'VERIFIER', 'ADMIN'),
+          role: fc.constantFrom<Role>('USER', 'VERIFIER', 'ADMIN'),
           pastSeconds: fc.integer({ min: 1, max: 3600 }), // 1 second to 1 hour in the past
         }),
         ({ address, role, pastSeconds }) => {
@@ -157,7 +156,7 @@ describe('Property 5: Session JWT acceptance', () => {
       fc.property(
         fc.record({
           address: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-          role: fc.constantFrom('USER', 'VERIFIER', 'ADMIN'),
+          role: fc.constantFrom<Role>('USER', 'VERIFIER', 'ADMIN'),
           tamperIndex: fc.integer({ min: 0, max: 10 }), // Index to tamper
           tamperChar: fc.char(),
         }),
@@ -203,7 +202,7 @@ describe('Property 5: Session JWT acceptance', () => {
           // Valid tokens
           fc.record({
             address: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-            role: fc.constantFrom('USER', 'VERIFIER', 'ADMIN'),
+            role: fc.constantFrom<Role>('USER', 'VERIFIER', 'ADMIN'),
           }).map(({ address, role }) => `Bearer ${tokenService.sign({ sub: address, role }, 3600)}`),
         ),
         (authHeader) => {
