@@ -10,9 +10,14 @@ out/
 .next/
 *.tsbuildinfo
 
-# Compiled JS from TypeScript
+# Compiled JS from TypeScript in source directories
 shared/src/*.js
 shared/src/*.js.map
+shared/src/*.d.ts
+backend/src/**/*.js
+backend/src/**/*.js.map
+frontend/src/**/*.js
+frontend/src/**/*.js.map
 
 # Test / coverage
 coverage/
