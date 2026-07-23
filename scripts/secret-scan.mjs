@@ -179,6 +179,33 @@ function main() {
   const usingExplicit = explicit.length > 0;
   const files = usingExplicit ? explicit : getStagedFiles();
 
+  // Check for compiled TypeScript files that shouldn't be committed
+  const compiledFiles = files.filter(
+    (f) =>
+      (f.endsWith('.js') || f.endsWith('.js.map') || f.endsWith('.d.ts')) &&
+      f.includes('/src/') &&
+      !f.includes('node_modules') &&
+      !f.includes('/lib/'),
+  );
+
+  if (compiledFiles.length > 0) {
+    console.error('\n\u001b[31m✖ Compiled files detected in source directories.\u001b[0m\n');
+    for (const file of compiledFiles) {
+      console.error(`  ${file}  →  Compiled TypeScript output`);
+    }
+    console.error(
+      '\nThese compiled files should not be committed. They should be generated' +
+        '\nduring build time and exist only in dist/ directories.' +
+        '\nRun the following to remove them:' +
+        '\n  git reset HEAD' +
+        '\n  rm ' +
+        compiledFiles.join(' ') +
+        '\n  git add .' +
+        '\n',
+    );
+    process.exit(1);
+  }
+
   const scannable = files.filter((f) => !IGNORED_PATH_PATTERNS.some((re) => re.test(f)));
 
   const findings = [];
