@@ -439,7 +439,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Document every contract's public/external functions, events, and roles generated from NatSpec
     - _Requirements: 18.4_
 
-  - [ ] 24.4 Write the deployment guide
+  - [-] 24.4 Write the deployment guide
     - Prerequisites and ordered steps for Base Sepolia contract deployment and service deployment
     - _Requirements: 18.5_
 
