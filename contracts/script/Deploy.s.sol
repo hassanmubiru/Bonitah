@@ -1,0 +1,158 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.24;
+
+import {Script, console} from "forge-std/Script.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+
+import {Registry} from "../src/Registry.sol";
+import {SavingsVault} from "../src/SavingsVault.sol";
+import {CommunityTreasury} from "../src/CommunityTreasury.sol";
+import {Education} from "../src/Education.sol";
+import {Governance} from "../src/Governance.sol";
+import {MockERC20} from "../src/mocks/MockERC20.sol";
+
+/**
+ * @title Deploy
+ * @notice Deploys all BFN contracts with UUPS proxies to Base Sepolia
+ * 
+ * This script deploys all five main contracts behind UUPS proxies, configures
+ * initial roles, and outputs deployment addresses for the shared package.
+ * 
+ * Usage:
+ *   forge script script/Deploy.s.sol:Deploy --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast --verify
+ */
+contract Deploy is Script {
+    // Contract instances
+    Registry public registry;
+    SavingsVault public savingsVault;  
+    CommunityTreasury public communityTreasury;
+    Education public education;
+    Governance public governance;
+    MockERC20 public token;
+    
+    // Proxy addresses
+    address public registryProxy;
+    address public savingsVaultProxy;
+    address public communityTreasuryProxy;
+    address public educationProxy;
+    address public governanceProxy;
+    
+    function run() public {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address deployer = vm.addr(deployerPrivateKey);
+        
+        console.log("Deploying BFN contracts to Base Sepolia...");
+        console.log("Deployer address:", deployer);
+        console.log("Chain ID:", block.chainid);
+        
+        vm.startBroadcast(deployerPrivateKey);
+        
+        // 1. Deploy mock ERC20 token for testing
+        token = new MockERC20();
+        console.log("MockERC20 deployed at:", address(token));
+        
+        // 2. Deploy implementation contracts
+        registry = new Registry();
+        savingsVault = new SavingsVault();
+        communityTreasury = new CommunityTreasury();
+        education = new Education();
+        governance = new Governance();
+        
+        console.log("Implementation contracts deployed:");
+        console.log("  Registry impl:", address(registry));
+        console.log("  SavingsVault impl:", address(savingsVault));
+        console.log("  CommunityTreasury impl:", address(communityTreasury));
+        console.log("  Education impl:", address(education));
+        console.log("  Governance impl:", address(governance));
+        
+        // 3. Deploy proxies with initialization
+        
+        // Registry proxy
+        bytes memory registryInitData = abi.encodeCall(
+            Registry.initialize,
+            (deployer)
+        );
+        registryProxy = address(new ERC1967Proxy(address(registry), registryInitData));
+        
+        // SavingsVault proxy
+        bytes memory vaultInitData = abi.encodeCall(
+            SavingsVault.initialize,
+            (deployer, registryProxy, address(token))
+        );
+        savingsVaultProxy = address(new ERC1967Proxy(address(savingsVault), vaultInitData));
+        
+        // CommunityTreasury proxy  
+        bytes memory treasuryInitData = abi.encodeCall(
+            CommunityTreasury.initialize,
+            (deployer, registryProxy, address(token))
+        );
+        communityTreasuryProxy = address(new ERC1967Proxy(address(communityTreasury), treasuryInitData));
+        
+        // Education proxy
+        bytes memory educationInitData = abi.encodeCall(
+            Education.initialize,
+            (deployer, registryProxy)
+        );
+        educationProxy = address(new ERC1967Proxy(address(education), educationInitData));
+        
+        // Governance proxy
+        bytes memory governanceInitData = abi.encodeCall(
+            Governance.initialize,
+            (deployer, registryProxy)
+        );
+        governanceProxy = address(new ERC1967Proxy(address(governance), governanceInitData));
+        
+        console.log("Proxy contracts deployed:");
+        console.log("  Registry proxy:", registryProxy);
+        console.log("  SavingsVault proxy:", savingsVaultProxy);
+        console.log("  CommunityTreasury proxy:", communityTreasuryProxy);
+        console.log("  Education proxy:", educationProxy);
+        console.log("  Governance proxy:", governanceProxy);
+        
+        // 4. Configure cross-contract permissions
+        _configurePermissions(deployer);
+        
+        vm.stopBroadcast();
+        
+        // 5. Output deployment information
+        _outputDeploymentInfo();
+        _updateSharedPackage();
+        
+        console.log("Deployment completed successfully!");
+    }
+    
+    function _configurePermissions(address deployer) internal {
+        console.log("Configuring cross-contract permissions...");
+        
+        // Grant REPUTATION_ROLE to Education contract on Registry
+        Registry(registryProxy).grantRole(
+            Registry(registryProxy).REPUTATION_ROLE(),
+            educationProxy
+        );
+        
+        console.log("Granted REPUTATION_ROLE to Education contract");
+        
+        // Additional role configurations can be added here
+    }
+    
+    function _outputDeploymentInfo() internal view {
+        console.log("");
+        console.log("=== DEPLOYMENT SUMMARY ===");
+        console.log("Chain ID:", block.chainid);
+        console.log("Block number:", block.number);
+        console.log("Token address:", address(token));
+        console.log("");
+        console.log("Contract addresses:");
+        console.log("Registry:         ", registryProxy);
+        console.log("SavingsVault:     ", savingsVaultProxy);
+        console.log("CommunityTreasury:", communityTreasuryProxy);
+        console.log("Education:        ", educationProxy);
+        console.log("Governance:       ", governanceProxy);
+        console.log("");
+    }
+    
+    function _updateSharedPackage() internal {
+        console.log("To update the shared package, run:");
+        console.log("node scripts/update-addresses.js", block.chainid, registryProxy, savingsVaultProxy, communityTreasuryProxy, educationProxy, governanceProxy, address(token), block.number);
+    }
+}
