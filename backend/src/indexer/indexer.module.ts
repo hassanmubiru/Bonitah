@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 
 import { IndexerService } from './indexer.service.js';
+import { PrismaModule } from '../prisma/prisma.module.js';
+import { ConfigModule } from '../config/config.module.js';
 
 /**
  * Event_Indexer module that reads emitted contract events from Base Sepolia and
@@ -11,6 +13,7 @@ import { IndexerService } from './indexer.service.js';
  * history and analytics.
  */
 @Module({
+  imports: [PrismaModule, ConfigModule],
   providers: [IndexerService],
   exports: [IndexerService],
 })

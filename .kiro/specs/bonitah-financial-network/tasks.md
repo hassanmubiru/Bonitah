@@ -36,24 +36,24 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement a mock ERC20 stablecoin for tests and configurable token wiring
     - _Requirements: 4.5, 13.1, 13.2, 13.6, 13.9_
 
-- [ ] 3. Implement the Registry contract
+- [x] 3. Implement the Registry contract
   - [x] 3.1 Implement `Registry.sol`
     - Implement `register`, `updateProfile`, `verifyUser` (VERIFIER_ROLE), `increaseReputation` (REPUTATION_ROLE), views, custom errors, events, and UUPS `_authorizeUpgrade`
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.6, 3.7, 3.10, 8.7, 13.1, 14.5, 14.8_
 
-  - [ ] 3.2 Write property test for registration lifecycle
+  - [x] 3.2 Write property test for registration lifecycle
     - **Property 7: Registration initializes state and is not repeatable**
     - **Validates: Requirements 3.1, 3.2**
 
-  - [ ] 3.3 Write property test for profile update round-trip
+  - [x] 3.3 Write property test for profile update round-trip
     - **Property 8: Profile update round-trip for registered users only**
     - **Validates: Requirements 3.3, 3.4**
 
-  - [ ] 3.4 Write property test for reputation invariant
+  - [x] 3.4 Write property test for reputation invariant
     - **Property 9: Reputation is a monotonic non-negative integer**
     - **Validates: Requirements 3.7, 8.7**
 
-  - [ ] 3.5 Write unit, event-emission, and revert tests for Registry
+  - [x] 3.5 Write unit, event-emission, and revert tests for Registry
     - Assert `UserRegistered`/`ProfileUpdated`/`UserVerified` args and one revert test per custom error
     - _Requirements: 13.1, 15.1, 15.2, 15.3_
 
@@ -62,15 +62,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `deposit`, `withdraw`, `availableBalance` with `SafeERC20`, `ReentrancyGuard`, `Pausable`, registration checks, and events
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 13.2, 13.3_
 
-  - [ ] 4.2 Write property test for vault balance conservation
+  - [x] 4.2 Write property test for vault balance conservation
     - **Property 11: Vault balance conservation and portfolio value**
     - **Validates: Requirements 4.2, 4.3, 5.6**
 
-  - [ ] 4.3 Write property test for invalid vault operations
+  - [-] 4.3 Write property test for invalid vault operations
     - **Property 12: Invalid vault operations revert without state change**
     - **Validates: Requirements 4.4, 4.7, 4.8, 4.9**
 
-  - [ ] 4.4 Implement goals and locked savings in `SavingsVault.sol`
+  - [-] 4.4 Implement goals and locked savings in `SavingsVault.sol`
     - Implement `createGoal`, `contributeToGoal`, `lockFunds`, `withdrawLocked`, `portfolioValue`, MIN/MAX lock constants, and goal/lock events
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 13.4, 13.5_
 
@@ -91,7 +91,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `createCircle`, `joinCircle`, `contribute`, `proposeAction`, `vote`, threshold-based execution, per-member contribution history, `nonReentrant` on value moves, and events
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11, 13.6, 13.7, 13.8_
 
-  - [ ] 5.2 Write property test for circle creation and membership
+  - [-] 5.2 Write property test for circle creation and membership
     - **Property 15: Savings circle creation and membership rules**
     - **Validates: Requirements 6.1, 6.2, 6.9, 6.11**
 
@@ -191,12 +191,12 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Wire `ZodValidationPipe`, `JwtAuthGuard`, and `RolesGuard` so non-public endpoints require a valid JWT and role checks
     - _Requirements: 14.1, 14.2, 14.3, 14.4_
 
-  - [ ] 10.4 Write property test for backend input validation
+  - [x] 10.4 Write property test for backend input validation
     - **Property 34: Input schema validation rejects invalid input without mutation**
     - **Validates: Requirements 14.3, 14.4**
 
 - [ ] 11. Implement the Auth module (SIWE)
-  - [ ] 11.1 Implement SIWE nonce, verification, JWT, and roles
+  - [x] 11.1 Implement SIWE nonce, verification, JWT, and roles
     - Implement `/auth/nonce`, `/auth/verify`, `/auth/logout`; single-use expiry-bounded nonces, signature/address verification, JWT issuance (<=24h), and least-privilege default role assignment
     - _Requirements: 2.4, 2.6, 2.7, 2.8, 2.9, 2.10, 10.6, 14.1_
 
@@ -221,7 +221,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 2.5, 2.6, 2.8, 2.9_
 
 - [ ] 12. Implement the ChainRead read-through cache module
-  - [ ] 12.1 Implement provenanced read-through cache with staleness
+  - [x] 12.1 Implement provenanced read-through cache with staleness
     - Read financial values from Base Sepolia via viem, cache with `{contractAddress, blockNumber, fetchedAt}` and 30s TTL, refresh when stale/absent, and never serve stale/placeholder on read failure
     - _Requirements: 1.4, 1.5, 1.7, 7.5, 10.9, 11.1_
 
@@ -238,7 +238,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 1.7, 10.9_
 
 - [ ] 13. Implement the Event_Indexer module
-  - [ ] 13.1 Implement the indexer worker
+  - [x] 13.1 Implement the indexer worker
     - Poll finalized head, `getLogs` from last+1, idempotent upsert on `(txHash, logIndex)` with provenance, reorg detection/repair, and gapless resume with backoff on network loss
     - _Requirements: 12.1, 12.2, 12.5, 12.6, 13.10_
 
@@ -255,7 +255,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 12.1, 12.2_
 
 - [ ] 14. Implement the Transactions and Analytics modules
-  - [ ] 14.1 Implement transaction history and analytics endpoints
+  - [x] 14.1 Implement transaction history and analytics endpoints
     - Implement `/transactions` (own-wallet scope, descending block, <=100/page, empty set for none) and `/analytics/portfolio` provenanced series
     - _Requirements: 11.1, 12.3, 12.4_
 
@@ -268,7 +268,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 12.3, 12.4_
 
 - [ ] 15. Implement the IPFS module
-  - [ ] 15.1 Implement the IPFS service
+  - [x] 15.1 Implement the IPFS service
     - Accept <=10 docs/request at <=10MB each, validate/exclude PII fields, pin content, return CID on success, and return storage error with no CID on failure
     - _Requirements: 3.5, 3.8, 3.9, 8.4_
 
@@ -281,7 +281,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 3.9, 8.9_
 
 - [ ] 16. Implement the Education and Certificate backend modules
-  - [ ] 16.1 Implement the Education module
+  - [x] 16.1 Implement the Education module
     - Implement courses/lessons content, lesson-completion with dedupe, course progress, and consecutive-day learning streak in off-chain data
     - _Requirements: 8.1, 8.2, 8.6, 8.8_
 
@@ -289,7 +289,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 21: Learning streak equals consecutive-day count**
     - **Validates: Requirements 8.2**
 
-  - [ ] 16.3 Implement the Certificate orchestration module
+  - [-] 16.3 Implement the Certificate orchestration module
     - Implement `/education/courses/:id/certificate`: verify completion, store metadata via IPFS, then call `Education.issueCertificate`; on IPFS failure leave prior state unchanged
     - _Requirements: 8.3, 8.4, 8.9_
 
@@ -298,7 +298,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 8.3, 8.4, 8.9, 8.10_
 
 - [ ] 17. Implement the AI Assistant module
-  - [ ] 17.1 Implement the AI assistant service
+  - [-] 17.1 Implement the AI assistant service
     - Validate question length (<=2000), read on-chain figures read-only via ChainRead (unavailable on failure, never fabricated), scope the OpenAI system prompt, enforce a 30s timeout with retained history, and persist conversation history
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.8, 10.9_
 
@@ -322,7 +322,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Scaffold App Router with strict TS, Tailwind, and shadcn/ui; configure `WagmiProvider` + `RainbowKitProvider` (Base Sepolia only), TanStack Query client, and `ThemeProvider`
     - _Requirements: 2.1, 2.3, 11.7, 17.2_
 
-  - [ ] 18.2 Implement theming, accessibility, and responsive base
+  - [x] 18.2 Implement theming, accessibility, and responsive base
     - Light default on first visit, theme switch across pages without reload within 1s, session persistence; keyboard focus with visible ring and accessible labels; responsive breakpoints (320-767, 768-1023, >=1024)
     - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7_
 
@@ -331,7 +331,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 19.1, 19.2, 19.5, 19.6, 19.7_
 
 - [ ] 19. Implement the frontend on-chain read layer
-  - [ ] 19.1 Implement read hooks with retry/timeout and state machine
+  - [x] 19.1 Implement read hooks with retry/timeout and state machine
     - Wrap viem reads with 10s per-attempt timeout and up to 3 retries; expose `{ data, isLoading, isError, refetch }`; render loading/error/retry states with no placeholder financial values
     - _Requirements: 1.2, 1.6, 1.7, 7.4, 7.5, 11.4, 11.5, 11.6_
 
