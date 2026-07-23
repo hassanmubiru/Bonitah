@@ -66,11 +66,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 11: Vault balance conservation and portfolio value**
     - **Validates: Requirements 4.2, 4.3, 5.6**
 
-  - [ ] 4.3 Write property test for invalid vault operations
+  - [-] 4.3 Write property test for invalid vault operations
     - **Property 12: Invalid vault operations revert without state change**
     - **Validates: Requirements 4.4, 4.7, 4.8, 4.9**
 
-  - [ ] 4.4 Implement goals and locked savings in `SavingsVault.sol`
+  - [-] 4.4 Implement goals and locked savings in `SavingsVault.sol`
     - Implement `createGoal`, `contributeToGoal`, `lockFunds`, `withdrawLocked`, `portfolioValue`, MIN/MAX lock constants, and goal/lock events
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 13.4, 13.5_
 
@@ -91,7 +91,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `createCircle`, `joinCircle`, `contribute`, `proposeAction`, `vote`, threshold-based execution, per-member contribution history, `nonReentrant` on value moves, and events
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11, 13.6, 13.7, 13.8_
 
-  - [ ] 5.2 Write property test for circle creation and membership
+  - [-] 5.2 Write property test for circle creation and membership
     - **Property 15: Savings circle creation and membership rules**
     - **Validates: Requirements 6.1, 6.2, 6.9, 6.11**
 
@@ -137,11 +137,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `propose`, `castVote` (weighted, active-only, no double vote), `finalize`, `outcomeOf`, `executeTreasury` (TREASURY_ROLE), `votingPowerOf`, UUPS upgrade, and events
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 13.8, 14.5, 14.8_
 
-  - [ ] 7.2 Write property test for proposal creation and weighted voting
+  - [-] 7.2 Write property test for proposal creation and weighted voting
     - **Property 23: Governance proposal and weighted voting correctness**
     - **Validates: Requirements 9.1, 9.2, 9.3**
 
-  - [ ] 7.3 Write property test for proposal outcome determination
+  - [-] 7.3 Write property test for proposal outcome determination
     - **Property 24: Proposal outcome is determined by recorded votes**
     - **Validates: Requirements 9.4, 9.5, 9.6**
 
