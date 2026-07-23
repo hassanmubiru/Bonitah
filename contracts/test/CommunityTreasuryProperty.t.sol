@@ -10,7 +10,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title CommunityTreasuryPropertyTest
 /// @notice Property-based tests for the CommunityTreasury contract.
-/// @dev Validates Requirements 6.7 implementation using Foundry fuzz testing.
+/// @dev Validates Requirements 6.1, 6.2, 6.7, 6.9, 6.11 implementation using Foundry fuzz testing.
 contract CommunityTreasuryPropertyTest is Test {
     CommunityTreasury public treasury;
     MockERC20 public token;
@@ -41,6 +41,223 @@ contract CommunityTreasuryPropertyTest is Test {
         bytes memory initData = abi.encodeCall(CommunityTreasury.initialize, (admin, IERC20(address(token))));
         ERC1967Proxy proxy = new ERC1967Proxy(address(implementation), initData);
         treasury = CommunityTreasury(address(proxy));
+    }
+    
+    /// @notice **Property 15: Savings circle creation and membership rules**
+    /// **Validates: Requirements 6.1, 6.2, 6.9, 6.11**
+    /// 
+    /// This property verifies that circle creation works with valid parameters and that
+    /// membership joining follows the correct rules.
+    /// 
+    /// The property tests:
+    /// 1. Circles created with valid maxMembers [2,1000] and threshold [1,100] store parameters correctly
+    /// 2. Creator is automatically added as first member with memberCount = 1
+    /// 3. Non-members can join open, non-full circles (incrementing member count)
+    /// 4. Joining closed, full, or already-joined circles reverts without adding member
+    /// 5. Out-of-range creation parameters revert and create no circle
+    function testProperty15_SavingsCircleCreationAndMembershipRules(
+        uint16 _maxMembers,
+        uint8 _approvalThreshold,
+        uint8 _attemptedJoins
+    ) public {
+        // Test Part 1: Valid parameter bounds and successful creation
+        uint256 maxMembers = bound(_maxMembers, 2, 1000); // Valid range per Req 6.11
+        uint256 approvalThreshold = bound(_approvalThreshold, 1, 100); // Valid range per Req 6.11
+        uint256 attemptedJoins = bound(_attemptedJoins, 0, 15); // Test various join scenarios
+        
+        // Create circle with valid parameters (Req 6.1)
+        vm.prank(creator);
+        uint256 poolId = treasury.createCircle(maxMembers, uint8(approvalThreshold));
+        
+        // Verify circle creation succeeded and stored parameters correctly (Req 6.1)
+        ICommunityTreasury.Circle memory circle = treasury.getCircle(poolId);
+        assertEq(circle.creator, creator, "Circle creator should be set correctly");
+        assertEq(circle.maxMembers, maxMembers, "Circle maxMembers should be stored correctly");
+        assertEq(circle.approvalThreshold, uint8(approvalThreshold), "Circle threshold should be stored correctly");
+        assertEq(circle.memberCount, 1, "Circle should start with 1 member (creator)");
+        assertTrue(circle.open, "Circle should be open by default");
+        assertEq(circle.treasuryBalance, 0, "Circle should start with zero treasury balance");
+        
+        // Verify creator is automatically a member (Req 6.1)
+        assertTrue(treasury.isMember(poolId, creator), "Creator should be automatically added as member");
+        
+        // Test Part 2: Non-member joining open, non-full circle (Req 6.2)
+        address[] memory joiners = new address[](attemptedJoins);
+        uint256 successfulJoins = 0;
+        
+        for (uint256 i = 0; i < attemptedJoins; i++) {
+            joiners[i] = makeAddr(string(abi.encodePacked("joiner", i)));
+            
+            // Check if circle has space for another member
+            ICommunityTreasury.Circle memory currentCircle = treasury.getCircle(poolId);
+            
+            if (currentCircle.memberCount < maxMembers) {
+                // Should succeed - circle is open and not full (Req 6.2)
+                vm.prank(joiners[i]);
+                treasury.joinCircle(poolId);
+                
+                // Verify membership was added and count incremented (Req 6.2)
+                assertTrue(treasury.isMember(poolId, joiners[i]), "New member should be added successfully");
+                
+                ICommunityTreasury.Circle memory updatedCircle = treasury.getCircle(poolId);
+                assertEq(updatedCircle.memberCount, currentCircle.memberCount + 1, "Member count should increment");
+                
+                successfulJoins++;
+            } else {
+                // Should fail - circle is full (Req 6.9)
+                vm.prank(joiners[i]);
+                vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.CircleClosedOrFull.selector, poolId));
+                treasury.joinCircle(poolId);
+                
+                // Verify no membership was added
+                assertFalse(treasury.isMember(poolId, joiners[i]), "Failed joiner should not be a member");
+            }
+        }
+        
+        // Verify final member count is correct
+        ICommunityTreasury.Circle memory finalCircle = treasury.getCircle(poolId);
+        assertEq(finalCircle.memberCount, 1 + successfulJoins, "Final member count should match successful joins + creator");
+        assertLe(finalCircle.memberCount, maxMembers, "Member count should never exceed maxMembers");
+        
+        // Test Part 3: Already-joined member trying to join again (Req 6.9)
+        if (successfulJoins > 0) {
+            vm.prank(joiners[0]);
+            vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.AlreadyMember.selector, joiners[0], poolId));
+            treasury.joinCircle(poolId);
+        }
+        
+        // Test creator trying to join again (Req 6.9)
+        vm.prank(creator);
+        vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.AlreadyMember.selector, creator, poolId));
+        treasury.joinCircle(poolId);
+    }
+    
+    /// @notice Test invalid circle creation parameters (Req 6.11)
+    /// This validates that out-of-range parameters revert and create no circle
+    function testProperty15_InvalidCircleCreationParameters(
+        uint16 _maxMembers,
+        uint8 _approvalThreshold
+    ) public {
+        // Test cases that should revert (Req 6.11)
+        bool shouldRevert = false;
+        
+        // Case 1: maxMembers below minimum (< 2)
+        if (_maxMembers < 2) {
+            shouldRevert = true;
+        }
+        // Case 2: maxMembers above maximum (> 1000) 
+        else if (_maxMembers > 1000) {
+            shouldRevert = true;
+        }
+        // Case 3: approvalThreshold below minimum (< 1)
+        else if (_approvalThreshold < 1) {
+            shouldRevert = true;
+        }
+        // Case 4: approvalThreshold above maximum (> 100)
+        else if (_approvalThreshold > 100) {
+            shouldRevert = true;
+        }
+        
+        uint256 initialPoolCount = treasury.poolCount();
+        
+        if (shouldRevert) {
+            // Should revert with InvalidCircleParams (Req 6.11)
+            vm.prank(creator);
+            vm.expectRevert(ICommunityTreasury.InvalidCircleParams.selector);
+            treasury.createCircle(_maxMembers, _approvalThreshold);
+            
+            // Verify no circle was created
+            assertEq(treasury.poolCount(), initialPoolCount, "Pool count should not increment on invalid params");
+        } else {
+            // Should succeed with valid parameters
+            vm.prank(creator);
+            uint256 poolId = treasury.createCircle(_maxMembers, _approvalThreshold);
+            
+            // Verify circle was created successfully
+            assertEq(treasury.poolCount(), initialPoolCount + 1, "Pool count should increment on valid params");
+            
+            ICommunityTreasury.Circle memory circle = treasury.getCircle(poolId);
+            assertEq(circle.maxMembers, _maxMembers, "Valid maxMembers should be stored");
+            assertEq(circle.approvalThreshold, _approvalThreshold, "Valid threshold should be stored");
+        }
+    }
+    
+    /// @notice Test circle closure behavior (membership joining closed circles)
+    function testProperty15_ClosedCircleMembership() public {
+        // Create a circle
+        vm.prank(creator);
+        uint256 poolId = treasury.createCircle(10, 51);
+        
+        // Close the circle by setting open = false
+        // Note: The current contract doesn't have a close function, so we can't test this specific case
+        // This is left as a placeholder for when circle closing functionality is added
+        
+        // For now, test the full circle scenario instead
+        address[] memory members = new address[](9); // maxMembers is 10, creator is already in
+        
+        // Fill the circle to capacity
+        for (uint256 i = 0; i < 9; i++) {
+            members[i] = makeAddr(string(abi.encodePacked("member", i)));
+            vm.prank(members[i]);
+            treasury.joinCircle(poolId);
+        }
+        
+        // Verify circle is now full
+        ICommunityTreasury.Circle memory fullCircle = treasury.getCircle(poolId);
+        assertEq(fullCircle.memberCount, 10, "Circle should be at max capacity");
+        
+        // Try to join full circle - should revert (Req 6.9)
+        address lateJoiner = makeAddr("lateJoiner");
+        vm.prank(lateJoiner);
+        vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.CircleClosedOrFull.selector, poolId));
+        treasury.joinCircle(poolId);
+        
+        // Verify no membership was added
+        assertFalse(treasury.isMember(poolId, lateJoiner), "Late joiner should not be added to full circle");
+        assertEq(treasury.getCircle(poolId).memberCount, 10, "Member count should remain at max after failed join");
+    }
+    
+    /// @notice Test edge cases for circle parameters
+    function testProperty15_EdgeCasesCircleParameters() public {
+        // Test minimum valid parameters
+        vm.prank(creator);
+        uint256 poolId1 = treasury.createCircle(2, 1); // Min members, min threshold
+        
+        ICommunityTreasury.Circle memory minCircle = treasury.getCircle(poolId1);
+        assertEq(minCircle.maxMembers, 2, "Min maxMembers should be accepted");
+        assertEq(minCircle.approvalThreshold, 1, "Min threshold should be accepted");
+        
+        // Test maximum valid parameters
+        address creator2 = makeAddr("creator2");
+        vm.prank(creator2);
+        uint256 poolId2 = treasury.createCircle(1000, 100); // Max members, max threshold
+        
+        ICommunityTreasury.Circle memory maxCircle = treasury.getCircle(poolId2);
+        assertEq(maxCircle.maxMembers, 1000, "Max maxMembers should be accepted");
+        assertEq(maxCircle.approvalThreshold, 100, "Max threshold should be accepted");
+        
+        // Test boundary violations
+        address creator3 = makeAddr("creator3");
+        
+        // Test maxMembers = 1 (below minimum)
+        vm.prank(creator3);
+        vm.expectRevert(ICommunityTreasury.InvalidCircleParams.selector);
+        treasury.createCircle(1, 50);
+        
+        // Test maxMembers = 1001 (above maximum)
+        vm.prank(creator3);
+        vm.expectRevert(ICommunityTreasury.InvalidCircleParams.selector);
+        treasury.createCircle(1001, 50);
+        
+        // Test threshold = 0 (below minimum)
+        vm.prank(creator3);
+        vm.expectRevert(ICommunityTreasury.InvalidCircleParams.selector);
+        treasury.createCircle(10, 0);
+        
+        // Test threshold = 101 (above maximum)
+        vm.prank(creator3);
+        vm.expectRevert(ICommunityTreasury.InvalidCircleParams.selector);
+        treasury.createCircle(10, 101);
     }
     
     /// @notice **Property 17: Treasury action executes exactly at threshold**

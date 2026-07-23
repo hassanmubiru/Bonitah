@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { z } from 'zod';
 
 /**
@@ -19,6 +20,7 @@ export const DEFAULT_ROLE: Role = 'USER';
  * Validated shape of a decoded session JWT payload (Req 2.7).
  *
  * - `sub`/`address`: the authenticated wallet address the session identifies.
+ * - `userId`: the database user ID for off-chain data access.
  * - `role`: the authorization role used for role checks.
  * - `iat`/`exp`: standard issued-at / expiry claims (seconds since epoch). An
  *   `exp` claim is mandatory so every session is expiry-bounded (Req 2.7, 14.2).
@@ -29,6 +31,7 @@ export const jwtPayloadSchema = z.object({
     .string()
     .regex(/^0x[0-9a-fA-F]{40}$/, 'address must be a 0x-prefixed address')
     .optional(),
+  userId: z.string().cuid(),
   role: z.enum(ROLES),
   iat: z.number().int().nonnegative().optional(),
   exp: z.number().int().positive(),
@@ -43,8 +46,21 @@ export type JwtPayload = z.infer<typeof jwtPayloadSchema>;
  * for identity and authorization decisions.
  */
 export interface AuthenticatedUser {
+  /** Database user ID for off-chain data access. */
+  readonly userId: string;
   /** Authenticated wallet address (lowercased for stable comparison). */
   readonly address: string;
   /** Authorization role carried by the session. */
   readonly role: Role;
+}
+
+/**
+ * Express request augmented with authenticated user information.
+ * 
+ * The JwtAuthGuard populates `req.user` with the authenticated principal
+ * for protected endpoints.
+ */
+export interface AuthenticatedRequest extends Request {
+  /** Authenticated user information extracted from valid JWT. */
+  user: AuthenticatedUser;
 }

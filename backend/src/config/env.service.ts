@@ -54,6 +54,10 @@ export class EnvService {
     return this.get('BASE_SEPOLIA_RPC_URL');
   }
 
+  get baseSepolia(): string {
+    return this.get('BASE_SEPOLIA_RPC_URL');
+  }
+
   get chainId(): number {
     return this.get('CHAIN_ID');
   }

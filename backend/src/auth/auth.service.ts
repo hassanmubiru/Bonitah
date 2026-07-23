@@ -147,7 +147,7 @@ export class AuthService {
     // Issue a session JWT whose lifetime never exceeds 24 hours (Req 2.7).
     const issuedAt = Math.floor(Date.now() / 1000);
     const token = this.tokenService.sign(
-      { sub: address, address, role: user.role as Role },
+      { sub: address, address, userId: user.id, role: user.role as Role },
       this.sessionSeconds,
     );
     const expiresAt = new Date((issuedAt + this.sessionSeconds) * 1000).toISOString();

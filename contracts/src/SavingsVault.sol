@@ -254,10 +254,21 @@ contract SavingsVault is
     }
 
     /// @inheritdoc ISavingsVault
+    /// @dev Portfolio value includes deposited balance plus all goal savings (Req 5.6).
+    ///      Since locked funds remain in depositedBalance and goal contributions are 
+    ///      moved out of depositedBalance into goal.savedAmount, the total portfolio
+    ///      value = depositedBalance + totalGoalSavings.
     function portfolioValue(address user) external view returns (uint256) {
-        // Interim value: deposited balance (includes any locked funds). Task 4.4 extends
-        // this to include goal savings per Req 5.6.
-        return depositedBalance[user];
+        uint256 totalGoalSavings = 0;
+        uint256 goalCount = nextGoalId[user];
+        
+        // Sum up all saved amounts across all goals for this user
+        for (uint256 i = 0; i < goalCount; i++) {
+            totalGoalSavings += goals[user][i].savedAmount;
+        }
+        
+        // Portfolio = deposited balance (includes locked funds) + goal savings
+        return depositedBalance[user] + totalGoalSavings;
     }
 
     /// @dev Restricts UUPS upgrades to `UPGRADER_ROLE` (Req 9.8, 14.5).

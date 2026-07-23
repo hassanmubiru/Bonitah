@@ -48,6 +48,18 @@ export const envSchema = z.object({
 
   /** OpenAI key is optional at boot; the AI module validates presence on use. */
   OPENAI_API_KEY: z.string().optional(),
+
+  /** Pinata JWT for IPFS uploads (Req 3.5, 8.4). */
+  PINATA_JWT: z.string().optional(),
+
+  /** Pinata IPFS gateway URL for content retrieval. */
+  PINATA_GATEWAY: z.string().url().optional(),
+
+  /** Private key for certificate issuer account with ISSUER_ROLE (Req 8.3). */
+  ISSUER_PRIVATE_KEY: z.string().regex(/^0x[a-fA-F0-9]{64}$/).optional(),
+
+  /** Education contract address (set after deployment). */
+  EDUCATION_CONTRACT_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
 });
 
 /** Fully-typed, validated environment shape. */

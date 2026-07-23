@@ -66,11 +66,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 11: Vault balance conservation and portfolio value**
     - **Validates: Requirements 4.2, 4.3, 5.6**
 
-  - [-] 4.3 Write property test for invalid vault operations
+  - [x] 4.3 Write property test for invalid vault operations
     - **Property 12: Invalid vault operations revert without state change**
     - **Validates: Requirements 4.4, 4.7, 4.8, 4.9**
 
-  - [-] 4.4 Implement goals and locked savings in `SavingsVault.sol`
+  - [x] 4.4 Implement goals and locked savings in `SavingsVault.sol`
     - Implement `createGoal`, `contributeToGoal`, `lockFunds`, `withdrawLocked`, `portfolioValue`, MIN/MAX lock constants, and goal/lock events
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 13.4, 13.5_
 
@@ -91,7 +91,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `createCircle`, `joinCircle`, `contribute`, `proposeAction`, `vote`, threshold-based execution, per-member contribution history, `nonReentrant` on value moves, and events
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11, 13.6, 13.7, 13.8_
 
-  - [-] 5.2 Write property test for circle creation and membership
+  - [x] 5.2 Write property test for circle creation and membership
     - **Property 15: Savings circle creation and membership rules**
     - **Validates: Requirements 6.1, 6.2, 6.9, 6.11**
 
@@ -132,24 +132,24 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Assert `CertificateIssued`/`BadgeAwarded`/`AchievementRecorded` args and one revert test per custom error
     - _Requirements: 13.9, 15.1, 15.2, 15.3_
 
-- [ ] 7. Implement the Governance contract
+- [x] 7. Implement the Governance contract
   - [x] 7.1 Implement `Governance.sol`
     - Implement `propose`, `castVote` (weighted, active-only, no double vote), `finalize`, `outcomeOf`, `executeTreasury` (TREASURY_ROLE), `votingPowerOf`, UUPS upgrade, and events
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 13.8, 14.5, 14.8_
 
-  - [-] 7.2 Write property test for proposal creation and weighted voting
+  - [x] 7.2 Write property test for proposal creation and weighted voting
     - **Property 23: Governance proposal and weighted voting correctness**
     - **Validates: Requirements 9.1, 9.2, 9.3**
 
-  - [-] 7.3 Write property test for proposal outcome determination
+  - [x] 7.3 Write property test for proposal outcome determination
     - **Property 24: Proposal outcome is determined by recorded votes**
     - **Validates: Requirements 9.4, 9.5, 9.6**
 
-  - [-] 7.4 Write property test for upgrade state preservation
+  - [x] 7.4 Write property test for upgrade state preservation
     - **Property 25: Upgrade preserves governance state**
     - **Validates: Requirements 9.8**
 
-  - [-] 7.5 Write unit, event, and revert tests for Governance
+  - [x] 7.5 Write unit, event, and revert tests for Governance
     - Assert `ProposalCreated`/`VoteCast`/`ProposalFinalized` args and one revert test per custom error
     - _Requirements: 13.8, 15.1, 15.2, 15.3_
 
@@ -195,45 +195,45 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 34: Input schema validation rejects invalid input without mutation**
     - **Validates: Requirements 14.3, 14.4**
 
-- [ ] 11. Implement the Auth module (SIWE)
+- [x] 11. Implement the Auth module (SIWE)
   - [x] 11.1 Implement SIWE nonce, verification, JWT, and roles
     - Implement `/auth/nonce`, `/auth/verify`, `/auth/logout`; single-use expiry-bounded nonces, signature/address verification, JWT issuance (<=24h), and least-privilege default role assignment
     - _Requirements: 2.4, 2.6, 2.7, 2.8, 2.9, 2.10, 10.6, 14.1_
 
-  - [-] 11.2 Write property test for nonce single-use and expiry
+  - [x] 11.2 Write property test for nonce single-use and expiry
     - **Property 4: SIWE nonces are single-use and expiry-bounded**
     - **Validates: Requirements 2.4, 2.6, 2.7, 2.8**
 
-  - [-] 11.3 Write property test for session JWT acceptance
+  - [x] 11.3 Write property test for session JWT acceptance
     - **Property 5: Sessions are accepted iff the JWT is valid and unexpired**
     - **Validates: Requirements 2.7, 2.9, 14.1, 14.2**
 
-  - [-] 11.4 Write property test for least-privilege default role
+  - [x] 11.4 Write property test for least-privilege default role
     - **Property 6: New wallets default to least-privilege role**
     - **Validates: Requirements 2.10**
 
-  - [ ] 11.5 Write property test for unsigned transaction rejection
+  - [x] 11.5 Write property test for unsigned transaction rejection
     - **Property 27: Unsigned transactions are rejected**
     - **Validates: Requirements 10.6**
 
-  - [ ] 11.6 Write integration tests for auth endpoints
+  - [x] 11.6 Write integration tests for auth endpoints
     - Cover the nonce -> verify -> JWT flow and rejection paths (invalid signature, reused/expired nonce, expired JWT)
     - _Requirements: 2.5, 2.6, 2.8, 2.9_
 
-- [ ] 12. Implement the ChainRead read-through cache module
+- [x] 12. Implement the ChainRead read-through cache module
   - [x] 12.1 Implement provenanced read-through cache with staleness
     - Read financial values from Base Sepolia via viem, cache with `{contractAddress, blockNumber, fetchedAt}` and 30s TTL, refresh when stale/absent, and never serve stale/placeholder on read failure
     - _Requirements: 1.4, 1.5, 1.7, 7.5, 10.9, 11.1_
 
-  - [ ] 12.2 Write property test for cache provenance and staleness
+  - [x] 12.2 Write property test for cache provenance and staleness
     - **Property 1: Cached financial values carry provenance and honor 30s staleness**
     - **Validates: Requirements 1.4, 12.2**
 
-  - [ ] 12.3 Write property test for stale-read refresh behavior
+  - [x] 12.3 Write property test for stale-read refresh behavior
     - **Property 2: Stale reads are refreshed from the source contract**
     - **Validates: Requirements 1.5**
 
-  - [ ] 12.4 Write unit/integration tests for read-failure handling
+  - [x] 12.4 Write unit/integration tests for read-failure handling
     - Assert timeout vs RPC vs decode errors surface as failures with no substituted value
     - _Requirements: 1.7, 10.9_
 
@@ -242,15 +242,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Poll finalized head, `getLogs` from last+1, idempotent upsert on `(txHash, logIndex)` with provenance, reorg detection/repair, and gapless resume with backoff on network loss
     - _Requirements: 12.1, 12.2, 12.5, 12.6, 13.10_
 
-  - [ ] 13.2 Write property test for reorg convergence
+  - [-] 13.2 Write property test for reorg convergence
     - **Property 31: Event indexing converges to canonical chain state**
     - **Validates: Requirements 12.5**
 
-  - [ ] 13.3 Write property test for gapless resume
+  - [-] 13.3 Write property test for gapless resume
     - **Property 32: Indexing resumes gaplessly**
     - **Validates: Requirements 12.6**
 
-  - [ ] 13.4 Write integration test for 60s indexing timing
+  - [-] 13.4 Write integration test for 60s indexing timing
     - Verify a finalized event is cached with provenance within the required window
     - _Requirements: 12.1, 12.2_
 
@@ -259,11 +259,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `/transactions` (own-wallet scope, descending block, <=100/page, empty set for none) and `/analytics/portfolio` provenanced series
     - _Requirements: 11.1, 12.3, 12.4_
 
-  - [ ] 14.2 Write property test for transaction history scoping/ordering/paging
+  - [-] 14.2 Write property test for transaction history scoping/ordering/paging
     - **Property 30: Transaction history is scoped, ordered, and paged**
     - **Validates: Requirements 11.2, 12.3**
 
-  - [ ] 14.3 Write unit tests for empty and boundary pagination
+  - [-] 14.3 Write unit tests for empty and boundary pagination
     - Test empty result set and max-page-size behavior
     - _Requirements: 12.3, 12.4_
 

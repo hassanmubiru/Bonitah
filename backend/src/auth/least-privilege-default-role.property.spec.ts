@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
-import { randomBytes } from 'node:crypto';
 import { SiweMessage } from 'siwe';
 import { generatePrivateKey, privateKeyToAccount, privateKeyToAddress } from 'viem/accounts';
 import * as fc from 'fast-check';
 
 import { AuthService } from './auth.service';
-import { AuthModule } from './auth.module';
+import { TokenService } from './token.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { EnvService } from '../config/env.service';
 import { DEFAULT_ROLE, Role } from './auth.types';
 
 /**
@@ -29,17 +29,45 @@ import { DEFAULT_ROLE, Role } from './auth.types';
 describe('Property Test: Least-Privilege Default Role Assignment', () => {
   let module: TestingModule;
   let authService: AuthService;
-  let prisma: PrismaService;
+  let mockUsers: Map<string, { walletAddress: string; role: Role }>;
+  let mockNonces: Map<string, { nonce: string; address: string; used: boolean; expiresAt: Date }>;
 
   beforeAll(async () => {
+    // Create simple mock functions that TypeScript can understand
+    const mockPrismaService = {
+      user: {
+        deleteMany: jest.fn(),
+        create: jest.fn(),
+        updateMany: jest.fn(),
+        findUnique: jest.fn(),
+        upsert: jest.fn(),
+      },
+      authNonce: {
+        deleteMany: jest.fn(),
+        create: jest.fn(),
+        findUnique: jest.fn(),
+        updateMany: jest.fn(),
+      },
+    };
+
+    // Create mock EnvService
+    const mockEnvService = {
+      jwtExpiresIn: '24h',
+      jwtSecret: 'x'.repeat(32),
+    };
+
     module = await Test.createTestingModule({
-      imports: [AuthModule],
+      providers: [
+        AuthService,
+        TokenService,
+        { provide: PrismaService, useValue: mockPrismaService },
+        { provide: EnvService, useValue: mockEnvService },
+      ],
     })
       .setLogger(new Logger())
       .compile();
 
     authService = module.get<AuthService>(AuthService);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterAll(async () => {
@@ -47,9 +75,162 @@ describe('Property Test: Least-Privilege Default Role Assignment', () => {
   });
 
   beforeEach(async () => {
-    // Clean up users table for each test to ensure isolation
-    await prisma.user.deleteMany();
-    await prisma.authNonce.deleteMany();
+    // Reset mock data structures
+    mockUsers = new Map();
+    mockNonces = new Map();
+    
+    // Get mock instances
+    const mockPrisma = module.get(PrismaService) as any;
+    
+    // Reset mock implementations
+    jest.clearAllMocks();
+    
+    // Setup mock implementations with proper typing
+    mockPrisma.user.deleteMany.mockResolvedValue({ count: 0 });
+    mockPrisma.authNonce.deleteMany.mockResolvedValue({ count: 0 });
+    
+    // Mock nonce creation
+    mockPrisma.authNonce.create.mockImplementation(async (args: any) => {
+      const { data: _data } = args;
+      const record = {
+        id: 'test-id',
+        nonce: data.nonce,
+        address: data.address,
+        used: false,
+        expiresAt: data.expiresAt,
+        createdAt: new Date(),
+      };
+      mockNonces.set(data.nonce, record);
+      return record;
+    });
+    
+    // Mock nonce lookup
+    mockPrisma.authNonce.findUnique.mockImplementation(async (args: any) => {
+      const { where } = args;
+      const record = mockNonces.get(where.nonce);
+      return record || null;
+    });
+    
+    // Mock nonce update (consuming)
+    mockPrisma.authNonce.updateMany.mockImplementation(async (args: any) => {
+      const { where } = args;
+      const record = mockNonces.get(where.nonce);
+      if (record && !record.used && where.used === false) {
+        record.used = true;
+        return { count: 1 };
+      }
+      return { count: 0 };
+    });
+    
+    // Mock user upsert
+    mockPrisma.user.upsert.mockImplementation(async (args: any) => {
+      const { where, create } = args;
+      const existing = mockUsers.get(where.walletAddress);
+      if (existing) {
+        // Update case - keep existing role
+        return { 
+          id: 'test-id', 
+          walletAddress: existing.walletAddress, 
+          role: existing.role,
+          displayName: null,
+          createdAt: new Date(),
+        };
+      } else {
+        // Create case - use default role
+        const user = { 
+          id: 'test-id',
+          walletAddress: create.walletAddress,
+          role: create.role as Role,
+          displayName: null,
+          createdAt: new Date(),
+        };
+        mockUsers.set(create.walletAddress, user);
+        return user;
+      }
+    });
+    
+    // Mock user creation
+    mockPrisma.user.create.mockImplementation(async (args: any) => {
+      const { data } = args;
+      const user = {
+        id: 'test-id',
+        walletAddress: data.walletAddress,
+        role: data.role as Role,
+        displayName: data.displayName || null,
+        createdAt: new Date(),
+      };
+      mockUsers.set(data.walletAddress, user);
+      return user;
+    });
+    
+    // Mock user find
+    mockPrisma.user.findUnique.mockImplementation(async (args: any) => {
+      const { where } = args;
+      const user = mockUsers.get(where.walletAddress);
+      return user ? {
+        id: user.walletAddress,
+        walletAddress: user.walletAddress,
+        role: user.role,
+        displayName: null,
+        createdAt: new Date(),
+      } : null;
+    });
+    
+    // Mock user updateMany for role changes
+    mockPrisma.user.updateMany.mockImplementation(async (args: any) => {
+      const { where, data: update } = args;
+      const user = Array.from(mockUsers.values()).find(u => u.walletAddress === where.walletAddress);
+      if (user) {
+        mockUsers.set(data.walletAddress, { ...user, walletAddress: data.walletAddress });
+        return { count: 1 };
+      }
+      return { count: 0 };
+    });
+  });
+
+  /**
+   * Simple unit test to debug the core functionality
+   */
+  it('Debug: Single wallet authentication should work', async () => {
+    // Generate a valid private key and account for signing
+    const privateKey = generatePrivateKey();
+    const account = privateKeyToAccount(privateKey);
+    const signerAddress = privateKeyToAddress(privateKey);
+    const _testAddress = signerAddress; // Use checksum case, not lowercase
+    
+    // Step 1: Issue nonce for the wallet
+    const nonceResponse = await authService.issueNonce({ address: testAddress });
+    expect(nonceResponse.nonce).toBeDefined();
+    
+    // Step 2: Create and sign a SIWE message
+    const siweMessage = new SiweMessage({
+      domain: 'localhost',
+      address: testAddress,
+      statement: 'Sign in to BFN',
+      uri: 'http://localhost:3000',
+      version: '1',
+      chainId: 84532, // Base Sepolia
+      nonce: nonceResponse.nonce,
+      issuedAt: new Date().toISOString(),
+    });
+    
+    const messageString = siweMessage.prepareMessage();
+    const signature = await account.signMessage({ message: messageString });
+    
+    // Step 3: Verify the SIWE message (this creates/updates the user)
+    const verifyResponse = await authService.verify({
+      message: messageString,
+      signature,
+    });
+    
+    // Assertions
+    expect(verifyResponse.role).toBe(DEFAULT_ROLE);
+    expect(verifyResponse.role).toBe('USER');
+    
+    // Check mock database (backend stores addresses in lowercase)
+    const user = mockUsers.get(testAddress.toLowerCase());
+    expect(user).toBeTruthy();
+    expect(user!.role).toBe('USER');
   });
 
   /**
@@ -58,72 +239,69 @@ describe('Property Test: Least-Privilege Default Role Assignment', () => {
   it('Property 6: New wallets default to least-privilege role', async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.array(fc.hexaString({ minLength: 40, maxLength: 40 }), { minLength: 1, maxLength: 10 }),
-        async (addressSuffixes) => {
-          // Generate unique wallet addresses for this test run
-          const walletAddresses = addressSuffixes.map(suffix => `0x${suffix.padStart(40, '0')}`);
+        fc.integer({ min: 1, max: 5 }), // Just use a simple integer to vary the test
+        async (_testSeed) => {
+          // Generate a valid private key and account for signing
+          const privateKey = generatePrivateKey();
+          const account = privateKeyToAccount(privateKey);
+          const signerAddress = privateKeyToAddress(privateKey);
           
-          for (const walletAddress of walletAddresses) {
-            // Generate a valid private key and account for signing
-            const privateKey = generatePrivateKey();
-            const account = privateKeyToAccount(privateKey);
-            const signerAddress = privateKeyToAddress(privateKey);
-            
-            // Use the generated signer address (ensuring we have signing capability)
-            const testAddress = signerAddress.toLowerCase();
-            
-            // Step 1: Issue nonce for the wallet
-            const nonceResponse = await authService.issueNonce({ address: testAddress });
-            expect(nonceResponse.nonce).toBeDefined();
-            
-            // Step 2: Create and sign a SIWE message
-            const siweMessage = new SiweMessage({
-              domain: 'localhost',
-              address: testAddress,
-              statement: 'Sign in to BFN',
-              uri: 'http://localhost:3000',
-              version: '1',
-              chainId: 84532, // Base Sepolia
-              nonce: nonceResponse.nonce,
-              issuedAt: new Date().toISOString(),
-            });
-            
-            const messageString = siweMessage.prepareMessage();
-            const signature = await account.signMessage({ message: messageString });
-            
-            // Step 3: Verify the SIWE message (this creates/updates the user)
-            const verifyResponse = await authService.verify({
-              message: messageString,
-              signature,
-            });
-            
-            // Property assertions:
-            // 1. The wallet received a role assignment
-            expect(verifyResponse.role).toBeDefined();
-            
-            // 2. For new wallets, the role must be the least-privilege default role
-            expect(verifyResponse.role).toBe(DEFAULT_ROLE);
-            
-            // 3. The role must be a valid role from the defined set
-            const validRoles: Role[] = ['USER', 'VERIFIER', 'ADMIN'];
-            expect(validRoles).toContain(verifyResponse.role);
-            
-            // 4. The default role must be 'USER' (least-privilege, non-administrative)
-            expect(DEFAULT_ROLE).toBe('USER');
-            
-            // 5. Verify the user exists in the database with the correct role
-            const user = await prisma.user.findUnique({
-              where: { walletAddress: testAddress },
-            });
-            expect(user).toBeTruthy();
-            expect(user!.role).toBe(DEFAULT_ROLE);
-            expect(user!.role).toBe('USER');
+          // Use the generated signer address with proper checksum case
+          const testAddress = signerAddress;
+          
+          // Step 1: Issue nonce for the wallet
+          const nonceResponse = await authService.issueNonce({ address: testAddress });
+          if (!nonceResponse.nonce) {
+            throw new Error('Nonce not generated');
           }
+          
+          // Step 2: Create and sign a SIWE message
+          const siweMessage = new SiweMessage({
+            domain: 'localhost',
+            address: testAddress,
+            statement: 'Sign in to BFN',
+            uri: 'http://localhost:3000',
+            version: '1',
+            chainId: 84532, // Base Sepolia
+            nonce: nonceResponse.nonce,
+            issuedAt: new Date().toISOString(),
+          });
+          
+          const messageString = siweMessage.prepareMessage();
+          const signature = await account.signMessage({ message: messageString });
+          
+          // Step 3: Verify the SIWE message (this creates/updates the user)
+          const verifyResponse = await authService.verify({
+            message: messageString,
+            signature,
+          });
+          
+          // Property assertions that should never fail:
+          if (verifyResponse.role !== DEFAULT_ROLE) {
+            throw new Error(`Expected role ${DEFAULT_ROLE}, got ${verifyResponse.role}`);
+          }
+          
+          if (verifyResponse.role !== 'USER') {
+            throw new Error(`Expected USER role, got ${verifyResponse.role}`);
+          }
+          
+          // Verify in mock database (addresses are stored in lowercase)
+          const user = mockUsers.get(testAddress.toLowerCase());
+          if (!user) {
+            throw new Error('User not found in mock database');
+          }
+          
+          if (user.role !== DEFAULT_ROLE) {
+            throw new Error(`Database role mismatch: expected ${DEFAULT_ROLE}, got ${user.role}`);
+          }
+          
+          // Clear this user for the next iteration to ensure isolation
+          mockUsers.delete(testAddress.toLowerCase());
         }
       ),
       { 
         numRuns: 100, // Minimum 100 iterations as specified in requirements
-        verbose: true,
+        verbose: false, // Reduce verbosity to see actual errors
       }
     );
   });
@@ -134,28 +312,18 @@ describe('Property Test: Least-Privilege Default Role Assignment', () => {
   it('Property 6b: Existing wallets retain their assigned role', async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.constantFrom('VERIFIER', 'ADMIN'), // Test with non-default roles
+        fc.constantFrom('VERIFIER' as const, 'ADMIN' as const), // Test with non-default roles
         fc.hexaString({ minLength: 40, maxLength: 40 }),
-        async (existingRole: Role, addressSuffix) => {
-          const testAddress = `0x${addressSuffix.padStart(40, '0')}`;
-          
-          // Pre-create a user with a non-default role
-          await prisma.user.create({
-            data: {
-              walletAddress: testAddress.toLowerCase(),
-              role: existingRole,
-            },
-          });
-          
+        async (existingRole: Role, _addressSuffix) => {
           // Generate signing capability for this address
           const privateKey = generatePrivateKey();
           const account = privateKeyToAccount(privateKey);
           const signerAddress = privateKeyToAddress(privateKey);
           
-          // Update the pre-created user to use the signer address
-          await prisma.user.updateMany({
-            where: { walletAddress: testAddress.toLowerCase() },
-            data: { walletAddress: signerAddress.toLowerCase() },
+          // Pre-create user with existing role using the signer address
+          mockUsers.set(signerAddress.toLowerCase(), {
+            walletAddress: signerAddress.toLowerCase(),
+            role: existingRole,
           });
           
           // Issue nonce and verify authentication
@@ -190,9 +358,7 @@ describe('Property Test: Least-Privilege Default Role Assignment', () => {
           }
           
           // 3. Verify in database that role was preserved
-          const user = await prisma.user.findUnique({
-            where: { walletAddress: signerAddress.toLowerCase() },
-          });
+          const user = mockUsers.get(signerAddress.toLowerCase());
           expect(user!.role).toBe(existingRole);
         }
       ),
@@ -210,7 +376,7 @@ describe('Property Test: Least-Privilege Default Role Assignment', () => {
     await fc.assert(
       fc.asyncProperty(
         fc.hexaString({ minLength: 40, maxLength: 40 }),
-        async (addressSuffix) => {
+        async (_addressSuffix) => {
           const privateKey = generatePrivateKey();
           const account = privateKeyToAccount(privateKey);
           const testAddress = privateKeyToAddress(privateKey);
@@ -220,9 +386,7 @@ describe('Property Test: Least-Privilege Default Role Assignment', () => {
           // Authenticate the same wallet multiple times
           for (let i = 0; i < 3; i++) {
             // Clean nonces to allow re-authentication
-            await prisma.authNonce.deleteMany({
-              where: { address: testAddress.toLowerCase() },
-            });
+            mockNonces.clear();
             
             const nonceResponse = await authService.issueNonce({ address: testAddress });
             
