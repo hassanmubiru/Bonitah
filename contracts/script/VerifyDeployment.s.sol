@@ -66,7 +66,7 @@ contract VerifyDeployment is Script {
         console.log("  Verifier role exists:", verifierRole != bytes32(0));
         console.log("  Reputation role exists:", reputationRole != bytes32(0));
         
-        console.log("Registry verification passed ✓");
+        console.log("Registry verification passed");
     }
     
     function _verifySavingsVault() internal view {
@@ -86,7 +86,7 @@ contract VerifyDeployment is Script {
         console.log("  Registry address:", vaultRegistry);
         console.log("  Is paused:", vault.paused());
         
-        console.log("SavingsVault verification passed ✓");
+        console.log("SavingsVault verification passed");
     }
     
     function _verifyCommunityTreasury() internal view {
@@ -105,7 +105,7 @@ contract VerifyDeployment is Script {
         console.log("  Token address:", treasuryToken);
         console.log("  Registry address:", treasuryRegistry);
         
-        console.log("CommunityTreasury verification passed ✓");
+        console.log("CommunityTreasury verification passed");
     }
     
     function _verifyEducation() internal view {
@@ -122,7 +122,7 @@ contract VerifyDeployment is Script {
         console.log("  Registry address:", educationRegistry);
         console.log("  Issuer role exists:", issuerRole != bytes32(0));
         
-        console.log("Education verification passed ✓");
+        console.log("Education verification passed");
     }
     
     function _verifyGovernance() internal view {
@@ -136,7 +136,7 @@ contract VerifyDeployment is Script {
         
         console.log("  Registry address:", governanceRegistry);
         
-        console.log("Governance verification passed ✓");
+        console.log("Governance verification passed");
     }
     
     function _verifyToken() internal view {
