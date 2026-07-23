@@ -267,4 +267,190 @@ contract GovernancePropertyTest is Test {
             "Finalized state should match calculated outcome"
         );
     }
+    
+    /// **Property 25: Upgrade preserves governance state**
+    /// **Validates: Requirements 9.8**
+    function testProperty25_UpgradePreservesGovernanceState(
+        uint8 proposalCount,
+        uint256 seed
+    ) public {
+        // Bound inputs
+        proposalCount = uint8(bound(proposalCount, 1, 5)); // Test with 1-5 proposals
+        
+        // Create multiple proposals and votes before upgrade
+        uint256[] memory proposalIds = new uint256[](proposalCount);
+        uint256[] memory expectedForVotes = new uint256[](proposalCount);
+        uint256[] memory expectedAgainstVotes = new uint256[](proposalCount);
+        address[] memory expectedProposers = new address[](proposalCount);
+        uint256[] memory expectedVotingEnds = new uint256[](proposalCount);
+        bool[][] memory expectedVoteRecords = new bool[][](proposalCount);
+        
+        for (uint8 p = 0; p < proposalCount; p++) {
+            expectedVoteRecords[p] = new bool[](users.length);
+        }
+        
+        // Create proposals and cast some votes
+        for (uint8 p = 0; p < proposalCount; p++) {
+            // Use different proposers with voting power
+            uint8 proposerIdx = uint8((seed + p) % 7); // Only users 0-6 have reputation
+            address proposer = users[proposerIdx];
+            uint256 proposerPower = governance.votingPowerOf(proposer);
+            
+            if (proposerPower == 0) continue; // Skip if no voting power
+            
+            // Create proposal
+            bytes memory testAction = abi.encode("proposal", p, block.timestamp);
+            uint256 votingPeriod = 7 days + (p * 1 days); // Vary voting periods
+            
+            vm.prank(proposer);
+            uint256 proposalId = governance.propose(testAction, votingPeriod);
+            
+            proposalIds[p] = proposalId;
+            expectedProposers[p] = proposer;
+            
+            IGovernance.Proposal memory proposal = governance.getProposal(proposalId);
+            expectedVotingEnds[p] = proposal.votingEnds;
+            
+            // Cast some votes on this proposal
+            uint256 forVotes = 0;
+            uint256 againstVotes = 0;
+            
+            for (uint8 v = 0; v < users.length && v < 6; v++) { // Limit voters to avoid too much complexity
+                address voter = users[v];
+                uint256 voterPower = governance.votingPowerOf(voter);
+                
+                if (voterPower == 0) continue;
+                
+                // Use seed to determine voting pattern
+                bool shouldVote = (uint256(keccak256(abi.encode(seed, p, v))) % 3) != 0; // 2/3 chance to vote
+                if (!shouldVote) continue;
+                
+                bool voteSupport = (uint256(keccak256(abi.encode(seed, p, v, "support"))) % 2) == 0;
+                
+                vm.prank(voter);
+                governance.castVote(proposalId, voteSupport);
+                
+                expectedVoteRecords[p][v] = true; // Mark that this voter voted
+                
+                if (voteSupport) {
+                    forVotes += voterPower;
+                } else {
+                    againstVotes += voterPower;
+                }
+            }
+            
+            expectedForVotes[p] = forVotes;
+            expectedAgainstVotes[p] = againstVotes;
+        }
+        
+        // Record state before upgrade
+        IGovernance.Proposal[] memory proposalsBeforeUpgrade = new IGovernance.Proposal[](proposalCount);
+        for (uint8 p = 0; p < proposalCount; p++) {
+            if (proposalIds[p] != 0) {
+                proposalsBeforeUpgrade[p] = governance.getProposal(proposalIds[p]);
+            }
+        }
+        
+        // Perform upgrade to new implementation
+        Governance newImplementation = new Governance();
+        
+        vm.prank(admin); // Admin has UPGRADER_ROLE
+        governance.upgradeToAndCall(address(newImplementation), "");
+        
+        // Verify all state is preserved after upgrade
+        for (uint8 p = 0; p < proposalCount; p++) {
+            if (proposalIds[p] == 0) continue; // Skip uninitialized proposals
+            
+            IGovernance.Proposal memory proposalAfterUpgrade = governance.getProposal(proposalIds[p]);
+            IGovernance.Proposal memory proposalBeforeUpgrade = proposalsBeforeUpgrade[p];
+            
+            // Verify core proposal data is preserved (Req 9.8)
+            assertEq(
+                proposalAfterUpgrade.id, 
+                proposalBeforeUpgrade.id, 
+                "Proposal ID should be preserved across upgrade"
+            );
+            assertEq(
+                proposalAfterUpgrade.proposer, 
+                proposalBeforeUpgrade.proposer, 
+                "Proposer should be preserved across upgrade"
+            );
+            assertEq(
+                proposalAfterUpgrade.votingEnds, 
+                proposalBeforeUpgrade.votingEnds, 
+                "Voting end time should be preserved across upgrade"
+            );
+            assertEq(
+                uint256(proposalAfterUpgrade.state), 
+                uint256(proposalBeforeUpgrade.state), 
+                "Proposal state should be preserved across upgrade"
+            );
+            
+            // Verify vote tallies are preserved (Req 9.8)
+            assertEq(
+                proposalAfterUpgrade.forVotes, 
+                proposalBeforeUpgrade.forVotes, 
+                "For votes should be preserved across upgrade"
+            );
+            assertEq(
+                proposalAfterUpgrade.againstVotes, 
+                proposalBeforeUpgrade.againstVotes, 
+                "Against votes should be preserved across upgrade"
+            );
+            assertEq(
+                proposalAfterUpgrade.quorum, 
+                proposalBeforeUpgrade.quorum, 
+                "Quorum should be preserved across upgrade"
+            );
+            
+            // Verify individual voting records are preserved (Req 9.8)
+            for (uint8 v = 0; v < users.length; v++) {
+                address voter = users[v];
+                bool votedBefore = expectedVoteRecords[p][v];
+                bool votedAfter = governance.hasVoted(proposalIds[p], voter);
+                
+                assertEq(
+                    votedAfter, 
+                    votedBefore, 
+                    "Individual voting records should be preserved across upgrade"
+                );
+            }
+        }
+        
+        // Verify functionality still works after upgrade
+        // Test that voting power calculation still works
+        for (uint8 u = 0; u < users.length; u++) {
+            address user = users[u];
+            uint256 expectedPower = userReputation[user];
+            uint256 actualPower = governance.votingPowerOf(user);
+            assertEq(
+                actualPower, 
+                expectedPower, 
+                "Voting power calculation should still work after upgrade"
+            );
+        }
+        
+        // Test that new proposals can still be created after upgrade
+        address testProposer = users[0]; // Has voting power
+        if (governance.votingPowerOf(testProposer) > 0) {
+            vm.prank(testProposer);
+            uint256 newProposalId = governance.propose("post-upgrade test", 7 days);
+            
+            IGovernance.Proposal memory newProposal = governance.getProposal(newProposalId);
+            assertTrue(
+                newProposal.id != 0, 
+                "New proposals should be creatable after upgrade"
+            );
+            assertEq(
+                newProposal.proposer, 
+                testProposer, 
+                "New proposal should have correct proposer after upgrade"
+            );
+            assertEq(
+                uint256(newProposal.state), 
+                uint256(IGovernance.ProposalState.Active), 
+                "New proposal should be active after upgrade"
+            );
+        }
+    }
 }
