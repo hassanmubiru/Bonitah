@@ -37,7 +37,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 4.5, 13.1, 13.2, 13.6, 13.9_
 
 - [ ] 3. Implement the Registry contract
-  - [ ] 3.1 Implement `Registry.sol`
+  - [x] 3.1 Implement `Registry.sol`
     - Implement `register`, `updateProfile`, `verifyUser` (VERIFIER_ROLE), `increaseReputation` (REPUTATION_ROLE), views, custom errors, events, and UUPS `_authorizeUpgrade`
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.6, 3.7, 3.10, 8.7, 13.1, 14.5, 14.8_
 
@@ -58,7 +58,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 13.1, 15.1, 15.2, 15.3_
 
 - [ ] 4. Implement the SavingsVault contract
-  - [ ] 4.1 Implement deposit/withdraw core in `SavingsVault.sol`
+  - [x] 4.1 Implement deposit/withdraw core in `SavingsVault.sol`
     - Implement `deposit`, `withdraw`, `availableBalance` with `SafeERC20`, `ReentrancyGuard`, `Pausable`, registration checks, and events
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 13.2, 13.3_
 
@@ -87,7 +87,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 4.6, 13.2, 13.3, 13.4, 13.5, 15.1, 15.2, 15.3_
 
 - [ ] 5. Implement the CommunityTreasury contract
-  - [ ] 5.1 Implement savings circles in `CommunityTreasury.sol`
+  - [x] 5.1 Implement savings circles in `CommunityTreasury.sol`
     - Implement `createCircle`, `joinCircle`, `contribute`, `proposeAction`, `vote`, threshold-based execution, per-member contribution history, `nonReentrant` on value moves, and events
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11, 13.6, 13.7, 13.8_
 
@@ -120,7 +120,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 6.8, 13.6, 13.7, 13.8, 15.1, 15.2, 15.3_
 
 - [ ] 6. Implement the Education contract
-  - [ ] 6.1 Implement `Education.sol`
+  - [x] 6.1 Implement `Education.sol`
     - Implement `issueCertificate` (ISSUER_ROLE, non-empty hash, duplicate guard), `awardBadge`, `recordAchievement`, and `Registry.increaseReputation` wiring via REPUTATION_ROLE; emit events
     - _Requirements: 8.3, 8.4, 8.5, 8.7, 8.9, 8.10, 13.9, 14.5, 14.8_
 
@@ -133,7 +133,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 13.9, 15.1, 15.2, 15.3_
 
 - [ ] 7. Implement the Governance contract
-  - [ ] 7.1 Implement `Governance.sol`
+  - [x] 7.1 Implement `Governance.sol`
     - Implement `propose`, `castVote` (weighted, active-only, no double vote), `finalize`, `outcomeOf`, `executeTreasury` (TREASURY_ROLE), `votingPowerOf`, UUPS upgrade, and events
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 13.8, 14.5, 14.8_
 
