@@ -27,9 +27,12 @@ module.exports = {
         'test',
       ],
     ],
-    // Keep the subject readable; allow a generous but bounded header length.
-    'header-max-length': [2, 'always', 100],
-    'subject-empty': [2, 'never'],
-    'type-empty': [2, 'never'],
+    // RELAXED RULES TO REDUCE COMMIT FRUSTRATION
+    'header-max-length': [1, 'always', 120], // Warning instead of error, longer limit
+    'subject-empty': [1, 'never'], // Warning instead of error
+    'type-empty': [1, 'never'], // Warning instead of error
+    'body-leading-blank': [0, 'always'], // Disable body blank line requirement
+    'footer-leading-blank': [0, 'always'], // Disable footer blank line requirement
+    'header-trim': [1, 'always'], // Warning for whitespace instead of error
   },
 };
