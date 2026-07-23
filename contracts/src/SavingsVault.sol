@@ -157,13 +157,52 @@ contract SavingsVault is
     // ---------------------------------------------------------------------
 
     /// @inheritdoc ISavingsVault
-    function createGoal(uint256 /*targetAmount*/, uint256 /*targetDate*/) external pure {
-        revert NotYetImplemented();
+    /// @dev Creates a savings goal with auto-incremented ID. Reverts `VaultPaused` while 
+    ///      paused, `NotRegisteredUser` for unregistered callers, and `InvalidGoalParams` 
+    ///      for zero target amount or past/current target date (Req 5.1, 5.7). Emits 
+    ///      `GoalCreated` (Req 13.4).
+    function createGoal(uint256 targetAmount, uint256 targetDate) external whenNotPaused {
+        if (!registry.isRegistered(msg.sender)) revert NotRegisteredUser(msg.sender);
+        if (targetAmount == 0 || targetDate <= block.timestamp) revert InvalidGoalParams();
+
+        uint256 goalId = nextGoalId[msg.sender]++;
+        
+        goals[msg.sender][goalId] = Goal({
+            id: goalId,
+            targetAmount: targetAmount,
+            targetDate: targetDate,
+            savedAmount: 0,
+            completed: false
+        });
+
+        emit GoalCreated(msg.sender, goalId, targetAmount, targetDate);
     }
 
     /// @inheritdoc ISavingsVault
-    function contributeToGoal(uint256 /*goalId*/, uint256 /*amount*/) external pure {
-        revert NotYetImplemented();
+    /// @dev Moves funds from available balance to goal savings. Reverts `VaultPaused` while 
+    ///      paused, `NotRegisteredUser` for unregistered callers, `ZeroAmount` for zero 
+    ///      contribution, and `InsufficientAvailableBalance` when amount exceeds available 
+    ///      balance. When goal reaches target, marks as completed and emits `GoalCompleted` 
+    ///      (Req 5.2, 13.5). Uses `nonReentrant` for safety.
+    function contributeToGoal(uint256 goalId, uint256 amount) external nonReentrant whenNotPaused {
+        if (!registry.isRegistered(msg.sender)) revert NotRegisteredUser(msg.sender);
+        if (amount == 0) revert ZeroAmount();
+
+        uint256 available = availableBalance(msg.sender);
+        if (amount > available) revert InsufficientAvailableBalance(amount, available);
+
+        Goal storage goal = goals[msg.sender][goalId];
+        if (goal.targetAmount == 0) revert InvalidGoalParams(); // Goal doesn't exist
+
+        // Move funds from available balance to goal
+        depositedBalance[msg.sender] -= amount;
+        goal.savedAmount += amount;
+
+        // Check if goal is completed
+        if (!goal.completed && goal.savedAmount >= goal.targetAmount) {
+            goal.completed = true;
+            emit GoalCompleted(msg.sender, goalId);
+        }
     }
 
     /// @inheritdoc ISavingsVault
