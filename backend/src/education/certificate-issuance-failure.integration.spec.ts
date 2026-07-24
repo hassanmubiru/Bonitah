@@ -115,3 +115,63 @@ describe('Certificate Issuance and Failure Integration (Task 16.4)', () => {
         courseId: mockCourse.onChainId,
         courseTitle: 'Test Financial Literacy Course',
         issuer: 'Bonitah Financial Network',
+        version: '1.0',
+        issuedAt: expect.any(String),
+      });
+
+      // Verify timestamp is valid ISO string
+      const issuedAt = result.metadata.issuedAt;
+      expect(() => new Date(issuedAt).toISOString()).not.toThrow();
+      expect(new Date(issuedAt).getTime()).toBeGreaterThan(Date.now() - 60000); // Within last minute
+    });
+
+    it('should handle successful certificate with course completion validation', async () => {
+      const courseId = 'validated-course';
+      const userId = 'test-user-id';
+      const walletAddress = '0x1234567890123456789012345678901234567890';
+      
+      const mockCourse = {
+        id: courseId,
+        onChainId: '0x0000000000000000000000000000000000000000000000000000000000000002',
+        title: 'Advanced DeFi Course',
+        lessons: [{ id: 'lesson-1' }, { id: 'lesson-2' }, { id: 'lesson-3' }],
+      };
+
+      (prismaService.course.findUnique as jest.Mock).mockResolvedValue(mockCourse);
+      (prismaService.lessonProgress.count as jest.Mock).mockResolvedValue(3); // All 3 lessons completed
+
+      const mockCid = 'QmValidatedCertificateHash987654321';
+      (ipfsService.storeCertificateMetadata as jest.Mock).mockResolvedValue(mockCid);
+
+      const result = await educationService.issueCertificate(userId, walletAddress, courseId);
+
+      expect(result.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+      expect(result.ipfsCid).toBe(mockCid);
+      expect(result.metadata.courseTitle).toBe('Advanced DeFi Course');
+
+      // Verify completion verification was performed
+      expect(prismaService.lessonProgress.count).toHaveBeenCalledWith({
+        where: {
+          userId,
+          lesson: {
+            courseId,
+          },
+        },
+      });
+    });
+  });
+
+  describe('IPFS Failure Path: State Preservation', () => {
+    it('should leave prior state unchanged when IPFS storage fails (Req 8.9)', async () => {
+      const courseId = 'ipfs-failure-course';
+      const userId = 'test-user-id';
+      const walletAddress = '0x1234567890123456789012345678901234567890';
+      
+      const mockCourse = {
+        id: courseId,
+        onChainId: '0x0000000000000000000000000000000000000000000000000000000000000004',
+        title: 'Course with IPFS Failure',
+        lessons: [{ id: 'lesson-1' }, { id: 'lesson-2' }],
+      };
+
+      // Setup successful completion check
