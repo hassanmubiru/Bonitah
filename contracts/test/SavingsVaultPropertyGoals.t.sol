@@ -248,11 +248,14 @@ contract SavingsVaultPropertyGoalsTest is Test {
     ) public {
         uint256 targetAmount = _zeroAmount ? 0 : bound(_targetAmount, 1, 1000e18);
         
-        // Prevent underflow by ensuring we don't subtract more than current timestamp
-        uint256 maxOffset = block.timestamp > 365 days ? 365 days : block.timestamp - 1;
-        uint256 targetDate = _pastDate ? 
-            block.timestamp - bound(_targetOffset, 1, maxOffset) : 
-            block.timestamp + bound(_targetOffset, 1, 365 days);
+        uint256 targetDate;
+        if (_pastDate && block.timestamp > 1) {
+            // Ensure we can subtract safely and max is greater than min
+            uint256 maxOffset = block.timestamp > 365 days ? 365 days : block.timestamp - 1;
+            targetDate = block.timestamp - bound(_targetOffset, 1, maxOffset);
+        } else {
+            targetDate = block.timestamp + bound(_targetOffset, 1, 365 days);
+        }
         
         // Deposit funds
         vm.prank(user1);
