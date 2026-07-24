@@ -1,4 +1,4 @@
-import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as fc from 'fast-check';
 
@@ -6,7 +6,7 @@ import { AiService } from './ai.service';
 import { EnvService } from '../config/env.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChainReadService } from '../chain-read/chain-read.service';
-import type { User, Conversation } from '@prisma/client';
+import type { Conversation } from '@prisma/client';
 
 /**
  * Property 29: AI question length boundary
@@ -20,8 +20,6 @@ import type { User, Conversation } from '@prisma/client';
  */
 describe('Property 29: AI question length boundary', () => {
   let aiService: AiService;
-  let prismaService: PrismaService;
-  let chainReadService: ChainReadService;
 
   const mockUser = {
     id: 'test-user-id',
@@ -79,8 +77,6 @@ describe('Property 29: AI question length boundary', () => {
     }).compile();
 
     aiService = moduleRef.get<AiService>(AiService);
-    prismaService = moduleRef.get<PrismaService>(PrismaService);
-    chainReadService = moduleRef.get<ChainReadService>(ChainReadService);
 
     // Mock OpenAI responses to avoid actual API calls
     const mockOpenAI = {
