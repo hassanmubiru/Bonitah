@@ -60,7 +60,7 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
         
         // Deploy CommunityTreasury
         CommunityTreasury treasuryImpl = new CommunityTreasury();
-        bytes memory treasuryInitData = abi.encodeCall(CommunityTreasury.initialize, (admin, token));
+        bytes memory treasuryInitData = abi.encodeCall(CommunityTreasury.initialize, (admin, IERC20(address(token))));
         ERC1967Proxy treasuryProxy = new ERC1967Proxy(address(treasuryImpl), treasuryInitData);
         communityTreasury = CommunityTreasury(address(treasuryProxy));
         
@@ -78,7 +78,7 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
         
         // Deploy SavingsVault
         SavingsVault vaultImpl = new SavingsVault();
-        bytes memory vaultInitData = abi.encodeCall(SavingsVault.initialize, (admin, address(registry), token));
+        bytes memory vaultInitData = abi.encodeCall(SavingsVault.initialize, (address(token), address(registry), admin));
         ERC1967Proxy vaultProxy = new ERC1967Proxy(address(vaultImpl), vaultInitData);
         savingsVault = SavingsVault(address(vaultProxy));
         
