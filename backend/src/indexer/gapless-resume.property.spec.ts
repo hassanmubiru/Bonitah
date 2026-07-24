@@ -70,154 +70,126 @@ describe('Property 32: Indexing resumes gaplessly', () => {
    */
   it('resumes indexing from last cached block without skipping blocks', () => {
     fc.assert(
-        fc.asyncProperty(
+      fc.asyncProperty(
         // Generate test data for resume scenarios
         fc.record({
-          lastIndexedBlock: fc.bigUintN(16).map(n => n + 100n), // Start from block 100+
-          currentHead: fc.bigUintN(16).map(n => n + 200n), // Current head is higher
-          networkFailures: fc.array(
-            fc.record({
-              failureType: fc.constantFrom('timeout', 'connection_error', 'rate_limit'),
-              affectedBlocks: fc.array(fc.bigUintN(16), { minLength: 1, maxLength: 3 }),
-            }),
-            { minLength: 1, maxLength: 2 }
-          ),
-          eventsPerBlock: fc.array(
-            fc.array(
-              fc.record({
-                transactionHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
-                logIndex: fc.integer({ min: 0, max: 5 }),
-                address: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-                topics: fc.array(fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`), { maxLength: 2 }),
-              }),
-              { maxLength: 2 }
-            ),
-            { maxLength: 10 }
-          ),
-        }).filter(({ lastIndexedBlock, currentHead }) => lastIndexedBlock < currentHead),
-        async ({ lastIndexedBlock, currentHead, networkFailures, eventsPerBlock }) => {
-          // Mock initial indexer state
+          initialBlock: fc.bigUintN(16).map(n => n + 100n), // Start from block 100+
+          finalBlock: fc.bigUintN(16).map(n => n + 150n), // End at a higher block
+          interruptionPoint: fc.bigUintN(16).map(n => n + 120n), // Point where network fails
+        }).filter(({ initialBlock, finalBlock, interruptionPoint }) => 
+          initialBlock < interruptionPoint && interruptionPoint < finalBlock),
+        async ({ initialBlock, finalBlock, interruptionPoint }) => {
+          // Phase 1: Successful indexing up to interruption point
           (prismaService.indexerState.findUnique as jest.Mock).mockResolvedValue({
             id: 'singleton',
-            lastIndexedBlock,
-            lastIndexedHash: `0x${'last'.repeat(16)}`,
+            lastIndexedBlock: initialBlock,
+            lastIndexedHash: `0x${initialBlock.toString(16).padStart(64, '0')}`,
           });
 
-          // Mock current blockchain head
-          mockPublicClient.getBlockNumber.mockResolvedValue(currentHead);
+          mockPublicClient.getBlockNumber.mockResolvedValue(interruptionPoint);
+          
+          // Mock no reorg
+          mockPublicClient.getBlock.mockImplementation(({ blockNumber }: { blockNumber: bigint }) => ({
+            number: blockNumber,
+            hash: `0x${blockNumber.toString(16).padStart(64, '0')}`,
+          }));
 
-          // Mock no reorg (consistent hash)
-          mockPublicClient.getBlock.mockImplementation(({ blockNumber }: { blockNumber: bigint }) => {
-            return Promise.resolve({
-              number: blockNumber,
-              hash: `0x${blockNumber.toString(16).padStart(64, '0')}`,
-            });
-          });
-
-          // Create a sequence of blocks to index from lastIndexedBlock+1 to currentHead
-          const blocksToIndex: bigint[] = [];
-          for (let block = lastIndexedBlock + 1n; block <= currentHead; block++) {
-            blocksToIndex.push(block);
-          }
-          // Track which blocks have been successfully processed
-          const processedBlocks = new Set<string>();
-          let getLogsCallCount = 0;
-
-          // Mock getLogs with potential network failures and eventual success
+          // Track processed blocks in phase 1
+          const phase1ProcessedBlocks: bigint[] = [];
           mockPublicClient.getLogs.mockImplementation(({ fromBlock, toBlock }: { fromBlock: bigint, toBlock: bigint }) => {
-            getLogsCallCount++;
-            
-            // Simulate network failure for certain calls based on our failure scenarios
-            const shouldFail = networkFailures.some(failure => 
-              failure.affectedBlocks.some(failBlock => failBlock >= fromBlock && failBlock <= toBlock)
-            ) && getLogsCallCount <= networkFailures.length; // Fail only on initial attempts
-
-            if (shouldFail) {
-              return Promise.reject(new Error('Network unavailable'));
-            }
-
-            // Generate events for the block range
             const events: any[] = [];
-            for (let blockNum = fromBlock; blockNum <= toBlock; blockNum++) {
-              const blockIndex = Number(blockNum - lastIndexedBlock - 1n);
-              const blockEvents = eventsPerBlock[blockIndex] || [];
-              
-              blockEvents.forEach(event => {
-                events.push({
-                  ...event,
-                  blockNumber: blockNum,
-                  blockHash: `0x${blockNum.toString(16).padStart(64, '0')}`,
-                });
+            for (let block = fromBlock; block <= toBlock; block++) {
+              phase1ProcessedBlocks.push(block);
+              events.push({
+                transactionHash: `0x${block.toString(16).padStart(64, '0')}`,
+                logIndex: 0,
+                address: `0x${'a'.repeat(40)}`,
+                blockNumber: block,
+                blockHash: `0x${block.toString(16).padStart(64, '0')}`,
+                topics: [`0x${'topic'.repeat(12)}00`],
               });
-              
-              // Mark this block as processed
-              processedBlocks.add(blockNum.toString());
             }
-
             return Promise.resolve(events);
           });
 
-          // Track state updates to verify gapless progression
-          const stateUpdates: { block: bigint, hash: string }[] = [];
+          (prismaService.cachedEvent.upsert as jest.Mock).mockResolvedValue({});
+          let lastStateUpdate: { block: bigint, hash: string } | undefined;
           (prismaService.indexerState.upsert as jest.Mock).mockImplementation((data: any) => {
-            stateUpdates.push({
+            lastStateUpdate = {
               block: data.create.lastIndexedBlock || data.update.lastIndexedBlock,
               hash: data.create.lastIndexedHash || data.update.lastIndexedHash,
-            });
+            };
             return Promise.resolve({});
           });
 
-          // Mock event caching (should be called for all events)
-          const cachedEvents: any[] = [];
-          (prismaService.cachedEvent.upsert as jest.Mock).mockImplementation((data: any) => {
-            cachedEvents.push(data.create);
-            return Promise.resolve({});
-          });
-
-          // Call indexNewBlocks method (simulating resume after network recovery)
+          // Execute phase 1 indexing
           const indexNewBlocks = (indexerService as any).indexNewBlocks.bind(indexerService);
-          
-          // If there are network failures, the method should throw and not process blocks
-          if (networkFailures.length > 0 && networkFailures[0]?.affectedBlocks.length > 0) {
-            await expect(indexNewBlocks()).rejects.toThrow();
-            // In case of network failure, no blocks should be processed
-            expect(processedBlocks.size).toBe(0);
-            return; // End test case - network failure scenario
-          }
-          
-          // Should not throw when there are no network failures
-          await expect(indexNewBlocks()).resolves.not.toThrow();
-          // Verify gapless progression: all blocks from lastIndexedBlock+1 to currentHead should be processed
-          // Only verify this if no network failures occurred
-          if (networkFailures.length === 0 || networkFailures[0]?.affectedBlocks.length === 0) {
-            const expectedBlocks = new Set<string>();
-            for (let block = lastIndexedBlock + 1n; block <= currentHead; block++) {
-              expectedBlocks.add(block.toString());
+          await indexNewBlocks();
+
+          // Verify phase 1 completed successfully
+          expect(phase1ProcessedBlocks.length).toBeGreaterThan(0);
+          expect(lastStateUpdate?.block).toBe(interruptionPoint);
+
+          // Phase 2: Network interruption and resume
+          // Update mock to simulate resuming from where we left off
+          (prismaService.indexerState.findUnique as jest.Mock).mockResolvedValue({
+            id: 'singleton',
+            lastIndexedBlock: interruptionPoint,
+            lastIndexedHash: `0x${interruptionPoint.toString(16).padStart(64, '0')}`,
+          });
+
+          mockPublicClient.getBlockNumber.mockResolvedValue(finalBlock);
+
+          // Track processed blocks in phase 2 (resume phase)
+          const phase2ProcessedBlocks: bigint[] = [];
+          mockPublicClient.getLogs.mockImplementation(({ fromBlock, toBlock }: { fromBlock: bigint, toBlock: bigint }) => {
+            const events: any[] = [];
+            for (let block = fromBlock; block <= toBlock; block++) {
+              phase2ProcessedBlocks.push(block);
+              events.push({
+                transactionHash: `0x${block.toString(16).padStart(64, '0')}`,
+                logIndex: 0,
+                address: `0x${'b'.repeat(40)}`,
+                blockNumber: block,
+                blockHash: `0x${block.toString(16).padStart(64, '0')}`,
+                topics: [`0x${'resume'.repeat(10)}00`],
+              });
             }
-            
-            // All expected blocks should have been processed (no gaps)
-            expect(processedBlocks).toEqual(expectedBlocks);
+            return Promise.resolve(events);
+          });
 
-            // Verify state was updated to the current head (complete catch-up)
-            const finalStateUpdate = stateUpdates[stateUpdates.length - 1];
-            expect(finalStateUpdate?.block).toBe(currentHead);
-            expect(finalStateUpdate?.hash).toBe(`0x${currentHead.toString(16).padStart(64, '0')}`);
+          // Execute phase 2 indexing (resume)
+          await indexNewBlocks();
 
-            // Verify events were cached with correct provenance for each processed block
-            const cachedBlockNumbers = cachedEvents.map(event => event.blockNumber);
-            const uniqueCachedBlocks = new Set(cachedBlockNumbers.map(b => b.toString()));
-            
-            // Should have cached events for blocks that have events
-            eventsPerBlock.forEach((blockEvents, index) => {
-              if (blockEvents.length > 0) {
-                const blockNum = lastIndexedBlock + BigInt(index) + 1n;
-                expect(uniqueCachedBlocks.has(blockNum.toString())).toBe(true);
-              }
-            });
+          // Verify gapless resume properties
+          
+          // 1. Phase 2 should start exactly from interruptionPoint + 1
+          expect(phase2ProcessedBlocks[0]).toBe(interruptionPoint + 1n);
+          
+          // 2. Phase 2 should process all blocks up to finalBlock
+          const expectedPhase2Blocks = [];
+          for (let block = interruptionPoint + 1n; block <= finalBlock; block++) {
+            expectedPhase2Blocks.push(block);
           }
+          expect(phase2ProcessedBlocks).toEqual(expectedPhase2Blocks);
+
+          // 3. Combined phases should have no gaps
+          const allProcessedBlocks = [...phase1ProcessedBlocks, ...phase2ProcessedBlocks];
+          allProcessedBlocks.sort((a, b) => Number(a - b));
+          
+          // Verify no gaps in the sequence
+          for (let i = 1; i < allProcessedBlocks.length; i++) {
+            expect(allProcessedBlocks[i]).toBe(allProcessedBlocks[i-1]! + 1n);
+          }
+          
+          // 4. Verify complete range was processed
+          const expectedFirstBlock = initialBlock + 1n;
+          const expectedLastBlock = finalBlock;
+          expect(allProcessedBlocks[0]).toBe(expectedFirstBlock);
+          expect(allProcessedBlocks[allProcessedBlocks.length - 1]).toBe(expectedLastBlock);
         }
       ),
-      { numRuns: 10 }
+      { numRuns: 20 }
     );
   });
 

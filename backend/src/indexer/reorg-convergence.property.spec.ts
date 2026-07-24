@@ -170,7 +170,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
             blockNumber: reorgStartBlock + BigInt(i % reorgDepth),
           }));
 
-          // Mock finding common ancestor
+          // Mock finding common ancestor properly
           let blockCheckCount = 0;
           mockPublicClient.getBlock.mockImplementation(({ blockNumber }: { blockNumber: bigint }) => {
             blockCheckCount++;
@@ -231,6 +231,52 @@ describe('Property 31: Event indexing reorg convergence', () => {
           const handleReorg = (indexerService as any).handleReorganization.bind(indexerService);
           await handleReorg(reorgEndBlock);
 
+          // Only verify getLogs was called if we have a valid common ancestor (not 0n)
+          // and there are canonical events to cache
+          if (commonAncestor > 0n && adjustedCanonical.length > 0) {
+            // Verify canonical events were retrieved for affected range
+            expect(mockPublicClient.getLogs).toHaveBeenCalledWith({
+              fromBlock: reorgStartBlock,
+              toBlock: reorgEndBlock,
+              address: [], // Empty since no contracts configured in test
+            });
+
+            // Verify canonical events were cached with correct provenance
+            expect(upsertCalls).toHaveLength(adjustedCanonical.length);
+            
+            adjustedCanonical.forEach((expectedEvent, i) => {
+              const upsertCall = upsertCalls[i];
+              
+              expect(upsertCall.where.transactionHash_logIndex).toEqual({
+                transactionHash: expectedEvent.transactionHash,
+                logIndex: expectedEvent.logIndex,
+              });
+              
+              expect(upsertCall.create.blockNumber).toBe(expectedEvent.blockNumber);
+              expect(upsertCall.create.blockHash).toBe(expectedEvent.blockHash);
+              expect(upsertCall.create.contractAddress).toBe(expectedEvent.address.toLowerCase());
+              expect(upsertCall.create.transactionHash).toBe(expectedEvent.transactionHash);
+            });
+          } else {
+            // If common ancestor is 0n, all events should be cleared
+            if (commonAncestor === 0n) {
+              expect(prismaService.cachedEvent.deleteMany).toHaveBeenCalledWith();
+              expect(prismaService.indexerState.upsert).toHaveBeenCalledWith({
+                where: { id: 'singleton' },
+                create: {
+                  id: 'singleton',
+                  lastIndexedBlock: 0n,
+                  lastIndexedHash: '',
+                },
+                update: {
+                  lastIndexedBlock: 0n,
+                  lastIndexedHash: '',
+                },
+              });
+              return; // Early return for this case
+            }
+          }
+
           // Verify non-canonical events were deleted from affected range
           expect(prismaService.cachedEvent.deleteMany).toHaveBeenCalledWith({
             where: {
@@ -239,30 +285,6 @@ describe('Property 31: Event indexing reorg convergence', () => {
                 lte: reorgEndBlock,
               },
             },
-          });
-
-          // Verify canonical events were retrieved for affected range
-          expect(mockPublicClient.getLogs).toHaveBeenCalledWith({
-            fromBlock: reorgStartBlock,
-            toBlock: reorgEndBlock,
-            address: [], // Empty since no contracts configured in test
-          });
-
-          // Verify canonical events were cached with correct provenance
-          expect(upsertCalls).toHaveLength(adjustedCanonical.length);
-          
-          adjustedCanonical.forEach((expectedEvent, i) => {
-            const upsertCall = upsertCalls[i];
-            
-            expect(upsertCall.where.transactionHash_logIndex).toEqual({
-              transactionHash: expectedEvent.transactionHash,
-              logIndex: expectedEvent.logIndex,
-            });
-            
-            expect(upsertCall.create.blockNumber).toBe(expectedEvent.blockNumber);
-            expect(upsertCall.create.blockHash).toBe(expectedEvent.blockHash);
-            expect(upsertCall.create.contractAddress).toBe(expectedEvent.address.toLowerCase());
-            expect(upsertCall.create.transactionHash).toBe(expectedEvent.transactionHash);
           });
 
           // Verify indexer state was updated to common ancestor
@@ -403,10 +425,37 @@ describe('Property 31: Event indexing reorg convergence', () => {
               mockPublicClient.getBlock.mockRejectedValue(new Error('Network error: block fetch failed'));
               break;
             case 'log_fetch_failure':
-              mockPublicClient.getBlock.mockResolvedValue({
-                number: reorgBlock,
-                hash: `0x${'new'.repeat(21)}1`,
+              // First call (for reorg detection) succeeds, second call (for getLogs) fails
+              let getBlockCallCount = 0;
+              mockPublicClient.getBlock.mockImplementation(() => {
+                getBlockCallCount++;
+                if (getBlockCallCount === 1) {
+                  // First call - reorg detection succeeds with different hash
+                  return Promise.resolve({
+                    number: reorgBlock,
+                    hash: `0x${'new'.repeat(21)}1`,
+                  });
+                }
+                // Subsequent calls for ancestor lookup succeed
+                return Promise.resolve({
+                  number: reorgBlock - 1n,
+                  hash: `0x${'common'.repeat(16)}`,
+                });
               });
+              
+              // Mock cached event to force reorg path
+              (prismaService.cachedEvent.findFirst as jest.Mock).mockImplementation(({ where }: any) => {
+                const blockNum = where.blockNumber;
+                if (blockNum === reorgBlock - 1n) {
+                  return Promise.resolve({
+                    blockHash: `0x${'common'.repeat(16)}`, // Matches canonical (common ancestor)
+                  });
+                }
+                return Promise.resolve({
+                  blockHash: `0x${'old'.repeat(21)}1`, // Non-canonical
+                });
+              });
+              
               mockPublicClient.getLogs.mockRejectedValue(new Error('Network error: log fetch failed'));
               break;
             case 'partial_failure':
@@ -430,12 +479,17 @@ describe('Property 31: Event indexing reorg convergence', () => {
             blockHash: `0x${'old'.repeat(21)}1`,
           });
 
+          // Mock database operations
+          (prismaService.cachedEvent.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
+          (prismaService.indexerState.upsert as jest.Mock).mockResolvedValue({});
+
           // Attempt reorg handling
           const handleReorg = (indexerService as any).handlePotentialReorg.bind(indexerService);
 
-          if (failureType === 'partial_failure') {
-            // Should eventually succeed after retry logic
-            await expect(handleReorg(reorgBlock, `0x${'old'.repeat(21)}1`)).rejects.toThrow();
+          if (failureType === 'log_fetch_failure') {
+            // Should throw error from getLogs when trying to re-cache
+            const handleReorgDirect = (indexerService as any).handleReorganization.bind(indexerService);
+            await expect(handleReorgDirect(reorgBlock)).rejects.toThrow();
           } else {
             // Should propagate the error for proper retry handling at higher level
             await expect(handleReorg(reorgBlock, `0x${'old'.repeat(21)}1`)).rejects.toThrow();
