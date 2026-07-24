@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 
 import { EducationService } from './education.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -219,6 +219,44 @@ describe('EducationService', () => {
 
       await expect(service.issueCertificate('user1', '0x123', 'nonexistent'))
         .rejects.toThrow(NotFoundException);
+    });
+
+    it('should handle IPFS storage failure gracefully and leave prior state unchanged (Req 8.9)', async () => {
+      const userId = 'user1';
+      const walletAddress = '0x1234567890123456789012345678901234567890';
+      const courseId = 'course1';
+      const mockCourse = {
+        id: courseId,
+        onChainId: '0x0000000000000000000000000000000000000000000000000000000000000001',
+        title: 'Test Course',
+        lessons: [{ id: 'lesson1' }, { id: 'lesson2' }],
+      };
+
+      mockPrismaService.course.findUnique.mockResolvedValue(mockCourse);
+      mockPrismaService.lessonProgress.count.mockResolvedValue(2);
+      
+      // Mock IPFS storage failure
+      const ipfsError = new Error('IPFS storage failed');
+      mockIpfsService.storeCertificateMetadata.mockRejectedValue(ipfsError);
+
+      // Should throw InternalServerErrorException on IPFS failure
+      await expect(service.issueCertificate(userId, walletAddress, courseId))
+        .rejects.toThrow('Certificate metadata storage failed');
+
+      // Verify IPFS service was called but failed
+      expect(mockIpfsService.storeCertificateMetadata).toHaveBeenCalledWith({
+        recipient: walletAddress,
+        courseId: mockCourse.onChainId,
+        courseTitle: 'Test Course',
+        issuedAt: expect.any(String),
+        issuer: 'Bonitah Financial Network',
+        version: '1.0',
+      });
+
+      // Verify no state changes occurred (no database calls made after IPFS failure)
+      // The service should fail fast and not proceed with on-chain certificate issuance
+      expect(mockPrismaService.course.findUnique).toHaveBeenCalledTimes(1);
+      expect(mockPrismaService.lessonProgress.count).toHaveBeenCalledTimes(1);
     });
   });
 });

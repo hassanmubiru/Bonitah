@@ -3,7 +3,23 @@ import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { type Address, type Abi } from 'viem';
 
+// Mock viem's readContract function
+jest.mock('viem', () => ({
+  ...jest.requireActual('viem'),
+  readContract: jest.fn(),
+}));
+
+// Mock wagmi's usePublicClient hook
+jest.mock('wagmi', () => ({
+  usePublicClient: jest.fn(),
+}));
+
+import { readContract } from 'viem';
+import { usePublicClient } from 'wagmi';
 import { useContractRead } from '@/hooks/useContractRead';
+
+const mockReadContract = readContract as jest.MockedFunction<typeof readContract>;
+const mockUsePublicClient = usePublicClient as jest.MockedFunction<typeof usePublicClient>;
 
 // Test component that uses the read hooks to demonstrate loading/error/retry states
 interface DashboardSectionProps {
