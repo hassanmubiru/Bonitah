@@ -1,9 +1,8 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { Logger } from 'nestjs-pino';
-import { createPublicClient, createWalletClient, http, parseEther, type PublicClient, type WalletClient } from 'viem';
+import { createPublicClient, http, type PublicClient } from 'viem';
 import { baseSepolia } from 'viem/chains';
-import { privateKeyToAccount } from 'viem/accounts';
 
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';

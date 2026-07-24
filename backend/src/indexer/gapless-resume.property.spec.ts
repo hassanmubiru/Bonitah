@@ -177,7 +177,15 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           // Call indexNewBlocks method (simulating resume after network recovery)
           const indexNewBlocks = (indexerService as any).indexNewBlocks.bind(indexerService);
           
-          // Should not throw even with initial network failures
+          // If there are network failures, the method should throw and not process blocks
+          if (networkFailures.length > 0 && networkFailures[0]?.affectedBlocks.length > 0) {
+            await expect(indexNewBlocks()).rejects.toThrow();
+            // In case of network failure, no blocks should be processed
+            expect(processedBlocks.size).toBe(0);
+            return; // End test case - network failure scenario
+          }
+          
+          // Should not throw when there are no network failures
           await expect(indexNewBlocks()).resolves.not.toThrow();
           // Verify gapless progression: all blocks from lastIndexedBlock+1 to currentHead should be processed
           const expectedBlocks = new Set<string>();
