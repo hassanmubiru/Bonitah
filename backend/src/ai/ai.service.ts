@@ -181,7 +181,7 @@ export class AiService {
       id: conversation.id,
       createdAt: conversation.createdAt,
       messages: conversation.messages.map((msg) => ({
-        role: msg.role,
+        role: msg.role as 'user' | 'assistant',
         content: msg.content,
         createdAt: msg.createdAt,
       })),
