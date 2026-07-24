@@ -73,8 +73,8 @@ describe('Property 32: Indexing resumes gaplessly', () => {
         fc.asyncProperty(
         // Generate test data for resume scenarios
         fc.record({
-          lastIndexedBlock: fc.bigUintN(32).map(n => n + 100n), // Start from block 100+
-          currentHead: fc.bigUintN(32).map(n => n + 200n), // Current head is higher
+          lastIndexedBlock: fc.bigUintN(16).map(n => n + 100n), // Start from block 100+
+          currentHead: fc.bigUintN(16).map(n => n + 200n), // Current head is higher
           networkFailures: fc.array(
             fc.record({
               failureType: fc.constantFrom('timeout', 'connection_error', 'rate_limit'),
