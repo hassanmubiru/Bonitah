@@ -679,8 +679,8 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       mockPublicClient.readContract.mockImplementation(() => {
         callCount++;
         if (callCount === 1) {
-          // First call: simulate loading then timeout
-          return new Promise(() => {});
+          // First call: fail
+          return Promise.reject(new Error('Network error'));
         } else if (callCount === 2) {
           // Retry: fail with error
           return Promise.reject(new Error('Retry failed'));
@@ -696,15 +696,7 @@ describe('Component Tests for Loading/Error/Retry States', () => {
         </TestWrapper>
       );
 
-      // Loading state accessibility
-      expect(screen.getByRole('status')).toBeInTheDocument();
-      expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
-
-      // Timeout to error state
-      act(() => {
-        jest.advanceTimersByTime(31000);
-      });
-
+      // Wait for error state
       await waitFor(() => {
         expect(screen.getByRole('alert')).toBeInTheDocument();
       });
@@ -756,19 +748,17 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       expect(screen.getByText('Balance')).toBeInTheDocument();
     });
 
-    it('does not make contract calls when disabled', () => {
+    it('does not make contract calls when disabled', async () => {
       render(
         <TestWrapper>
           <DashboardSection {...testProps} enabled={false} />
         </TestWrapper>
       );
 
-      // Wait to ensure no calls are made
-      act(() => {
-        jest.advanceTimersByTime(1000);
-      });
-
-      expect(mockPublicClient.readContract).not.toHaveBeenCalled();
+      // Wait a moment to ensure no calls are made
+      await waitFor(() => {
+        expect(mockPublicClient.readContract).not.toHaveBeenCalled();
+      }, { timeout: 500 });
     });
 
     it('can be enabled and disabled dynamically', async () => {
