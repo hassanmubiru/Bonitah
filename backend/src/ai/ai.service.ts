@@ -231,7 +231,7 @@ export class AiService {
     } catch (error) {
       // On read failure, mark as unavailable (Req 10.9)
       context.push('Available savings balance: unavailable (unable to read from blockchain)');
-      this.logger.warn(`Failed to read savings balance for ${walletAddress}`, error);
+      this.logger.warn(`Failed to read savings balance for ${address}`, error);
     }
 
     try {
@@ -256,7 +256,7 @@ export class AiService {
       const profileResult = await this.chainRead.read({
         contract: 'Registry' as ContractName,
         functionName: 'getProfile',
-        args: [walletAddress],
+        args: [address],
       });
 
       context.push(
