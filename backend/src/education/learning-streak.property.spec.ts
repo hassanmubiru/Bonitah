@@ -130,7 +130,7 @@ describe('Property 21: Learning streak consecutive-day count', () => {
             return currentStreakState;
           });
           
-          mockPrismaService.learningStreak.create.mockImplementation(async (args) => {
+          mockPrismaService.learningStreak.create.mockImplementation(async (args: any) => {
             currentStreakState = {
               id: 'streak-id',
               userId: args.data.userId,
@@ -140,7 +140,7 @@ describe('Property 21: Learning streak consecutive-day count', () => {
             return currentStreakState;
           });
           
-          mockPrismaService.learningStreak.update.mockImplementation(async (args) => {
+          mockPrismaService.learningStreak.update.mockImplementation(async (args: any) => {
             currentStreakState = {
               ...currentStreakState,
               currentStreak: args.data.currentStreak,
@@ -152,18 +152,20 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           // Simulate lesson completions on each day
           for (let i = 0; i < completionDays.length; i++) {
             const dayOffset = completionDays[i];
+            if (dayOffset === undefined) continue;
+            
             const completionDate = new Date(baseDate);
             completionDate.setDate(baseDate.getDate() + dayOffset);
             completionDate.setHours(0, 0, 0, 0);
             
             // Mock the current date to be the completion date
-            jest.spyOn(global, 'Date').mockImplementation((() => {
+            jest.spyOn(global, 'Date').mockImplementation((function () {
               const RealDate = Date;
-              return function(this: any, ...args: any[]) {
+              return function (this: any, ...args: any[]): any {
                 if (args.length === 0) {
                   return completionDate;
                 }
-                return new RealDate(...args);
+                return new (RealDate as any)(...args);
               } as any;
             })());
             
@@ -218,7 +220,7 @@ describe('Property 21: Learning streak consecutive-day count', () => {
             return currentStreakState;
           });
           
-          mockPrismaService.learningStreak.create.mockImplementation(async (args) => {
+          mockPrismaService.learningStreak.create.mockImplementation(async (args: any) => {
             currentStreakState = {
               id: 'streak-id',
               userId: args.data.userId,
@@ -228,7 +230,7 @@ describe('Property 21: Learning streak consecutive-day count', () => {
             return currentStreakState;
           });
           
-          mockPrismaService.learningStreak.update.mockImplementation(async (args) => {
+          mockPrismaService.learningStreak.update.mockImplementation(async (args: any) => {
             currentStreakState = {
               ...currentStreakState,
               currentStreak: args.data.currentStreak,
@@ -241,13 +243,13 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           const testDate = new Date(baseDate);
           testDate.setHours(0, 0, 0, 0);
           
-          jest.spyOn(global, 'Date').mockImplementation((() => {
+          jest.spyOn(global, 'Date').mockImplementation((function () {
             const RealDate = Date;
-            return function(this: any, ...args: any[]) {
+            return function (this: any, ...args: any[]): any {
               if (args.length === 0) {
                 return testDate;
               }
-              return new RealDate(...args);
+              return new (RealDate as any)(...args);
             } as any;
           })());
           
@@ -304,7 +306,7 @@ describe('Property 21: Learning streak consecutive-day count', () => {
             return currentStreakState;
           });
           
-          mockPrismaService.learningStreak.create.mockImplementation(async (args) => {
+          mockPrismaService.learningStreak.create.mockImplementation(async (args: any) => {
             currentStreakState = {
               id: 'streak-id',
               userId: args.data.userId,
@@ -314,7 +316,7 @@ describe('Property 21: Learning streak consecutive-day count', () => {
             return currentStreakState;
           });
           
-          mockPrismaService.learningStreak.update.mockImplementation(async (args) => {
+          mockPrismaService.learningStreak.update.mockImplementation(async (args: any) => {
             currentStreakState = {
               ...currentStreakState,
               currentStreak: args.data.currentStreak,
@@ -329,13 +331,13 @@ describe('Property 21: Learning streak consecutive-day count', () => {
             completionDate.setDate(baseDate.getDate() + day);
             completionDate.setHours(0, 0, 0, 0);
             
-            jest.spyOn(global, 'Date').mockImplementation((() => {
+            jest.spyOn(global, 'Date').mockImplementation((function () {
               const RealDate = Date;
-              return function(this: any, ...args: any[]) {
+              return function (this: any, ...args: any[]): any {
                 if (args.length === 0) {
                   return completionDate;
                 }
-                return new RealDate(...args);
+                return new (RealDate as any)(...args);
               } as any;
             })());
             
@@ -363,13 +365,13 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           gapDate.setDate(baseDate.getDate() + initialStreakDays + gapDays);
           gapDate.setHours(0, 0, 0, 0);
           
-          jest.spyOn(global, 'Date').mockImplementation((() => {
+          jest.spyOn(global, 'Date').mockImplementation((function () {
             const RealDate = Date;
-            return function(this: any, ...args: any[]) {
+            return function (this: any, ...args: any[]): any {
               if (args.length === 0) {
                 return gapDate;
               }
-              return new RealDate(...args);
+              return new (RealDate as any)(...args);
             } as any;
           })());
           
@@ -407,11 +409,15 @@ function calculateExpectedStreak(completionDays: number[]): number {
   if (completionDays.length === 0) return 0;
   
   const lastDay = completionDays[completionDays.length - 1];
+  if (lastDay === undefined) return 0;
+  
   let streak = 1;
   
   // Count backwards from the last day to find consecutive streak
   for (let i = completionDays.length - 2; i >= 0; i--) {
     const currentDay = completionDays[i];
+    if (currentDay === undefined) break;
+    
     const expectedPreviousDay = lastDay - streak;
     
     if (currentDay === expectedPreviousDay) {
