@@ -310,7 +310,7 @@ contract SavingsVaultPropertyGoalsTest is Test {
             vault.contributeToGoal(0, contribAmount);
         } else {
             // Valid contribution should succeed
-            uint256 savedBefore = vault.goals(user1, 0).savedAmount;
+            (,,,uint256 savedBefore,) = vault.goals(user1, 0);
             
             vm.prank(user1);
             vault.contributeToGoal(0, contribAmount);
@@ -349,8 +349,8 @@ contract SavingsVaultPropertyGoalsTest is Test {
             uint256 amount = bound(uint256(keccak256(abi.encode(_seed, "amount", i))), 10e18, 200e18);
             
             if (vault.availableBalance(user1) >= amount) {
-                uint256 savedBefore = vault.goals(user1, goalIndex).savedAmount;
-                bool completedBefore = vault.goals(user1, goalIndex).completed;
+                (,,,uint256 savedBefore,) = vault.goals(user1, goalIndex);
+                (,,,, bool completedBefore) = vault.goals(user1, goalIndex);
                 
                 vm.prank(user1);
                 vault.contributeToGoal(goalIndex, amount);
