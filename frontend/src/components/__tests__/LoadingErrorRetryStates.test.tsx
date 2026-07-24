@@ -416,7 +416,7 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       expect(screen.queryByText(/\d+/)).not.toBeInTheDocument();
       expect(screen.queryByText(/ETH/)).not.toBeInTheDocument();
       expect(screen.queryByText(/\$/)).not.toBeInTheDocument();
-      expect(screen.queryByText(/balance/i)).toBeInTheDocument(); // Only in error message
+      expect(screen.getAllByText(/balance/i)).toHaveLength(2); // Only in heading and error message
       expect(screen.queryByTestId('Balance-data')).not.toBeInTheDocument();
 
       // Should only show error message and retry button
