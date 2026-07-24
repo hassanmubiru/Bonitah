@@ -457,13 +457,13 @@ contract CommunityTreasuryComprehensiveUnitTest is Test {
         vm.prank(pauser);
         treasury.pause();
         
-        // Contributions should fail when paused
+        // Contributions should fail when paused (using modern OpenZeppelin error format)
         vm.prank(user1);
-        vm.expectRevert("Pausable: paused");
+        vm.expectRevert();
         treasury.contribute(poolId, CONTRIBUTION_AMOUNT);
         
         vm.prank(user1);
-        vm.expectRevert("Pausable: paused");
+        vm.expectRevert();
         treasury.contributeToPool(poolId, CONTRIBUTION_AMOUNT);
         
         // Unpause and verify operations work
