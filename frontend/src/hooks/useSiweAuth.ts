@@ -1,0 +1,241 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import { useAccount, useSignMessage, useDisconnect } from 'wagmi';
+import { SiweMessage } from 'siwe';
+
+import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
+
+/**
+ * Authentication state for SIWE (Sign-In With Ethereum) flow.
+ */
+export interface AuthState {
+  /** Whether the user is currently authenticated */
+  isAuthenticated: boolean;
+  /** Whether authentication is in progress */
+  isLoading: boolean;
+  /** Authentication error if any */
+  error: string | null;
+  /** Authenticated user's address if signed in */
+  address?: string;
+  /** User's role if signed in */
+  role?: string;
+}
+
+/**
+ * SIWE authentication hook providing wallet-based sign-in functionality.
+ *
+ * Implements Requirements 2.4-2.10 for wallet connection and authentication:
+ * - Generates SIWE message with backend-issued nonce
+ * - Requests signature from connected wallet
+ * - Verifies signature with backend to establish session
+ * - Manages JWT token for authenticated requests
+ * - Handles session expiry and logout
+ */
+export function useSiweAuth() {
+  const { address, isConnected, chainId } = useAccount();
+  const { signMessageAsync } = useSignMessage();
+  const { disconnect } = useDisconnect();
+
+  const [authState, setAuthState] = useState<AuthState>({
+    isAuthenticated: false,
+    isLoading: false,
+    error: null,
+  });
+
+  // Backend API base URL
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+  /**
+   * Check if current JWT is valid and get user info
+   */
+  const checkAuth = useCallback(async () => {
+    const token = localStorage.getItem('bfn-auth-token');
+    if (!token) {
+      setAuthState((prev) => ({
+        ...prev,
+        isAuthenticated: false,
+        address: undefined,
+        role: undefined,
+      }));
+      return;
+    }
+
+    try {
+      const response = await fetch(`${apiUrl}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const user = await response.json();
+        setAuthState((prev) => ({
+          ...prev,
+          isAuthenticated: true,
+          address: user.address,
+          role: user.role,
+          error: null,
+        }));
+      } else {
+        // Token invalid, remove it
+        localStorage.removeItem('bfn-auth-token');
+        setAuthState((prev) => ({
+          ...prev,
+          isAuthenticated: false,
+          address: undefined,
+          role: undefined,
+        }));
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      setAuthState((prev) => ({ ...prev, error: 'Authentication check failed' }));
+    }
+  }, [apiUrl]);
+
+  /**
+   * Sign in with connected wallet using SIWE
+   */
+  const signIn = useCallback(async () => {
+    if (!address || !isConnected || chainId !== BASE_SEPOLIA_CHAIN_ID) {
+      setAuthState((prev) => ({
+        ...prev,
+        error: 'Please connect your wallet to Base Sepolia network',
+      }));
+      return;
+    }
+
+    setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      // Step 1: Get nonce from backend (Req 2.4)
+      const nonceResponse = await fetch(`${apiUrl}/auth/nonce`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ address }),
+      });
+
+      if (!nonceResponse.ok) {
+        throw new Error('Failed to get authentication nonce');
+      }
+
+      const { nonce } = await nonceResponse.json();
+
+      // Step 2: Create SIWE message (Req 2.4)
+      const domain = window.location.host;
+      const origin = window.location.origin;
+      const statement = 'Sign in to Bonitah Financial Network';
+
+      const message = new SiweMessage({
+        domain,
+        address,
+        statement,
+        uri: origin,
+        version: '1',
+        chainId: BASE_SEPOLIA_CHAIN_ID,
+        nonce,
+        issuedAt: new Date().toISOString(),
+        expirationTime: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutes
+      });
+
+      const messageString = message.prepareMessage();
+
+      // Step 3: Request signature from wallet (Req 2.4, 2.5)
+      const signature = await signMessageAsync({
+        message: messageString,
+      });
+
+      // Step 4: Verify signature with backend (Req 2.6-2.8)
+      const verifyResponse = await fetch(`${apiUrl}/auth/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: messageString,
+          signature,
+        }),
+      });
+
+      if (!verifyResponse.ok) {
+        const error = await verifyResponse.json();
+        throw new Error(error.message || 'Authentication verification failed');
+      }
+
+      const { jwt, address: authAddress, role } = await verifyResponse.json();
+
+      // Store JWT for future requests (Req 2.7)
+      localStorage.setItem('bfn-auth-token', jwt);
+
+      setAuthState({
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        address: authAddress,
+        role,
+      });
+    } catch (error) {
+      console.error('SIWE authentication failed:', error);
+      setAuthState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Authentication failed',
+      }));
+    }
+  }, [address, isConnected, chainId, signMessageAsync, apiUrl]);
+
+  /**
+   * Sign out and clear session
+   */
+  const signOut = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('bfn-auth-token');
+      if (token) {
+        // Notify backend of logout
+        await fetch(`${apiUrl}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Logout request failed:', error);
+    } finally {
+      // Clear local state regardless of backend response
+      localStorage.removeItem('bfn-auth-token');
+      setAuthState({
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+      });
+      disconnect();
+    }
+  }, [apiUrl, disconnect]);
+
+  // Check authentication on mount and when wallet changes
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // Clear auth state if wallet disconnects
+  useEffect(() => {
+    if (!isConnected) {
+      setAuthState((prev) => ({
+        ...prev,
+        isAuthenticated: false,
+        address: undefined,
+        role: undefined,
+      }));
+    }
+  }, [isConnected]);
+
+  return {
+    ...authState,
+    signIn,
+    signOut,
+    checkAuth,
+  };
+}
