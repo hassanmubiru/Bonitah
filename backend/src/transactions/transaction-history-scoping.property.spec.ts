@@ -283,76 +283,12 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
   });
 
   /**
-   * Property: Pagination metadata is accurate
-   * Requirements: 12.3 (proper pagination with metadata)
-   */
-  it('provides accurate pagination metadata', () => {
-    fc.assert(
-      fc.property(
-        fc.record({
-          walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}`),
-          totalEvents: fc.integer({ min: 0, max: 500 }),
-          page: fc.integer({ min: 1, max: 10 }),
-          limit: fc.integer({ min: 1, max: 100 }),
-        }),
-        async ({ walletAddress, totalEvents, page, limit }) => {
-          const effectiveLimit = Math.min(limit, 100);
-          const skip = (page - 1) * effectiveLimit;
-          const eventsOnPage = Math.max(0, Math.min(effectiveLimit, totalEvents - skip));
-
-          // Generate mock events for the current page
-          const mockEvents = Array.from({ length: eventsOnPage }, (_, i) => ({
-            id: `event-${skip + i}`,
-            contractAddress: `0x${'a'.repeat(40)}`,
-            eventName: `Event${i}`,
-            transactionHash: `0x${'b'.repeat(64)}`,
-            blockNumber: BigInt(1000 - skip - i),
-            blockHash: `0x${'c'.repeat(64)}`,
-            logIndex: i,
-            payload: {},
-            createdAt: new Date(),
-            walletAddress: walletAddress.toLowerCase(),
-          }));
-
-          // Mock Prisma responses
-          (prisma.cachedEvent.findMany as jest.Mock).mockResolvedValue(mockEvents);
-          (prisma.cachedEvent.count as jest.Mock).mockResolvedValue(totalEvents);
-
-          const result = await service.getTransactionHistory(walletAddress, { page, limit });
-
-          // Calculate expected pagination values
-          const expectedTotalPages = Math.ceil(totalEvents / effectiveLimit);
-          const expectedHasNextPage = page < expectedTotalPages;
-          const expectedHasPreviousPage = page > 1;
-
-          // Property: Pagination metadata is accurate
-          expect(result.pagination.currentPage).toBe(page);
-          expect(result.pagination.totalCount).toBe(totalEvents);
-          expect(result.pagination.totalPages).toBe(expectedTotalPages);
-          expect(result.pagination.pageSize).toBe(effectiveLimit);
-          expect(result.pagination.hasNextPage).toBe(expectedHasNextPage);
-          expect(result.pagination.hasPreviousPage).toBe(expectedHasPreviousPage);
-
-          // Property: Correct skip/take values used in query
-          expect(prisma.cachedEvent.findMany).toHaveBeenCalledWith(
-            expect.objectContaining({
-              skip: (page - 1) * effectiveLimit,
-              take: effectiveLimit,
-            }),
-          );
-        },
-      ),
-      { numRuns: 100 },
-    );
-  });
-
-  /**
    * Property: Wallet address normalization (case insensitive)
    * Requirements: 12.3 (consistent address handling)
    */
-  it('normalizes wallet addresses to lowercase for consistent querying', () => {
-    fc.assert(
-      fc.property(
+  it('normalizes wallet addresses to lowercase for consistent querying', async () => {
+    await fc.assert(
+      fc.asyncProperty(
         fc.record({
           // Mixed case wallet address
           walletAddress: fc
@@ -365,35 +301,31 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
                 .map((c) => (Math.random() > 0.5 ? c.toUpperCase() : c.toLowerCase()))
                 .join('');
             }),
-          pagination: fc.record({
-            page: fc.integer({ min: 1, max: 3 }),
+          query: fc.record({
+            cursor: fc.option(
+              fc.bigInt({ min: 1n, max: 1000000n }).map((n) => n.toString()),
+              { nil: undefined },
+            ),
             limit: fc.integer({ min: 1, max: 50 }),
           }),
         }),
-        async ({ walletAddress, pagination }) => {
+        async ({ walletAddress, query }) => {
           // Mock empty results for simplicity
           (prisma.cachedEvent.findMany as jest.Mock).mockResolvedValue([]);
-          (prisma.cachedEvent.count as jest.Mock).mockResolvedValue(0);
 
-          await service.getTransactionHistory(walletAddress, pagination);
+          await service.getTransactionHistory(walletAddress, query);
 
           // Property: Wallet address is normalized to lowercase in queries
           expect(prisma.cachedEvent.findMany).toHaveBeenCalledWith(
             expect.objectContaining({
-              where: {
+              where: expect.objectContaining({
                 walletAddress: walletAddress.toLowerCase(), // Always lowercase
-              },
+              }),
             }),
           );
-
-          expect(prisma.cachedEvent.count).toHaveBeenCalledWith({
-            where: {
-              walletAddress: walletAddress.toLowerCase(), // Always lowercase
-            },
-          });
         },
       ),
-      { numRuns: 100 },
+      { numRuns: 25 }, // Reduce runs to avoid memory issues
     );
   });
 });
