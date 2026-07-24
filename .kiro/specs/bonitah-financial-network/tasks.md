@@ -111,11 +111,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 19: Investment pool ownership share and yield are proportional and conserved**
     - **Validates: Requirements 7.1, 7.6**
 
-  - [ ] 5.7 Write property test for pool contribution records
+  - [x] 5.7 Write property test for pool contribution records
     - **Property 20: Pool contribution records amount and timestamp**
     - **Validates: Requirements 7.3**
 
-  - [ ] 5.8 Write unit, event, revert, and reentrancy tests for CommunityTreasury
+  - [x] 5.8 Write unit, event, revert, and reentrancy tests for CommunityTreasury
     - Assert `PoolCreated`/`ContributionMade`/`VoteCast`/`ActionExecuted` args, one revert test per custom error, and a reentrancy-attack test
     - _Requirements: 6.8, 13.6, 13.7, 13.8, 15.1, 15.2, 15.3_
 
@@ -272,7 +272,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Accept <=10 docs/request at <=10MB each, validate/exclude PII fields, pin content, return CID on success, and return storage error with no CID on failure
     - _Requirements: 3.5, 3.8, 3.9, 8.4_
 
-  - [ ] 15.2 Write property test for upload boundary and PII exclusion
+  - [x] 15.2 Write property test for upload boundary and PII exclusion
     - **Property 10: IPFS upload boundary validation**
     - **Validates: Requirements 3.5, 3.8**
 
