@@ -1,11 +1,5 @@
-const { TextEncoder, TextDecoder } = require('util');
-
-// Polyfills for Jest environment
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
-
 // Setup testing-library/jest-dom custom matchers
-require('@testing-library/jest-dom');
+import '@testing-library/jest-dom';
 
 // Global test utilities
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
@@ -26,11 +20,13 @@ global.matchMedia = jest.fn().mockImplementation((query) => ({
 }));
 
 // Mock CSS modules
-Object.defineProperty(window, 'CSS', {
-  value: {
-    supports: jest.fn().mockReturnValue(false),
-  },
-});
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'CSS', {
+    value: {
+      supports: jest.fn().mockReturnValue(false),
+    },
+  });
+}
 
 // Mock localStorage
 const localStorageMock = {
@@ -39,7 +35,11 @@ const localStorageMock = {
   removeItem: jest.fn(),
   clear: jest.fn(),
 };
-global.localStorage = localStorageMock;
+if (typeof global !== 'undefined') {
+  global.localStorage = localStorageMock;
+}
 
 // Mock fetch
-global.fetch = jest.fn();
+if (typeof global !== 'undefined') {
+  global.fetch = jest.fn();
+}
