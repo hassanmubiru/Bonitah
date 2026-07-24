@@ -901,3 +901,81 @@ describe('Authentication Flow Component Tests', () => {
       // Error should be displayed
       expect(screen.getByText('User rejected signing')).toBeInTheDocument();
     });
+    it('shows loading state during sign-in attempt', () => {
+      mockAuthState.isLoading = true;
+      mockAuthState.error = null;
+
+      render(<AuthPage />);
+
+      // Should show loading state
+      expect(screen.getByRole('button', { name: /signing in.../i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /signing in.../i })).toBeDisabled();
+
+      // Should not show any error
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * Test Success Path and General Auth Flow
+   */
+  describe('Success Path Tests', () => {
+    beforeEach(() => {
+      mockUseAccount.mockReturnValue({
+        isConnected: true,
+        address: testAddress,
+        chainId: 84532,
+      });
+    });
+
+    it('completes full authentication flow successfully', async () => {
+      const user = userEvent.setup();
+
+      render(<AuthPage />);
+
+      // Step 1 should be completed (wallet connected)
+      expect(screen.getByText('Wallet Connected')).toBeInTheDocument();
+      
+      // Step 2 should be available
+      expect(screen.getByText('Step 2: Sign Authentication Message')).toBeInTheDocument();
+      const signInButton = screen.getByRole('button', { name: /sign in with ethereum/i });
+      expect(signInButton).toBeEnabled();
+
+      await user.click(signInButton);
+      expect(mockSignIn).toHaveBeenCalled();
+    });
+
+    it('redirects to dashboard when authentication succeeds', async () => {
+      // Mock authenticated state
+      mockAuthState.isAuthenticated = true;
+      mockAuthState.address = testAddress;
+
+      render(<AuthPage />);
+
+      // Should trigger redirect
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith('/dashboard');
+      });
+    });
+
+    it('shows redirecting state when authenticated', () => {
+      mockAuthState.isAuthenticated = true;
+      mockAuthState.address = testAddress;
+
+      render(<AuthPage />);
+
+      // Should show redirecting UI instead of auth form
+      expect(screen.getByText('Redirecting to dashboard...')).toBeInTheDocument();
+      expect(screen.queryByText('Welcome to BFN')).not.toBeInTheDocument();
+    });
+
+    it('displays help text and security information', () => {
+      render(<AuthPage />);
+
+      // Should show security help text
+      expect(screen.getByText('Secure Wallet-Based Authentication')).toBeInTheDocument();
+      expect(screen.getByText('No passwords or personal information required')).toBeInTheDocument();
+      expect(screen.getByText('Your wallet signature proves ownership')).toBeInTheDocument();
+      expect(screen.getByText('All financial data comes from the blockchain')).toBeInTheDocument();
+      expect(screen.getByText('You maintain full control of your funds')).toBeInTheDocument();
+    });
