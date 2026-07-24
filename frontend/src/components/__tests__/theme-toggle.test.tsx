@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
@@ -12,7 +12,6 @@ expect.extend(toHaveNoViolations);
 // Mock next-themes with controllable state
 let mockTheme = 'light';
 let mockSetTheme = jest.fn();
-let mockMounted = true;
 
 jest.mock('next-themes', () => ({
   useTheme: () => ({
