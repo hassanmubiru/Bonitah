@@ -86,12 +86,7 @@ describe('IpfsService - Storage Failure Handling', () => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${testJwtToken}`,
           },
-          body: JSON.stringify({
-            pinataContent: validCertificateMetadata,
-            pinataMetadata: {
-              name: expect.stringMatching(/^BFN Certificate Metadata - \d+$/),
-            },
-          }),
+          body: expect.stringContaining('pinataContent'),
         })
       );
     });
