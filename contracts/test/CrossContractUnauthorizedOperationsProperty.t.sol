@@ -89,6 +89,8 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
         registry.grantRole(BFNRoles.REPUTATION_ROLE, authorizedUser);
         governance.grantRole(BFNRoles.TREASURY_ROLE, authorizedUser);
         education.grantRole(BFNRoles.ISSUER_ROLE, authorizedUser);
+        // Grant REPUTATION_ROLE to Education contract so it can increase reputation
+        registry.grantRole(BFNRoles.REPUTATION_ROLE, address(education));
         vm.stopPrank();
         
         // Setup a registered user for testing
