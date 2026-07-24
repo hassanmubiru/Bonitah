@@ -265,7 +265,7 @@ export class AiService {
     } catch (error) {
       // On read failure, mark as unavailable (Req 10.9)
       context.push('User reputation score: unavailable (unable to read from blockchain)');
-      this.logger.warn(`Failed to read user profile for ${walletAddress}`, error);
+      this.logger.warn(`Failed to read user profile for ${address}`, error);
     }
 
     return context.length > 0 ? context.join('\n') : 'No financial data available at this time.';
@@ -274,7 +274,7 @@ export class AiService {
   /**
    * Build the system prompt with strict scope and transaction prohibition (Req 10.1, 10.2).
    */
-  private buildSystemPrompt(financialContext: string, walletAddress: string): string {
+  private buildSystemPrompt(financialContext: string, address: string): string {
     return `You are a financial assistant for Bonitah Financial Network (BFN), helping users with personal finance education and guidance.
 
 CRITICAL CONSTRAINTS:
@@ -293,7 +293,7 @@ SCOPE OF ASSISTANCE:
 - Financial planning methodologies
 
 USER CONTEXT:
-Wallet Address: ${walletAddress}
+Wallet Address: ${address}
 Current Financial Data:
 ${financialContext}
 
