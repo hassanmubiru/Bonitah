@@ -499,3 +499,76 @@ contract SavingsVaultTask4_7Test is Test {
         // Verify the original withdrawal succeeded
         assertEq(vault.depositedBalance(address(attacker)), 1500e18);
     }
+    
+    /// @notice Test reentrancy protection on contributeToGoal function
+    function testReentrancyProtection_ContributeToGoal() public {
+        // Setup: deposit and create goal
+        vm.prank(address(attacker));
+        attacker.attackDeposit(3000e18);
+        
+        vm.prank(address(attacker));
+        vault.createGoal(2000e18, block.timestamp + 30 days);
+        
+        // Reset attack counters
+        attacker.resetCounters();
+        
+        // Attempt reentrancy attack on contributeToGoal
+        vm.prank(address(attacker));
+        attacker.attackContributeToGoal(0, 500e18);
+        
+        // Verify no reentrancy occurred
+        assertEq(attacker.contributeAttempts(), 0, "No reentrancy should occur on contributeToGoal");
+        assertEq(attacker.depositAttempts(), 0, "No reentrancy should occur on contributeToGoal");
+        
+        // Verify the original contribution succeeded
+        (,,,uint256 savedAmount,) = vault.goals(address(attacker), 0);
+        assertEq(savedAmount, 500e18);
+    }
+    
+    /// @notice Test reentrancy protection on lockFunds function
+    function testReentrancyProtection_LockFunds() public {
+        // Setup: deposit funds
+        vm.prank(address(attacker));
+        attacker.attackDeposit(2000e18);
+        
+        // Reset attack counters
+        attacker.resetCounters();
+        
+        // Attempt reentrancy attack on lockFunds
+        vm.prank(address(attacker));
+        attacker.attackLockFunds(300e18, 7 days);
+        
+        // Verify no reentrancy occurred
+        assertEq(attacker.lockAttempts(), 0, "No reentrancy should occur on lockFunds");
+        assertEq(attacker.depositAttempts(), 0, "No reentrancy should occur on lockFunds");
+        
+        // Verify the original lock succeeded
+        assertEq(vault.lockedTotal(address(attacker)), 300e18);
+    }
+    
+    /// @notice Test reentrancy protection on withdrawLocked function
+    function testReentrancyProtection_WithdrawLocked() public {
+        // Setup: deposit and lock funds
+        vm.prank(address(attacker));
+        attacker.attackDeposit(2000e18);
+        
+        vm.prank(address(attacker));
+        attacker.attackLockFunds(400e18, 1 days);
+        
+        // Move time forward past lock expiry
+        vm.warp(block.timestamp + 1 days + 1);
+        
+        // Reset attack counters
+        attacker.resetCounters();
+        
+        // Attempt reentrancy attack on withdrawLocked
+        vm.prank(address(attacker));
+        attacker.attackWithdrawLocked(0);
+        
+        // Verify no reentrancy occurred
+        assertEq(attacker.unlockAttempts(), 0, "No reentrancy should occur on withdrawLocked");
+        assertEq(attacker.withdrawAttempts(), 0, "No reentrancy should occur on withdrawLocked");
+        
+        // Verify the original unlock succeeded
+        assertEq(vault.lockedTotal(address(attacker)), 0);
+    }

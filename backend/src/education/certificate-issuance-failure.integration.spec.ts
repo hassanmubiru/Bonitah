@@ -37,6 +37,19 @@ describe('Certificate Issuance and Failure Integration (Task 16.4)', () => {
           },
         }),
       ],
+      providers: [
+        {
+          provide: PrismaService,
+          useValue: {
+            course: {
+              findUnique: jest.fn(),
+            },
+            lessonProgress: {
+              count: jest.fn(),
+            },
+          },
+        },
+      ],
     })
       .overrideProvider(ConfigService)
       .useValue({
