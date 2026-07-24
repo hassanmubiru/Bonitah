@@ -175,3 +175,62 @@ describe('Certificate Issuance and Failure Integration (Task 16.4)', () => {
       };
 
       // Setup successful completion check
+      (prismaService.course.findUnique as jest.Mock).mockResolvedValue(mockCourse);
+      (prismaService.lessonProgress.count as jest.Mock).mockResolvedValue(2);
+
+      // Mock IPFS failure
+      const ipfsError = new Error('IPFS network timeout');
+      (ipfsService.storeCertificateMetadata as jest.Mock).mockRejectedValue(ipfsError);
+
+      // Verify error is thrown
+      await expect(educationService.issueCertificate(userId, walletAddress, courseId))
+        .rejects.toThrow(InternalServerErrorException);
+
+      try {
+        await educationService.issueCertificate(userId, walletAddress, courseId);
+      } catch (error: any) {
+        expect(error).toBeInstanceOf(InternalServerErrorException);
+        expect(error.message).toContain('Certificate metadata storage failed');
+      }
+      
+      // Verify IPFS was attempted but failed
+      expect(ipfsService.storeCertificateMetadata).toHaveBeenCalledWith({
+        recipient: walletAddress,
+        courseId: mockCourse.onChainId,
+        courseTitle: 'Course with IPFS Failure',
+        issuer: 'Bonitah Financial Network',
+        version: '1.0',
+        issuedAt: expect.any(String),
+      });
+    });
+
+    it('should handle IPFS timeout gracefully without state mutation', async () => {
+      const courseId = 'timeout-course';
+      const userId = 'test-user-id';
+      const walletAddress = '0x1234567890123456789012345678901234567890';
+      
+      const mockCourse = {
+        id: courseId,
+        onChainId: '0x0000000000000000000000000000000000000000000000000000000000000005',
+        title: 'Timeout Test Course',
+        lessons: [{ id: 'lesson-1' }],
+      };
+
+      (prismaService.course.findUnique as jest.Mock).mockResolvedValue(mockCourse);
+      (prismaService.lessonProgress.count as jest.Mock).mockResolvedValue(1);
+
+      // Mock IPFS timeout
+      (ipfsService.storeCertificateMetadata as jest.Mock).mockRejectedValue(
+        new Error('Request timeout after 30s')
+      );
+
+      await expect(educationService.issueCertificate(userId, walletAddress, courseId))
+        .rejects.toThrow(InternalServerErrorException);
+      
+      // Verify completion check was done but no mutation occurred
+      expect(prismaService.course.findUnique).toHaveBeenCalled();
+      expect(prismaService.lessonProgress.count).toHaveBeenCalled();
+      expect(ipfsService.storeCertificateMetadata).toHaveBeenCalled();
+    });
+
+    it('should handle IPFS service unavailable error without side effects', async () => {
