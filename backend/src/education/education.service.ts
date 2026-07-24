@@ -269,7 +269,7 @@ export class EducationService {
         issueCertificate: (args: [string, string, string]) => Promise<string>;
       }
 
-      const txHash = await (educationContract.write as ContractWrite).issueCertificate([
+      const txHash = await (educationContract.write as unknown as ContractWrite).issueCertificate([
         walletAddress as `0x${string}`,
         course.onChainId as `0x${string}`,
         cid,
