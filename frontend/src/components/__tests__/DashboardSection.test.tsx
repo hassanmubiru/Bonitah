@@ -289,13 +289,28 @@ describe('Component Tests for Loading/Error/Retry States', () => {
     });
 
     it('applies timeout behavior per section independently', async () => {
-      // Mock different behaviors for different sections
-      mockPublicClient.readContract.mockImplementation((params) => {
-        if (params.functionName === 'balanceOf') {
-          return Promise.resolve(1000n); // Succeeds quickly
+      // Mock different states for different sections using implementation based on function name
+      let callCount = 0;
+      mockUseContractRead.mockImplementation((options: any) => {
+        callCount++;
+        if (options.functionName === 'balanceOf') {
+          return {
+            data: 1000n,
+            isLoading: false,
+            isError: false,
+            error: null,
+            refetch: jest.fn(),
+          };
+        } else {
+          // portfolioValue fails (simulating timeout)
+          return {
+            data: undefined,
+            isLoading: false,
+            isError: true,
+            error: { name: 'ContractReadError', message: 'Request timeout' } as any,
+            refetch: jest.fn(),
+          };
         }
-        // portfolioValue fails (simulating timeout)
-        return Promise.reject(new Error('Request timeout'));
       });
 
       render(
@@ -305,14 +320,12 @@ describe('Component Tests for Loading/Error/Retry States', () => {
         </TestWrapper>,
       );
 
-      await waitFor(() => {
-        // Balance succeeds
-        expect(screen.getByTestId('Balance-data')).toBeInTheDocument();
-        expect(screen.getByText('1000 ETH')).toBeInTheDocument();
+      // Balance succeeds
+      expect(screen.getByTestId('Balance-data')).toBeInTheDocument();
+      expect(screen.getByText('1000 ETH')).toBeInTheDocument();
 
-        // Portfolio fails (timeout) - Req 11.5
-        expect(screen.getByTestId('Portfolio-error')).toBeInTheDocument();
-      });
+      // Portfolio fails (timeout) - Req 11.5
+      expect(screen.getByTestId('Portfolio-error')).toBeInTheDocument();
 
       // Balance should remain successful
       expect(screen.getByTestId('Balance-data')).toBeInTheDocument();
