@@ -130,6 +130,14 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           // Execute phase 1 indexing
           const indexNewBlocks = (indexerService as any).indexNewBlocks.bind(indexerService);
           console.log(`Phase 1: About to call indexNewBlocks. initialBlock=${initialBlock}, interruptionPoint=${interruptionPoint}`);
+          
+          // Add debugging for state retrieval
+          const getIndexerState = (indexerService as any).getIndexerState.bind(indexerService);
+          const state = await getIndexerState();
+          const currentBlockNumber = await mockPublicClient.getBlockNumber();
+          console.log(`Phase 1: State - lastIndexedBlock=${state.lastIndexedBlock}, currentBlock=${currentBlockNumber}`);
+          console.log(`Phase 1: Condition check - ${state.lastIndexedBlock} >= ${currentBlockNumber} = ${state.lastIndexedBlock >= currentBlockNumber}`);
+          
           await indexNewBlocks();
           console.log(`Phase 1: indexNewBlocks completed. Processed blocks: ${phase1ProcessedBlocks.length}, getLogs calls: ${getLogsCalls}`);
 

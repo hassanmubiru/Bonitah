@@ -73,11 +73,15 @@ describe('Event Indexer 60s Timing (e2e)', () => {
 
   afterAll(async () => {
     // Stop the indexer service cleanly
-    await indexerService.stopIndexing();
+    if (indexerService) {
+      await indexerService.stopIndexing();
+    }
     
     // Clean up test data
-    await prisma.cachedEvent.deleteMany({});
-    await prisma.indexerState.deleteMany({});
+    if (prisma) {
+      await prisma.cachedEvent.deleteMany({});
+      await prisma.indexerState.deleteMany({});
+    }
     await app?.close();
   });
 
