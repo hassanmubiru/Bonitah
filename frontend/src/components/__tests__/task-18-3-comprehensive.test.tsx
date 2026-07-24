@@ -216,10 +216,10 @@ describe('Task 18.3: Comprehensive Frontend Foundation Tests', () => {
       render(<TestApp />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /switch to dark theme/i })).toBeInTheDocument();
       });
 
-      const themeButton = screen.getByRole('button');
+      const themeButton = screen.getByRole('button', { name: /switch/i });
 
       // Rapidly switch themes
       await user.click(themeButton); // light -> dark
@@ -303,7 +303,7 @@ describe('Task 18.3: Comprehensive Frontend Foundation Tests', () => {
       setViewportSize(375);
       render(<TestApp />);
 
-      const themeButton = screen.getByRole('button');
+      const themeButton = screen.getByRole('button', { name: /switch/i });
 
       // Should have touch-friendly size (36px minimum)
       expect(themeButton).toHaveClass('h-9', 'w-9');
