@@ -2,11 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { ConfigService } from '@nestjs/config';
+import { LoggerModule } from 'nestjs-pino';
 
-import { AppModule } from '../app.module';
+import { EducationModule } from './education.module';
 import { PrismaService } from '../prisma/prisma.service';
 import { IpfsService } from '../ipfs/ipfs.service';
 import { EnvService } from '../config/env.service';
+import { AuthModule } from '../auth/auth.module';
 
 /**
  * Integration tests for Task 16.4: Certificate issuance and failure handling.
@@ -26,7 +28,15 @@ describe('Certificate Issuance and Failure Integration (Task 16.4)', () => {
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [
+        EducationModule,
+        AuthModule,
+        LoggerModule.forRoot({
+          pinoHttp: {
+            level: 'silent', // Disable logging in tests
+          },
+        }),
+      ],
     })
       .overrideProvider(ConfigService)
       .useValue({

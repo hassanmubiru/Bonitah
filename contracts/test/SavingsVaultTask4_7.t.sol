@@ -435,3 +435,67 @@ contract SavingsVaultTask4_7Test is Test {
         vm.prank(user1);
         vault.lockFunds(LOCK_AMOUNT, tooLong);
     }
+    
+    /// @notice Test LockNotExpired error when trying to withdraw before expiry
+    function testRevert_LockNotExpired() public {
+        // Deposit and lock funds
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        vm.prank(user1);
+        vault.lockFunds(LOCK_AMOUNT, LOCK_DURATION);
+        
+        uint256 currentTime = block.timestamp;
+        uint256 expectedExpiry = currentTime + LOCK_DURATION;
+        
+        // Try to withdraw immediately (before expiry)
+        vm.expectRevert(abi.encodeWithSelector(
+            ISavingsVault.LockNotExpired.selector,
+            currentTime,
+            expectedExpiry
+        ));
+        vm.prank(user1);
+        vault.withdrawLocked(0);
+    }
+
+    // ================================================================================
+    // REENTRANCY ATTACK TEST (Req 4.6, 15.3)
+    // ================================================================================
+    
+    /// @notice Test reentrancy protection on deposit function
+    function testReentrancyProtection_Deposit() public {
+        // Reset attack counters
+        attacker.resetCounters();
+        
+        // Attempt reentrancy attack on deposit
+        vm.prank(address(attacker));
+        attacker.attackDeposit(1000e18);
+        
+        // Verify no reentrancy occurred
+        assertEq(attacker.depositAttempts(), 0, "No reentrancy should occur on deposit");
+        assertEq(attacker.withdrawAttempts(), 0, "No reentrancy should occur on deposit");
+        
+        // Verify the original deposit succeeded
+        assertEq(vault.depositedBalance(address(attacker)), 1000e18);
+    }
+    
+    /// @notice Test reentrancy protection on withdraw function  
+    function testReentrancyProtection_Withdraw() public {
+        // First deposit some funds
+        vm.prank(address(attacker));
+        attacker.attackDeposit(2000e18);
+        
+        // Reset attack counters
+        attacker.resetCounters();
+        
+        // Attempt reentrancy attack on withdraw
+        vm.prank(address(attacker));
+        attacker.attackWithdraw(500e18);
+        
+        // Verify no reentrancy occurred
+        assertEq(attacker.depositAttempts(), 0, "No reentrancy should occur on withdraw");
+        assertEq(attacker.withdrawAttempts(), 0, "No reentrancy should occur on withdraw");
+        
+        // Verify the original withdrawal succeeded
+        assertEq(vault.depositedBalance(address(attacker)), 1500e18);
+    }
