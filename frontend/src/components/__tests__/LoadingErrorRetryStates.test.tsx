@@ -9,18 +9,20 @@
  */
 
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { type Address, type Abi } from 'viem';
 
-// Mock the hooks module
-jest.mock('@/hooks/useContractRead');
+// Define the contract read state interface
+interface ContractReadState<TData> {
+  data: TData | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: { name: string; message: string } | null;
+  refetch: () => void;
+}
 
-import { useContractRead } from '@/hooks/useContractRead';
-
-const mockUseContractRead = useContractRead as jest.MockedFunction<typeof useContractRead>;
-
-// Test component that uses the read hooks to demonstrate loading/error/retry states
+// Test component that simulates how a real dashboard section would use the read hooks
 interface DashboardSectionProps {
   title: string;
   contractAddress: Address;
@@ -29,6 +31,8 @@ interface DashboardSectionProps {
   args: readonly unknown[];
   enabled?: boolean;
   formatValue?: (value: unknown) => string;
+  // For testing: inject mock state directly
+  mockState?: ContractReadState<unknown>;
 }
 
 function DashboardSection({
@@ -38,15 +42,18 @@ function DashboardSection({
   functionName,
   args,
   enabled = true,
-  formatValue = (value) => String(value)
+  formatValue = (value) => String(value),
+  mockState
 }: DashboardSectionProps) {
-  const { data, isLoading, isError, error, refetch } = useContractRead({
-    address: contractAddress,
-    abi,
-    functionName,
-    args,
-    enabled,
-  });
+  // In a real component, this would be: useContractRead({ address, abi, functionName, args, enabled })
+  // For testing, we use the injected mock state
+  const { data, isLoading, isError, error, refetch } = mockState || {
+    data: undefined,
+    isLoading: false,
+    isError: false,
+    error: null,
+    refetch: () => {},
+  };
 
   if (isLoading) {
     return (
