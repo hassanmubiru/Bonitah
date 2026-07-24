@@ -5,6 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {CommunityTreasury} from "../src/CommunityTreasury.sol";
 import {ICommunityTreasury} from "../src/interfaces/ICommunityTreasury.sol";
 import {MockERC20} from "../src/mocks/MockERC20.sol";
+import {MaliciousERC20} from "./mocks/MaliciousERC20.sol";
 import {ReentrancyAttacker} from "./mocks/ReentrancyAttacker.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";

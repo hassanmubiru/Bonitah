@@ -314,7 +314,7 @@ describe('Certificate Issuance and Failure Integration (Task 16.4)', () => {
     });
 
     it('should validate course ID format', async () => {
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/education/courses//certificate') // Empty course ID
         .set('Authorization', authToken)
         .expect(404);

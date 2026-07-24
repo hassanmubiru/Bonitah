@@ -57,3 +57,111 @@ contract SavingsVaultTask4_7Test is Test {
         );
         ERC1967Proxy vaultProxy = new ERC1967Proxy(address(vaultImpl), vaultData);
         vault = SavingsVault(address(vaultProxy));
+        
+        // Deploy reentrancy attacker
+        attacker = new SavingsVaultReentrancyAttacker(vault, token);
+        
+        // Mint tokens to test accounts
+        token.mint(user1, INITIAL_BALANCE);
+        token.mint(user2, INITIAL_BALANCE);
+        token.mint(unregistered, INITIAL_BALANCE);
+        token.mint(address(attacker), INITIAL_BALANCE);
+        
+        // Register test users (except unregistered)
+        vm.prank(user1);
+        registry.register();
+        
+        vm.prank(user2);
+        registry.register();
+        
+        vm.prank(address(attacker));
+        registry.register();
+        
+        // Approve vault to spend tokens
+        vm.prank(user1);
+        token.approve(address(vault), type(uint256).max);
+        
+        vm.prank(user2);
+        token.approve(address(vault), type(uint256).max);
+        
+        vm.prank(unregistered);
+        token.approve(address(vault), type(uint256).max);
+        
+        // Setup attacker with token approvals
+        attacker.setup(type(uint256).max);
+    }
+
+    // ================================================================================
+    // EVENT ASSERTION TESTS (Req 13.2, 13.3, 13.4, 13.5)
+    // ================================================================================
+    
+    /// @notice Test DepositMade event emission with correct args (Req 13.2)
+    function testDepositEventEmission() public {
+        vm.expectEmit(true, false, false, true, address(vault));
+        emit DepositMade(user1, DEPOSIT_AMOUNT);
+        
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        // Verify state change occurred
+        assertEq(vault.depositedBalance(user1), DEPOSIT_AMOUNT);
+    }
+    
+    /// @notice Test WithdrawalMade event emission with correct args (Req 13.3)
+    function testWithdrawEventEmission() public {
+        // First deposit to have balance
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        vm.expectEmit(true, false, false, true, address(vault));
+        emit WithdrawalMade(user1, WITHDRAW_AMOUNT);
+        
+        vm.prank(user1);
+        vault.withdraw(WITHDRAW_AMOUNT);
+        
+        // Verify state change occurred
+        assertEq(vault.depositedBalance(user1), DEPOSIT_AMOUNT - WITHDRAW_AMOUNT);
+    }
+    
+    /// @notice Test GoalCreated event emission with correct args (Req 13.4)
+    function testGoalCreatedEventEmission() public {
+        uint256 targetDate = block.timestamp + 30 days;
+        
+        vm.expectEmit(true, true, false, true, address(vault));
+        emit GoalCreated(user1, 0, GOAL_TARGET, targetDate);
+        
+        vm.prank(user1);
+        vault.createGoal(GOAL_TARGET, targetDate);
+        
+        // Verify goal was created correctly
+        (uint256 id, uint256 target, uint256 date, uint256 saved, bool completed) = vault.goals(user1, 0);
+        assertEq(id, 0);
+        assertEq(target, GOAL_TARGET);
+        assertEq(date, targetDate);
+        assertEq(saved, 0);
+        assertFalse(completed);
+    }
+    
+    /// @notice Test GoalCompleted event emission when goal reaches target (Req 13.5)
+    function testGoalCompletedEventEmission() public {
+        uint256 targetDate = block.timestamp + 30 days;
+        
+        // Deposit and create goal
+        vm.prank(user1);
+        vault.deposit(GOAL_TARGET);
+        
+        vm.prank(user1);
+        vault.createGoal(GOAL_TARGET, targetDate);
+        
+        // Contribute exactly the target amount to complete goal
+        vm.expectEmit(true, true, false, false, address(vault));
+        emit GoalCompleted(user1, 0);
+        
+        vm.prank(user1);
+        vault.contributeToGoal(0, GOAL_TARGET);
+        
+        // Verify goal is completed
+        (,,, uint256 saved, bool completed) = vault.goals(user1, 0);
+        assertEq(saved, GOAL_TARGET);
+        assertTrue(completed);
+    }
