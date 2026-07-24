@@ -87,8 +87,10 @@ describe('Event Indexer 60s Timing (e2e)', () => {
 
   beforeEach(async () => {
     // Clean up test data between tests
-    await prisma.cachedEvent.deleteMany({});
-    await prisma.indexerState.deleteMany({});
+    if (prisma) {
+      await prisma.cachedEvent.deleteMany({});
+      await prisma.indexerState.deleteMany({});
+    }
   });
 
   describe('60-Second Indexing Timing Requirement', () => {
