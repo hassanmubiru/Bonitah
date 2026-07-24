@@ -979,3 +979,89 @@ describe('Authentication Flow Component Tests', () => {
       expect(screen.getByText('All financial data comes from the blockchain')).toBeInTheDocument();
       expect(screen.getByText('You maintain full control of your funds')).toBeInTheDocument();
     });
+    it('shows proper step indicators throughout the flow', () => {
+      // Test with unconnected wallet
+      const { rerender } = render(<AuthPage />);
+
+      // Step 1 should be inactive
+      const step1Indicator = screen.getByText('Step 1: Connect Your Wallet')
+        .parentElement?.querySelector('.h-2.w-2.rounded-full');
+      expect(step1Indicator).toHaveClass('bg-gray-300');
+
+      // Connect wallet
+      mockUseAccount.mockReturnValue({
+        isConnected: true,
+        address: testAddress,
+        chainId: 84532,
+      });
+
+      rerender(<AuthPage />);
+
+      // Step 1 should be completed
+      expect(step1Indicator).toHaveClass('bg-green-500');
+
+      // Step 2 should be inactive
+      const step2Indicator = screen.getByText('Step 2: Sign Authentication Message')
+        .parentElement?.querySelector('.h-2.w-2.rounded-full');
+      expect(step2Indicator).toHaveClass('bg-gray-300');
+
+      // Authenticate
+      mockAuthState.isAuthenticated = true;
+
+      rerender(<AuthPage />);
+
+      // Should show redirect state (both steps completed conceptually)
+      expect(screen.getByText('Redirecting to dashboard...')).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * Test Edge Cases and Error Recovery
+   */
+  describe('Edge Cases and Error Recovery', () => {
+    it('handles rapid state changes gracefully', () => {
+      const { rerender } = render(<AuthPage />);
+
+      // Rapid state changes
+      mockAuthState.isLoading = true;
+      rerender(<AuthPage />);
+
+      mockAuthState.isLoading = false;
+      mockAuthState.error = 'Test error';
+      rerender(<AuthPage />);
+
+      mockAuthState.error = null;
+      mockAuthState.isAuthenticated = true;
+      rerender(<AuthPage />);
+
+      // Should handle the final state correctly
+      expect(screen.getByText('Redirecting to dashboard...')).toBeInTheDocument();
+    });
+
+    it('maintains stable UI during loading states', () => {
+      mockUseAccount.mockReturnValue({
+        isConnected: true,
+        address: testAddress,
+        chainId: 84532,
+      });
+      mockAuthState.isLoading = true;
+
+      render(<AuthPage />);
+
+      // UI should remain stable during loading
+      expect(screen.getByText('Welcome to BFN')).toBeInTheDocument();
+      expect(screen.getByText('Step 1: Connect Your Wallet')).toBeInTheDocument();
+      expect(screen.getByText('Step 2: Sign Authentication Message')).toBeInTheDocument();
+      
+      // Button should show loading state
+      expect(screen.getByRole('button', { name: /signing in.../i })).toBeDisabled();
+    });
+
+    it('handles auth check on component mount', () => {
+      render(<AuthPage />);
+
+      // Should call checkAuth during mount
+      expect(mockCheckAuth).toHaveBeenCalled();
+    });
+  });
+});
