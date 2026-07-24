@@ -62,6 +62,12 @@ describe('Property 32: Indexing resumes gaplessly', () => {
 
     // Replace the public client with our mock
     (indexerService as any).publicClient = mockPublicClient;
+    
+    // Add some monitored contracts so getLogs doesn't return early
+    (indexerService as any).monitoredContracts = [
+      '0x1234567890123456789012345678901234567890',
+      '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'
+    ];
   });
 
   /**
