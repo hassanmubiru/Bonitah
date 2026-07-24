@@ -616,11 +616,12 @@ contract SavingsVaultTask4_7Test is Test {
         assertEq(attacker.unlockAttempts(), 0, "No unlock reentrancy should occur");
         
         // Verify all original operations succeeded
-        assertTrue(vault.depositedBalance(address(attacker)) > 5000e18, "Deposits should have succeeded");
+        // Expected balance: initial 5000 + 100 (new deposit) - 100 (withdraw) = 5000
+        assertEq(vault.depositedBalance(address(attacker)), 5000e18, "Final deposited balance should be 5000");
         assertEq(vault.lockedTotal(address(attacker)), 0, "Lock should have been released");
         
         (,,,uint256 savedAmount,) = vault.goals(address(attacker), 0);
-        assertTrue(savedAmount > 0, "Goal contribution should have succeeded");
+        assertEq(savedAmount, 100e18, "Goal contribution should have succeeded");
     }
 
     // ================================================================================
