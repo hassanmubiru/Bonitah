@@ -60,80 +60,27 @@ jest.mock('@/hooks/useSiweAuth', () => ({
 }));
 
 // Mock NetworkGuard to control network behavior
-const mockNetworkGuard = jest.fn();
+const mockNetworkGuard = jest.fn(({ children }: { children: React.ReactNode }) => (
+  <div data-testid="network-guard">{children}</div>
+));
 jest.mock('@/components/NetworkGuard', () => ({
-  NetworkGuard: ({ children, onNetworkSwitched }: { children: React.ReactNode; onNetworkSwitched?: () => void }) => {
-    mockNetworkGuard({ onNetworkSwitched });
-    return <div data-testid="network-guard">{children}</div>;
-  },
+  NetworkGuard: mockNetworkGuard,
 }));
 
 // Mock ConnectButton for wallet interaction testing
-const mockConnectButton = jest.fn();
 jest.mock('@rainbow-me/rainbowkit', () => ({
-  ConnectButton: (props: any) => {
-    mockConnectButton(props);
-    return (
-      <button data-testid="connect-button" onClick={() => mockConnectButton.onClick?.()}>
-        Mock Connect Button
-      </button>
-    );
-  },
-  RainbowKitProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  ConnectButton: (props: any) => (
+    <button data-testid="connect-button">
+      Mock Connect Button
+    </button>
+  ),
 }));
 
-// Test wrapper with providers
-function TestWrapper({ 
-  children, 
-  mockAccount = null,
-  mockChainId = BASE_SEPOLIA_CHAIN_ID 
-}: { 
-  children: React.ReactNode;
-  mockAccount?: { address: Address; isConnected: boolean } | null;
-  mockChainId?: number;
-}) {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-        gcTime: 0,
-      },
-    },
-  });
-
-  // Create mock wagmi config for testing
-  const config = createConfig({
-    chains: [baseSepolia],
-    connectors: [
-      mock({
-        accounts: mockAccount ? [mockAccount.address] : [],
-        chainId: mockChainId,
-        features: {
-          connectError: false,
-          reconnect: true,
-          signMessageError: false,
-          switchChainError: false,
-        },
-      }),
-    ],
-    transports: {
-      [baseSepolia.id]: http(),
-    },
-  });
-
-  return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
-          {children}
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
-  );
-}
+// Import after mocks
+import AuthPage from '@/app/auth/page';
 
 describe('Authentication Flow Component Tests', () => {
-  const testAddress = '0x1234567890123456789012345678901234567890' as Address;
+  const testAddress = '0x1234567890123456789012345678901234567890';
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -143,7 +90,66 @@ describe('Authentication Flow Component Tests', () => {
       error: null,
     };
     mockPush.mockClear();
+    mockUseAccount.mockReturnValue({
+      isConnected: false,
+      address: undefined,
+      chainId: undefined,
+    });
   });
+
+  /**
+   * Test Requirement 2.2: Handle wallet connection failures gracefully
+   */
+  describe('Connect Failure Tests (Req 2.2)', () => {
+    it('displays connection step when wallet is not connected', () => {
+      render(<AuthPage />);
+
+      // Should render the connection step
+      expect(screen.getByText('Step 1: Connect Your Wallet')).toBeInTheDocument();
+      expect(screen.getByTestId('connect-button')).toBeInTheDocument();
+
+      // Should not show authentication step when not connected
+      expect(screen.queryByText('Step 2: Sign Authentication Message')).not.toBeInTheDocument();
+    });
+
+    it('shows inactive step indicator when wallet not connected', () => {
+      render(<AuthPage />);
+
+      // Connection step indicator should not be completed
+      const stepIndicator = screen.getByText('Step 1: Connect Your Wallet')
+        .parentElement?.querySelector('.h-2.w-2.rounded-full');
+      expect(stepIndicator).toHaveClass('bg-gray-300');
+      expect(stepIndicator).not.toHaveClass('bg-green-500');
+    });
+
+    it('handles wallet disconnection gracefully during auth flow', () => {
+      // Start with connected wallet
+      mockUseAccount.mockReturnValue({
+        isConnected: true,
+        address: testAddress,
+        chainId: 84532,
+      });
+
+      const { rerender } = render(<AuthPage />);
+
+      // Should show both steps when connected
+      expect(screen.getByText('Step 1: Connect Your Wallet')).toBeInTheDocument();
+      expect(screen.getByText('Step 2: Sign Authentication Message')).toBeInTheDocument();
+
+      // Simulate wallet disconnection
+      mockUseAccount.mockReturnValue({
+        isConnected: false,
+        address: undefined,
+        chainId: undefined,
+      });
+
+      rerender(<AuthPage />);
+
+      // Should revert to connection-only state
+      expect(screen.getByText('Step 1: Connect Your Wallet')).toBeInTheDocument();
+      expect(screen.queryByText('Step 2: Sign Authentication Message')).not.toBeInTheDocument();
+      expect(screen.queryByText('Wallet Connected')).not.toBeInTheDocument();
+    });
 
   /**
    * Test Requirement 2.2: Handle wallet connection failures gracefully
