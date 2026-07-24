@@ -572,3 +572,218 @@ contract SavingsVaultTask4_7Test is Test {
         // Verify the original unlock succeeded
         assertEq(vault.lockedTotal(address(attacker)), 0);
     }
+    
+    /// @notice Comprehensive reentrancy attack test - attempts multiple vectors simultaneously
+    function testReentrancyProtection_Comprehensive() public {
+        // Setup complete scenario
+        vm.prank(address(attacker));
+        attacker.attackDeposit(5000e18);
+        
+        vm.prank(address(attacker));
+        vault.createGoal(1000e18, block.timestamp + 30 days);
+        
+        vm.prank(address(attacker));
+        attacker.attackLockFunds(1000e18, 1 days);
+        
+        // Move time forward for lock expiry
+        vm.warp(block.timestamp + 1 days + 1);
+        
+        // Reset all counters
+        attacker.resetCounters();
+        
+        // Attempt multiple reentrancy vectors
+        vm.startPrank(address(attacker));
+        
+        // Try deposit reentrancy
+        attacker.attackDeposit(100e18);
+        
+        // Try withdraw reentrancy  
+        attacker.attackWithdraw(100e18);
+        
+        // Try contribute reentrancy
+        attacker.attackContributeToGoal(0, 100e18);
+        
+        // Try withdraw locked reentrancy
+        attacker.attackWithdrawLocked(0);
+        
+        vm.stopPrank();
+        
+        // Verify no reentrancy occurred on any function
+        assertEq(attacker.depositAttempts(), 0, "No deposit reentrancy should occur");
+        assertEq(attacker.withdrawAttempts(), 0, "No withdraw reentrancy should occur");
+        assertEq(attacker.contributeAttempts(), 0, "No contribute reentrancy should occur");
+        assertEq(attacker.lockAttempts(), 0, "No lock reentrancy should occur");
+        assertEq(attacker.unlockAttempts(), 0, "No unlock reentrancy should occur");
+        
+        // Verify all original operations succeeded
+        assertTrue(vault.depositedBalance(address(attacker)) > 5000e18, "Deposits should have succeeded");
+        assertEq(vault.lockedTotal(address(attacker)), 0, "Lock should have been released");
+        
+        (,,,uint256 savedAmount,) = vault.goals(address(attacker), 0);
+        assertTrue(savedAmount > 0, "Goal contribution should have succeeded");
+    }
+
+    // ================================================================================
+    // UNIT TESTS - CORE FUNCTIONALITY VERIFICATION
+    // ================================================================================
+    
+    /// @notice Unit test: deposit functionality updates balances correctly
+    function testUnit_DepositUpdatesBalances() public {
+        uint256 userBalanceBefore = token.balanceOf(user1);
+        uint256 vaultBalanceBefore = token.balanceOf(address(vault));
+        uint256 depositedBefore = vault.depositedBalance(user1);
+        
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        assertEq(token.balanceOf(user1), userBalanceBefore - DEPOSIT_AMOUNT);
+        assertEq(token.balanceOf(address(vault)), vaultBalanceBefore + DEPOSIT_AMOUNT);
+        assertEq(vault.depositedBalance(user1), depositedBefore + DEPOSIT_AMOUNT);
+        assertEq(vault.availableBalance(user1), depositedBefore + DEPOSIT_AMOUNT);
+    }
+    
+    /// @notice Unit test: withdraw functionality updates balances correctly
+    function testUnit_WithdrawUpdatesBalances() public {
+        // First deposit
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        uint256 userBalanceBefore = token.balanceOf(user1);
+        uint256 vaultBalanceBefore = token.balanceOf(address(vault));
+        uint256 depositedBefore = vault.depositedBalance(user1);
+        
+        vm.prank(user1);
+        vault.withdraw(WITHDRAW_AMOUNT);
+        
+        assertEq(token.balanceOf(user1), userBalanceBefore + WITHDRAW_AMOUNT);
+        assertEq(token.balanceOf(address(vault)), vaultBalanceBefore - WITHDRAW_AMOUNT);
+        assertEq(vault.depositedBalance(user1), depositedBefore - WITHDRAW_AMOUNT);
+        assertEq(vault.availableBalance(user1), depositedBefore - WITHDRAW_AMOUNT);
+    }
+    
+    /// @notice Unit test: goal creation increments nextGoalId correctly
+    function testUnit_GoalCreationIncrementsId() public {
+        uint256 nextIdBefore = vault.nextGoalId(user1);
+        assertEq(nextIdBefore, 0);
+        
+        vm.prank(user1);
+        vault.createGoal(GOAL_TARGET, block.timestamp + 30 days);
+        
+        assertEq(vault.nextGoalId(user1), nextIdBefore + 1);
+        
+        // Create another goal
+        vm.prank(user1);
+        vault.createGoal(GOAL_TARGET * 2, block.timestamp + 60 days);
+        
+        assertEq(vault.nextGoalId(user1), nextIdBefore + 2);
+    }
+    
+    /// @notice Unit test: goal contribution affects available balance correctly
+    function testUnit_GoalContributionAffectsAvailableBalance() public {
+        // Setup
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        vm.prank(user1);
+        vault.createGoal(GOAL_TARGET, block.timestamp + 30 days);
+        
+        uint256 availableBefore = vault.availableBalance(user1);
+        uint256 contributionAmount = 300e18;
+        
+        vm.prank(user1);
+        vault.contributeToGoal(0, contributionAmount);
+        
+        // Available balance should decrease by contribution amount
+        assertEq(vault.availableBalance(user1), availableBefore - contributionAmount);
+        
+        // Portfolio value should remain the same
+        assertEq(vault.portfolioValue(user1), DEPOSIT_AMOUNT);
+        
+        // Goal should show the contribution
+        (,,,uint256 savedAmount,) = vault.goals(user1, 0);
+        assertEq(savedAmount, contributionAmount);
+    }
+    
+    /// @notice Unit test: lock funds affects available balance and locked total
+    function testUnit_LockFundsAffectsBalances() public {
+        // Setup
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        uint256 availableBefore = vault.availableBalance(user1);
+        uint256 lockedBefore = vault.lockedTotal(user1);
+        
+        vm.prank(user1);
+        vault.lockFunds(LOCK_AMOUNT, LOCK_DURATION);
+        
+        // Available balance should decrease by lock amount
+        assertEq(vault.availableBalance(user1), availableBefore - LOCK_AMOUNT);
+        
+        // Locked total should increase by lock amount
+        assertEq(vault.lockedTotal(user1), lockedBefore + LOCK_AMOUNT);
+        
+        // Portfolio value should remain the same (locked funds still count)
+        assertEq(vault.portfolioValue(user1), DEPOSIT_AMOUNT);
+        
+        // Deposited balance should remain the same
+        assertEq(vault.depositedBalance(user1), DEPOSIT_AMOUNT);
+    }
+    
+    /// @notice Unit test: withdraw locked restores available balance
+    function testUnit_WithdrawLockedRestoresBalance() public {
+        // Setup: deposit and lock
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        vm.prank(user1);
+        vault.lockFunds(LOCK_AMOUNT, LOCK_DURATION);
+        
+        uint256 availableBefore = vault.availableBalance(user1);
+        uint256 lockedBefore = vault.lockedTotal(user1);
+        
+        // Move time past expiry and withdraw
+        vm.warp(block.timestamp + LOCK_DURATION + 1);
+        
+        vm.prank(user1);
+        vault.withdrawLocked(0);
+        
+        // Available balance should increase by unlocked amount
+        assertEq(vault.availableBalance(user1), availableBefore + LOCK_AMOUNT);
+        
+        // Locked total should decrease by unlocked amount
+        assertEq(vault.lockedTotal(user1), lockedBefore - LOCK_AMOUNT);
+        
+        // Lock should be marked as released
+        (,, bool released) = vault.locks(user1, 0);
+        assertTrue(released);
+    }
+    
+    /// @notice Unit test: portfolio value calculation includes all funds
+    function testUnit_PortfolioValueCalculation() public {
+        // Initial state
+        assertEq(vault.portfolioValue(user1), 0);
+        
+        // After deposit
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        assertEq(vault.portfolioValue(user1), DEPOSIT_AMOUNT);
+        
+        // After creating and contributing to goal
+        vm.prank(user1);
+        vault.createGoal(GOAL_TARGET, block.timestamp + 30 days);
+        
+        uint256 contributionAmount = 300e18;
+        vm.prank(user1);
+        vault.contributeToGoal(0, contributionAmount);
+        
+        // Portfolio should still include goal contributions
+        assertEq(vault.portfolioValue(user1), DEPOSIT_AMOUNT);
+        
+        // After locking funds
+        vm.prank(user1);
+        vault.lockFunds(LOCK_AMOUNT, LOCK_DURATION);
+        
+        // Portfolio should still include locked funds
+        assertEq(vault.portfolioValue(user1), DEPOSIT_AMOUNT);
+    }
+}
