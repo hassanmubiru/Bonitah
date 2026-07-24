@@ -57,7 +57,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Assert `UserRegistered`/`ProfileUpdated`/`UserVerified` args and one revert test per custom error
     - _Requirements: 13.1, 15.1, 15.2, 15.3_
 
-- [-] 4. Implement the SavingsVault contract
+- [ ] 4. Implement the SavingsVault contract
   - [x] 4.1 Implement deposit/withdraw core in `SavingsVault.sol`
     - Implement `deposit`, `withdraw`, `availableBalance` with `SafeERC20`, `ReentrancyGuard`, `Pausable`, registration checks, and events
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 13.2, 13.3_
@@ -74,15 +74,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `createGoal`, `contributeToGoal`, `lockFunds`, `withdrawLocked`, `portfolioValue`, MIN/MAX lock constants, and goal/lock events
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 13.4, 13.5_
 
-  - [~] 4.5 Write property test for goal lifecycle
+  - [ ] 4.5 Write property test for goal lifecycle
     - **Property 13: Goal lifecycle correctness**
     - **Validates: Requirements 5.1, 5.2, 5.7**
 
-  - [~] 4.6 Write property test for locked savings time-lock
+  - [ ] 4.6 Write property test for locked savings time-lock
     - **Property 14: Locked savings time-lock round-trip**
     - **Validates: Requirements 5.3, 5.4, 5.5, 5.8**
 
-  - [~] 4.7 Write unit, event, revert, and reentrancy tests for SavingsVault
+  - [ ] 4.7 Write unit, event, revert, and reentrancy tests for SavingsVault
     - Assert deposit/withdraw/goal/lock event args, one revert test per custom error, and a reentrancy-attack test
     - _Requirements: 4.6, 13.2, 13.3, 13.4, 13.5, 15.1, 15.2, 15.3_
 
@@ -107,15 +107,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `contributeToPool`, `ownershipShare` (ppm), `yieldDistribution`, and timestamped contribution history
     - _Requirements: 7.1, 7.2, 7.3, 7.6, 13.7_
 
-  - [~] 5.6 Write property test for pool ownership and yield
+  - [ ] 5.6 Write property test for pool ownership and yield
     - **Property 19: Investment pool ownership share and yield are proportional and conserved**
     - **Validates: Requirements 7.1, 7.6**
 
-  - [~] 5.7 Write property test for pool contribution records
+  - [ ] 5.7 Write property test for pool contribution records
     - **Property 20: Pool contribution records amount and timestamp**
     - **Validates: Requirements 7.3**
 
-  - [~] 5.8 Write unit, event, revert, and reentrancy tests for CommunityTreasury
+  - [ ] 5.8 Write unit, event, revert, and reentrancy tests for CommunityTreasury
     - Assert `PoolCreated`/`ContributionMade`/`VoteCast`/`ActionExecuted` args, one revert test per custom error, and a reentrancy-attack test
     - _Requirements: 6.8, 13.6, 13.7, 13.8, 15.1, 15.2, 15.3_
 
@@ -154,27 +154,27 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 13.8, 15.1, 15.2, 15.3_
 
 - [ ] 8. Cross-contract property tests and coverage
-  - [~] 8.1 Write property test for non-repeatable on-chain operations
+  - [ ] 8.1 Write property test for non-repeatable on-chain operations
     - **Property 18: Repeated operations are rejected while prior state is retained**
     - **Validates: Requirements 3.2, 6.10, 8.10, 9.9**
 
-  - [~] 8.2 Write property test for unauthorized privileged operations
+  - [ ] 8.2 Write property test for unauthorized privileged operations
     - **Property 26: Unauthorized privileged operations revert without state change**
     - **Validates: Requirements 3.10, 6.5, 9.7, 9.10, 14.5, 14.7, 14.9**
 
-  - [~] 8.3 Write property test for event emission discipline
+  - [ ] 8.3 Write property test for event emission discipline
     - **Property 33: Exactly one event per successful state change; none on revert**
     - **Validates: Requirements 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8, 13.9, 13.10**
 
-  - [~] 8.4 Checkpoint - contracts test suite
+  - [ ] 8.4 Checkpoint - contracts test suite
     - Ensure all contract tests pass and coverage meets >=90% line/branch; ask the user if questions arise.
 
 - [ ] 9. Deployment scripts and shared ABI/address emission
-  - [~] 9.1 Implement Foundry Base Sepolia deployment scripts
+  - [ ] 9.1 Implement Foundry Base Sepolia deployment scripts
     - Deploy all five contracts behind UUPS proxies, wire roles, record deployed addresses to `deployment/` and `shared/`, and fail non-zero naming the failed contract with no partial-success report
     - _Requirements: 16.5, 16.6_
 
-  - [~] 9.2 Emit typed ABIs and addresses into the shared package
+  - [ ] 9.2 Emit typed ABIs and addresses into the shared package
     - Generate ABI + address exports into `shared/` for frontend and backend consumption
     - _Requirements: 17.1, 1.1_
 
@@ -242,15 +242,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Poll finalized head, `getLogs` from last+1, idempotent upsert on `(txHash, logIndex)` with provenance, reorg detection/repair, and gapless resume with backoff on network loss
     - _Requirements: 12.1, 12.2, 12.5, 12.6, 13.10_
 
-  - [-] 13.2 Write property test for reorg convergence
+  - [ ] 13.2 Write property test for reorg convergence
     - **Property 31: Event indexing converges to canonical chain state**
     - **Validates: Requirements 12.5**
 
-  - [-] 13.3 Write property test for gapless resume
+  - [ ] 13.3 Write property test for gapless resume
     - **Property 32: Indexing resumes gaplessly**
     - **Validates: Requirements 12.6**
 
-  - [-] 13.4 Write integration test for 60s indexing timing
+  - [ ] 13.4 Write integration test for 60s indexing timing
     - Verify a finalized event is cached with provenance within the required window
     - _Requirements: 12.1, 12.2_
 
@@ -259,11 +259,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `/transactions` (own-wallet scope, descending block, <=100/page, empty set for none) and `/analytics/portfolio` provenanced series
     - _Requirements: 11.1, 12.3, 12.4_
 
-  - [-] 14.2 Write property test for transaction history scoping/ordering/paging
+  - [ ] 14.2 Write property test for transaction history scoping/ordering/paging
     - **Property 30: Transaction history is scoped, ordered, and paged**
     - **Validates: Requirements 11.2, 12.3**
 
-  - [-] 14.3 Write unit tests for empty and boundary pagination
+  - [ ] 14.3 Write unit tests for empty and boundary pagination
     - Test empty result set and max-page-size behavior
     - _Requirements: 12.3, 12.4_
 
@@ -272,11 +272,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Accept <=10 docs/request at <=10MB each, validate/exclude PII fields, pin content, return CID on success, and return storage error with no CID on failure
     - _Requirements: 3.5, 3.8, 3.9, 8.4_
 
-  - [~] 15.2 Write property test for upload boundary and PII exclusion
+  - [ ] 15.2 Write property test for upload boundary and PII exclusion
     - **Property 10: IPFS upload boundary validation**
     - **Validates: Requirements 3.5, 3.8**
 
-  - [~] 15.3 Write unit tests for storage-failure handling
+  - [ ] 15.3 Write unit tests for storage-failure handling
     - Assert failure returns an error and no CID
     - _Requirements: 3.9, 8.9_
 
@@ -285,36 +285,36 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement courses/lessons content, lesson-completion with dedupe, course progress, and consecutive-day learning streak in off-chain data
     - _Requirements: 8.1, 8.2, 8.6, 8.8_
 
-  - [~] 16.2 Write property test for the learning streak
+  - [ ] 16.2 Write property test for the learning streak
     - **Property 21: Learning streak equals consecutive-day count**
     - **Validates: Requirements 8.2**
 
-  - [~] 16.3 Implement the Certificate orchestration module
+  - [ ] 16.3 Implement the Certificate orchestration module
     - Implement `/education/courses/:id/certificate`: verify completion, store metadata via IPFS, then call `Education.issueCertificate`; on IPFS failure leave prior state unchanged
     - _Requirements: 8.3, 8.4, 8.9_
 
-  - [~] 16.4 Write integration tests for certificate issuance and failure
+  - [ ] 16.4 Write integration tests for certificate issuance and failure
     - Cover success (cid + tx) and IPFS-failure (no cert hash, state unchanged) paths
     - _Requirements: 8.3, 8.4, 8.9, 8.10_
 
 - [ ] 17. Implement the AI Assistant module
-  - [~] 17.1 Implement the AI assistant service
+  - [ ] 17.1 Implement the AI assistant service
     - Validate question length (<=2000), read on-chain figures read-only via ChainRead (unavailable on failure, never fabricated), scope the OpenAI system prompt, enforce a 30s timeout with retained history, and persist conversation history
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.8, 10.9_
 
-  - [~] 17.2 Write property test for AI question length boundary
+  - [ ] 17.2 Write property test for AI question length boundary
     - **Property 29: AI question length boundary**
     - **Validates: Requirements 10.7**
 
-  - [~] 17.3 Write property test for AI non-signing guarantee
+  - [ ] 17.3 Write property test for AI non-signing guarantee
     - **Property 28: AI assistant never signs or submits transactions**
     - **Validates: Requirements 10.2**
 
-  - [~] 17.4 Write integration tests for AI timeout/unavailability
+  - [ ] 17.4 Write integration tests for AI timeout/unavailability
     - Assert 503 with retained history on timeout/unavailable and unavailable-figure handling on read failure
     - _Requirements: 10.8, 10.9_
 
-  - [~] 17.5 Checkpoint - backend test suite
+  - [ ] 17.5 Checkpoint - backend test suite
     - Ensure all backend tests pass and coverage meets >=80% line; ask the user if questions arise.
 
 - [ ] 18. Establish frontend foundation (Next.js)
@@ -326,7 +326,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Light default on first visit, theme switch across pages without reload within 1s, session persistence; keyboard focus with visible ring and accessible labels; responsive breakpoints (320-767, 768-1023, >=1024)
     - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7_
 
-  - [~] 18.3 Write component tests for theming, responsiveness, and a11y
+  - [ ] 18.3 Write component tests for theming, responsiveness, and a11y
     - Test theme apply/persist, no horizontal scroll at breakpoints, keyboard traversal and axe checks
     - _Requirements: 19.1, 19.2, 19.5, 19.6, 19.7_
 
@@ -335,90 +335,90 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Wrap viem reads with 10s per-attempt timeout and up to 3 retries; expose `{ data, isLoading, isError, refetch }`; render loading/error/retry states with no placeholder financial values
     - _Requirements: 1.2, 1.6, 1.7, 7.4, 7.5, 11.4, 11.5, 11.6_
 
-  - [~] 19.2 Write property test for the read retry policy
+  - [ ] 19.2 Write property test for the read retry policy
     - **Property 3: Read retry policy is bounded and correct**
     - **Validates: Requirements 1.6**
 
-  - [~] 19.3 Write component tests for loading/error/retry states
+  - [ ] 19.3 Write component tests for loading/error/retry states
     - Assert error state offers working retry and never shows substituted values
     - _Requirements: 11.4, 11.5, 11.6_
 
 - [ ] 20. Implement the frontend authentication flow
-  - [~] 20.1 Implement `useSiweAuth`, network guard, and `/auth` page
+  - [ ] 20.1 Implement `useSiweAuth`, network guard, and `/auth` page
     - Orchestrate nonce -> SIWE message -> sign -> verify -> store JWT; prompt Base Sepolia switch before on-chain actions; handle connect/decline errors
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-  - [~] 20.2 Write component tests for the auth flow
+  - [ ] 20.2 Write component tests for the auth flow
     - Cover connect failure, wrong-network prompt, and sign decline paths
     - _Requirements: 2.2, 2.3, 2.5_
 
 - [ ] 21. Implement the frontend pages
-  - [~] 21.1 Implement Landing and 404 pages
+  - [ ] 21.1 Implement Landing and 404 pages
     - Static theme-aware landing hero and not-found route
     - _Requirements: 11.7_
 
-  - [~] 21.2 Implement the Dashboard page
+  - [ ] 21.2 Implement the Dashboard page
     - Display savings, locked, goals, community contributions, achievements, and portfolio growth from on-chain reads; recent transactions (<=50, most-recent-first); charts from real data only
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.7_
 
-  - [~] 21.3 Implement the Savings page
+  - [ ] 21.3 Implement the Savings page
     - Deposit/withdraw flows wired to SavingsVault with signed transactions and live reads
     - _Requirements: 4.2, 4.3, 11.7_
 
-  - [~] 21.4 Implement the Goals page
+  - [ ] 21.4 Implement the Goals page
     - Create goal, contribute, and lock/withdraw-locked flows wired to SavingsVault
     - _Requirements: 5.1, 5.2, 5.3, 5.5, 11.7_
 
-  - [~] 21.5 Implement the Community page
+  - [ ] 21.5 Implement the Community page
     - Create/join circles, contribute, and vote flows wired to CommunityTreasury
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 11.7_
 
-  - [~] 21.6 Implement the Investments page
+  - [ ] 21.6 Implement the Investments page
     - Pool contribution, ownership share, and yield display from on-chain state with error-on-failure
     - _Requirements: 7.1, 7.4, 7.5, 11.7_
 
-  - [~] 21.7 Implement the Education page
+  - [ ] 21.7 Implement the Education page
     - Courses/progress from backend and certificates from the Education contract
     - _Requirements: 8.1, 8.3, 11.7_
 
-  - [~] 21.8 Implement the AI Assistant page
+  - [ ] 21.8 Implement the AI Assistant page
     - Chat UI calling `/ai/chat`; recommended actions require wallet signing in the frontend
     - _Requirements: 10.1, 10.5, 11.7_
 
-  - [~] 21.9 Implement the Profile page
+  - [ ] 21.9 Implement the Profile page
     - Profile, verification, and reputation from Registry + IPFS; profile-doc upload
     - _Requirements: 3.3, 3.5, 3.7, 11.7_
 
-  - [~] 21.10 Implement the Settings page
+  - [ ] 21.10 Implement the Settings page
     - Theme and preference controls persisted for the session
     - _Requirements: 19.1, 19.3, 11.7_
 
-  - [~] 21.11 Implement the Admin page (role-gated)
+  - [ ] 21.11 Implement the Admin page (role-gated)
     - Admin-only operations gated by role with unauthorized access blocked
     - _Requirements: 14.9, 11.7_
 
-  - [~] 21.12 Write component tests for pages
+  - [ ] 21.12 Write component tests for pages
     - Cover data-source wiring, loading/error/retry rendering, and role gating across pages
     - _Requirements: 11.1, 11.3, 11.4, 14.9, 15.5_
 
 - [ ] 22. Implement frontend end-to-end tests
-  - [~] 22.1 Write Playwright e2e tests for primary user flows
+  - [ ] 22.1 Write Playwright e2e tests for primary user flows
     - Cover account creation, authentication, initiating a transaction, and viewing transaction history
     - _Requirements: 15.5_
 
-  - [~] 22.2 Checkpoint - frontend test suite
+  - [ ] 22.2 Checkpoint - frontend test suite
     - Ensure all frontend tests pass and coverage meets >=80% line; ask the user if questions arise.
 
 - [ ] 23. Implement DevOps tooling
-  - [~] 23.1 Create multi-stage Dockerfiles for frontend and backend
+  - [ ] 23.1 Create multi-stage Dockerfiles for frontend and backend
     - Produce runnable images for both services
     - _Requirements: 16.1_
 
-  - [~] 23.2 Create the Docker Compose configuration
+  - [ ] 23.2 Create the Docker Compose configuration
     - Start frontend, backend, PostgreSQL, and Redis with healthchecks reaching healthy within 120s
     - _Requirements: 16.2_
 
-  - [~] 23.3 Create the GitHub Actions CI workflow
+  - [ ] 23.3 Create the GitHub Actions CI workflow
     - Run lint -> test -> build within 30 minutes; fail and report the failing step, blocking deployment on failure
     - _Requirements: 16.3, 16.4, 15.6, 15.7, 15.8_
 
@@ -427,15 +427,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 16.8, 17.6, 17.7_
 
 - [ ] 24. Write documentation
-  - [~] 24.1 Write the README and environment/developer guide
+  - [ ] 24.1 Write the README and environment/developer guide
     - Platform description, ordered local setup steps, description of every top-level directory, required tools/versions, env vars, and per-service build/start commands
     - _Requirements: 18.1, 18.6_
 
-  - [~] 24.2 Write the API documentation
+  - [ ] 24.2 Write the API documentation
     - Document every REST endpoint: method, path, params/body, response body, auth requirement, and error conditions/responses
     - _Requirements: 18.2, 18.3_
 
-  - [~] 24.3 Write the contract documentation
+  - [ ] 24.3 Write the contract documentation
     - Document every contract's public/external functions, events, and roles generated from NatSpec
     - _Requirements: 18.4_
 
@@ -443,7 +443,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Prerequisites and ordered steps for Base Sepolia contract deployment and service deployment
     - _Requirements: 18.5_
 
-- [~] 25. Final checkpoint
+- [ ] 25. Final checkpoint
   - Ensure all suites pass across contracts, backend, and frontend and CI is green; ask the user if questions arise.
 
 ## Notes
