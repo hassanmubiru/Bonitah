@@ -78,7 +78,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 13: Goal lifecycle correctness**
     - **Validates: Requirements 5.1, 5.2, 5.7**
 
-  - [ ] 4.6 Write property test for locked savings time-lock
+  - [x] 4.6 Write property test for locked savings time-lock
     - **Property 14: Locked savings time-lock round-trip**
     - **Validates: Requirements 5.3, 5.4, 5.5, 5.8**
 
