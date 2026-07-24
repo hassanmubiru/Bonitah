@@ -55,7 +55,7 @@ export class AiService {
    */
   async chat(
     userId: string,
-    walletAddress: string,
+    address: string,
     question: string,
   ): Promise<{ answer: string; conversationId: string }> {
     // Validate question length (Req 10.7)
@@ -77,10 +77,10 @@ export class AiService {
 
     try {
       // Get user's financial data from on-chain sources (Req 10.3)
-      const financialContext = await this.getUserFinancialContext(walletAddress);
+      const financialContext = await this.getUserFinancialContext(address);
 
       // Build the system prompt with strict scoping and transaction prohibition (Req 10.1, 10.2)
-      const systemPrompt = this.buildSystemPrompt(financialContext, walletAddress);
+      const systemPrompt = this.buildSystemPrompt(financialContext, address);
 
       // Get recent conversation history for context (last 10 messages)
       const recentMessages = await this.getRecentConversationHistory(conversation.id, 10);

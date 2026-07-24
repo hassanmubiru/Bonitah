@@ -50,9 +50,9 @@ export class AiController {
     @Req() request: AuthenticatedRequest,
     @Body(new ZodValidationPipe(chatRequestSchema)) body: ChatRequestDto,
   ): Promise<ChatResponseDto> {
-    const { userId, walletAddress } = request.user;
+    const { userId, address } = request.user;
 
-    const result = await this.aiService.chat(userId, walletAddress, body.question);
+    const result = await this.aiService.chat(userId, address, body.question);
 
     return {
       answer: result.answer,
