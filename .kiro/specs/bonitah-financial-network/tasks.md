@@ -259,11 +259,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `/transactions` (own-wallet scope, descending block, <=100/page, empty set for none) and `/analytics/portfolio` provenanced series
     - _Requirements: 11.1, 12.3, 12.4_
 
-  - [ ] 14.2 Write property test for transaction history scoping/ordering/paging
+  - [-] 14.2 Write property test for transaction history scoping/ordering/paging
     - **Property 30: Transaction history is scoped, ordered, and paged**
     - **Validates: Requirements 11.2, 12.3**
 
-  - [ ] 14.3 Write unit tests for empty and boundary pagination
+  - [-] 14.3 Write unit tests for empty and boundary pagination
     - Test empty result set and max-page-size behavior
     - _Requirements: 12.3, 12.4_
 
