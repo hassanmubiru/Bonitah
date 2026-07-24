@@ -27,14 +27,20 @@ describe('Event Indexer 60s Timing (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let indexerService: IndexerService;
-  let publicClient: any;
-
+  let publicClient: PublicClient;
+  let walletClient: WalletClient;
+  
+  // Test configuration
+  const INDEXING_TIMEOUT_MS = 60000; // 60 seconds
+  const POLL_INTERVAL_MS = 2000; // Check every 2 seconds
+  const MAX_TEST_DURATION_MS = 90000; // 90 seconds total test time
+  
   beforeAll(async () => {
     // Set up test environment
     Object.assign(process.env, {
       NODE_ENV: 'test',
       PORT: '3999',
-      LOG_LEVEL: 'warn', // Reduce log noise
+      LOG_LEVEL: 'warn', // Reduce log noise in tests
       DATABASE_URL: 'postgresql://bfn:bfn@localhost:5432/bfn_test?schema=public',
       REDIS_URL: 'redis://localhost:6379/1',
       BASE_SEPOLIA_RPC_URL: process.env['BASE_SEPOLIA_RPC_URL'] || 'https://sepolia.base.org',
@@ -63,6 +69,16 @@ describe('Event Indexer 60s Timing (e2e)', () => {
       chain: baseSepolia,
       transport: http(process.env['BASE_SEPOLIA_RPC_URL']),
     });
+
+    // Set up wallet client for creating test transactions (if needed)
+    if (process.env['TEST_PRIVATE_KEY']) {
+      const account = privateKeyToAccount(process.env['TEST_PRIVATE_KEY'] as `0x${string}`);
+      walletClient = createWalletClient({
+        account,
+        chain: baseSepolia,
+        transport: http(process.env['BASE_SEPOLIA_RPC_URL']),
+      });
+    }
 
     // Clean up test data before starting
     await prisma.cachedEvent.deleteMany({});

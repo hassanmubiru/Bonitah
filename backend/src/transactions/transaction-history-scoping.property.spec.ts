@@ -6,18 +6,20 @@ import { TransactionsQuery } from '@bfn/shared';
 
 /**
  * Property 30: Transaction history is scoped, ordered, and paged
- * **Validates: Requirements 12.3**
+ * **Validates: Requirements 11.2, 12.3**
  *
  * This property test validates that cached events are returned scoped to the requesting
  * user's wallet address, ordered by descending block number, and properly paginated
- * with at most 100 events per response.
+ * with at most 100 events per response (API limit) or 50 events (Dashboard limit).
  *
  * Key requirements tested:
  * - Transaction history is scoped to the requesting user's wallet address only
- * - Events are ordered by descending block number (most recent first)
- * - Pagination limits responses to at most 100 events per page
+ * - Events are ordered by descending block number (most recent first) 
+ * - Pagination respects ≤100 events per page limit (Req 12.3)
+ * - Dashboard display limits to ≤50 events per view (Req 11.2)
+ * - Page boundaries work correctly with cursor-based pagination
+ * - No data leakage between different users
  * - Empty result set is returned when no events exist for the user
- * - Pagination metadata is accurate (total count, page info, etc.)
  */
 describe('Property 30: Transaction history scoping/ordering/paging', () => {
   let service: TransactionsService;

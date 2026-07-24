@@ -95,6 +95,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
             { maxLength: 20 }
           ),
         }).filter(({ lastIndexedBlock, currentHead }) => lastIndexedBlock < currentHead),
+        async ({ lastIndexedBlock, currentHead, networkFailures, eventsPerBlock }) => {
           // Mock initial indexer state
           (prismaService.indexerState.findUnique as jest.Mock).mockResolvedValue({
             id: 'singleton',
