@@ -98,7 +98,7 @@ describe('Integration Tests - Theme, Responsiveness, and Accessibility', () => {
       const { rerender } = render(<TestApp />);
 
       // Set dark theme
-      const themeButton = screen.getByRole('button');
+      const themeButton = screen.getByRole('button', { name: /switch to dark theme/i });
       await user.click(themeButton);
 
       await waitFor(() => {
