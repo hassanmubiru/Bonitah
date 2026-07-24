@@ -399,6 +399,8 @@ describe('Property 21: Learning streak consecutive-day count', () => {
       { numRuns: 100 },
     );
   });
+});
+
 /**
  * Helper function to calculate expected consecutive day streak
  * Given an array of day offsets, return the count of consecutive days ending on the last day
