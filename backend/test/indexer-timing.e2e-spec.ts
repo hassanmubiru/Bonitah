@@ -27,12 +27,10 @@ describe('Event Indexer 60s Timing (e2e)', () => {
   let prisma: PrismaService;
   let indexerService: IndexerService;
   let publicClient: PublicClient;
-  let walletClient: WalletClient;
   
   // Test configuration
   const INDEXING_TIMEOUT_MS = 60000; // 60 seconds
   const POLL_INTERVAL_MS = 2000; // Check every 2 seconds
-  const MAX_TEST_DURATION_MS = 90000; // 90 seconds total test time
   
   beforeAll(async () => {
     // Set up test environment

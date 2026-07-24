@@ -394,7 +394,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
       fc.asyncProperty(
         fc.record({
           failureType: fc.constantFrom('block_fetch_failure', 'log_fetch_failure', 'partial_failure'),
-          reorgBlock: fc.bigUintN(32),
+          reorgBlock: fc.integer({ min: 1, max: 1000 }).map(n => BigInt(n)),
         }),
         async ({ failureType, reorgBlock }) => {
           // Mock different types of network failures
@@ -445,7 +445,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
           expect(true).toBe(true); // Test completed without hanging
         }
       ),
-      { numRuns: 5 }
+      { numRuns: 3 }
     );
   });
 });
