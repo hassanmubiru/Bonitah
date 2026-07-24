@@ -221,3 +221,52 @@ contract SavingsVaultTask4_7Test is Test {
         vm.prank(unregistered);
         vault.deposit(DEPOSIT_AMOUNT);
     }
+    
+    /// @notice Test NotRegisteredUser error on withdraw
+    function testRevert_NotRegisteredUser_Withdraw() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.NotRegisteredUser.selector, unregistered));
+        vm.prank(unregistered);
+        vault.withdraw(WITHDRAW_AMOUNT);
+    }
+    
+    /// @notice Test NotRegisteredUser error on createGoal
+    function testRevert_NotRegisteredUser_CreateGoal() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.NotRegisteredUser.selector, unregistered));
+        vm.prank(unregistered);
+        vault.createGoal(GOAL_TARGET, block.timestamp + 30 days);
+    }
+    
+    /// @notice Test NotRegisteredUser error on contributeToGoal
+    function testRevert_NotRegisteredUser_ContributeToGoal() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.NotRegisteredUser.selector, unregistered));
+        vm.prank(unregistered);
+        vault.contributeToGoal(0, 100e18);
+    }
+    
+    /// @notice Test NotRegisteredUser error on lockFunds
+    function testRevert_NotRegisteredUser_LockFunds() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.NotRegisteredUser.selector, unregistered));
+        vm.prank(unregistered);
+        vault.lockFunds(LOCK_AMOUNT, LOCK_DURATION);
+    }
+    
+    /// @notice Test NotRegisteredUser error on withdrawLocked
+    function testRevert_NotRegisteredUser_WithdrawLocked() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.NotRegisteredUser.selector, unregistered));
+        vm.prank(unregistered);
+        vault.withdrawLocked(0);
+    }
+    
+    /// @notice Test ZeroAmount error on deposit
+    function testRevert_ZeroAmount_Deposit() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.ZeroAmount.selector));
+        vm.prank(user1);
+        vault.deposit(0);
+    }
+    
+    /// @notice Test ZeroAmount error on withdraw
+    function testRevert_ZeroAmount_Withdraw() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.ZeroAmount.selector));
+        vm.prank(user1);
+        vault.withdraw(0);
+    }

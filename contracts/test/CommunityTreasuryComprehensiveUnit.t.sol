@@ -42,19 +42,32 @@ contract CommunityTreasuryComprehensiveUnitTest is Test {
         // Deploy mock ERC20 token
         token = new MockERC20("Test Token", "TEST", 18);
         
-        // Deploy CommunityTreasury proxy
+        // Deploy malicious ERC20 token for reentrancy tests
+        maliciousToken = new MaliciousERC20();
+        
+        // Deploy CommunityTreasury proxy with regular token
         CommunityTreasury implementation = new CommunityTreasury();
         bytes memory initData = abi.encodeCall(CommunityTreasury.initialize, (admin, IERC20(address(token))));
         ERC1967Proxy proxy = new ERC1967Proxy(address(implementation), initData);
         treasury = CommunityTreasury(address(proxy));
         
+        // Deploy CommunityTreasury proxy with malicious token for reentrancy tests
+        bytes memory maliciousInitData = abi.encodeCall(CommunityTreasury.initialize, (admin, IERC20(address(maliciousToken))));
+        ERC1967Proxy maliciousProxy = new ERC1967Proxy(address(implementation), maliciousInitData);
+        maliciousTreasury = CommunityTreasury(address(maliciousProxy));
+        
+        // Configure malicious token
+        maliciousToken.setTarget(maliciousTreasury);
+        
         // Setup roles for admin
         vm.startPrank(admin);
         treasury.grantRole(treasury.PAUSER_ROLE(), pauser);
         treasury.grantRole(treasury.UPGRADER_ROLE(), upgrader);
+        maliciousTreasury.grantRole(maliciousTreasury.PAUSER_ROLE(), pauser);
+        maliciousTreasury.grantRole(maliciousTreasury.UPGRADER_ROLE(), upgrader);
         vm.stopPrank();
         
-        // Deploy reentrancy attacker
+        // Deploy reentrancy attacker (still useful for some tests)
         attacker = new ReentrancyAttacker(treasury, token);
         
         // Setup initial token balances
@@ -63,6 +76,10 @@ contract CommunityTreasuryComprehensiveUnitTest is Test {
         token.mint(user3, INITIAL_BALANCE);
         token.mint(address(attacker), INITIAL_BALANCE);
         
+        maliciousToken.mint(user1, INITIAL_BALANCE);
+        maliciousToken.mint(user2, INITIAL_BALANCE);
+        maliciousToken.mint(user3, INITIAL_BALANCE);
+        
         // Approve treasury to spend tokens
         vm.prank(user1);
         token.approve(address(treasury), INITIAL_BALANCE);
@@ -70,6 +87,14 @@ contract CommunityTreasuryComprehensiveUnitTest is Test {
         token.approve(address(treasury), INITIAL_BALANCE);
         vm.prank(user3);
         token.approve(address(treasury), INITIAL_BALANCE);
+        
+        // Approve malicious treasury to spend malicious tokens
+        vm.prank(user1);
+        maliciousToken.approve(address(maliciousTreasury), INITIAL_BALANCE);
+        vm.prank(user2);
+        maliciousToken.approve(address(maliciousTreasury), INITIAL_BALANCE);
+        vm.prank(user3);
+        maliciousToken.approve(address(maliciousTreasury), INITIAL_BALANCE);
         
         // Approve attacker to spend tokens
         vm.prank(address(attacker));
