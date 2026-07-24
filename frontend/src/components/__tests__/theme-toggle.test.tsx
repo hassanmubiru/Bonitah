@@ -32,25 +32,24 @@ describe('ThemeToggle', () => {
   beforeEach(() => {
     mockTheme = 'light';
     mockSetTheme = jest.fn();
-    mockMounted = true;
   });
 
   describe('**Validates: Requirements 19.6, 19.7**', () => {
     it('should be keyboard focusable with visible focus ring (Req 19.6)', async () => {
       const user = userEvent.setup();
       renderThemeToggle();
-      
+
       const button = screen.getByRole('button');
-      
+
       // Tab to focus the button
       await user.tab();
-      
+
       expect(button).toHaveFocus();
-      
+
       // Verify it can be activated with keyboard
       await user.keyboard('{Enter}');
       expect(mockSetTheme).toHaveBeenCalledWith('dark');
-      
+
       // Reset and test with Space key
       mockSetTheme.mockClear();
       await user.keyboard(' ');
@@ -59,20 +58,20 @@ describe('ThemeToggle', () => {
 
     it('should have proper ARIA labels and attributes (Req 19.7)', async () => {
       renderThemeToggle();
-      
+
       const button = screen.getByRole('button');
-      
+
       // Should have aria-label
       expect(button).toHaveAttribute('aria-label');
       const ariaLabel = button.getAttribute('aria-label');
       expect(ariaLabel).toContain('Switch to');
-      
+
       // Should have aria-pressed
       expect(button).toHaveAttribute('aria-pressed', 'false');
-      
+
       // Should have title attribute
       expect(button).toHaveAttribute('title');
-      
+
       // Icon should be hidden from screen readers
       const icon = button.querySelector('svg');
       expect(icon).toHaveAttribute('aria-hidden', 'true');
@@ -81,14 +80,14 @@ describe('ThemeToggle', () => {
     it('should update ARIA attributes when theme changes', async () => {
       // Start with light theme
       const { rerender } = renderThemeToggle();
-      
+
       let button = screen.getByRole('button');
       expect(button).toHaveAttribute('aria-pressed', 'false');
-      
+
       // Simulate theme change to dark
       mockTheme = 'dark';
       rerender(<ThemeToggle />);
-      
+
       button = screen.getByRole('button');
       expect(button).toHaveAttribute('aria-pressed', 'true');
     });
@@ -102,20 +101,20 @@ describe('ThemeToggle', () => {
     it('should handle theme switching correctly', async () => {
       const user = userEvent.setup();
       renderThemeToggle();
-      
+
       const button = screen.getByRole('button');
-      
+
       // Click to switch from light to dark
       await user.click(button);
       expect(mockSetTheme).toHaveBeenCalledWith('dark');
-      
+
       // Simulate theme change to dark and test switching back
       mockTheme = 'dark';
       mockSetTheme.mockClear();
-      
+
       const { rerender } = render(<ThemeToggle />);
       rerender(<ThemeToggle />);
-      
+
       await user.click(screen.getByRole('button'));
       expect(mockSetTheme).toHaveBeenCalledWith('light');
     });
@@ -125,7 +124,7 @@ describe('ThemeToggle', () => {
       renderThemeToggle();
       const lightIcon = document.querySelector('.lucide-sun, [data-lucide="sun"]');
       expect(lightIcon).toBeInTheDocument();
-      
+
       // Dark theme shows Moon icon
       mockTheme = 'dark';
       const { rerender } = render(<ThemeToggle />);
@@ -136,7 +135,7 @@ describe('ThemeToggle', () => {
 
     it('should support high contrast and screen reader combinations', async () => {
       const user = userEvent.setup();
-      
+
       // Mock high contrast media query
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
@@ -148,15 +147,15 @@ describe('ThemeToggle', () => {
           removeListener: jest.fn(),
         })),
       });
-      
+
       renderThemeToggle();
-      
+
       const button = screen.getByRole('button');
-      
+
       // Should maintain accessibility in high contrast mode
       expect(button).toHaveAttribute('aria-label');
       expect(button).toHaveAttribute('aria-pressed');
-      
+
       // Should still be operable
       await user.click(button);
       expect(mockSetTheme).toHaveBeenCalled();
