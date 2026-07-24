@@ -179,3 +179,92 @@ contract CommunityTreasuryComprehensiveTest is Test {
         // Verify execution occurred
         assertEq(token.balanceOf(recipient), 500e18);
     }
+    // ========== REVERT CONDITION TESTS (Req 15.2) ==========
+    
+    /**
+     * Test InvalidCircleParams error for various invalid parameters
+     */
+    function test_Revert_InvalidCircleParams() public {
+        // Test maxMembers below minimum (< 2)
+        vm.prank(user1);
+        vm.expectRevert(ICommunityTreasury.InvalidCircleParams.selector);
+        treasury.createCircle(1, 51);
+        
+        // Test maxMembers above maximum (> 1000)
+        vm.prank(user1);
+        vm.expectRevert(ICommunityTreasury.InvalidCircleParams.selector);
+        treasury.createCircle(1001, 51);
+        
+        // Test approvalThreshold below minimum (< 1)
+        vm.prank(user1);
+        vm.expectRevert(ICommunityTreasury.InvalidCircleParams.selector);
+        treasury.createCircle(10, 0);
+        
+        // Test approvalThreshold above maximum (> 100)
+        vm.prank(user1);
+        vm.expectRevert(ICommunityTreasury.InvalidCircleParams.selector);
+        treasury.createCircle(10, 101);
+    }
+    
+    /**
+     * Test AlreadyMember error
+     */
+    function test_Revert_AlreadyMember() public {
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        
+        // Creator trying to join again
+        vm.prank(user1);
+        vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.AlreadyMember.selector, user1, poolId));
+        treasury.joinCircle(poolId);
+        
+        // User joins successfully
+        vm.prank(user2);
+        treasury.joinCircle(poolId);
+        
+        // Same user trying to join again
+        vm.prank(user2);
+        vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.AlreadyMember.selector, user2, poolId));
+        treasury.joinCircle(poolId);
+    }
+    
+    /**
+     * Test CircleClosedOrFull error
+     */
+    function test_Revert_CircleClosedOrFull() public {
+        // Create circle with max 2 members
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(2, 51);
+        
+        // User2 joins successfully (now at capacity: user1 + user2 = 2)
+        vm.prank(user2);
+        treasury.joinCircle(poolId);
+        
+        // User3 tries to join full circle
+        vm.prank(user3);
+        vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.CircleClosedOrFull.selector, poolId));
+        treasury.joinCircle(poolId);
+    }
+    
+    /**
+     * Test NotMember error for various operations
+     */
+    function test_Revert_NotMember() public {
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        
+        // Non-member trying to contribute to circle
+        vm.prank(user2);
+        vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.NotMember.selector, user2, poolId));
+        treasury.contribute(poolId, 1000e18);
+        
+        // Non-member trying to contribute to pool
+        vm.prank(user2);
+        vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.NotMember.selector, user2, poolId));
+        treasury.contributeToPool(poolId, 1000e18);
+        
+        // Non-member trying to propose action
+        vm.prank(user2);
+        vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.NotMember.selector, user2, poolId));
+        treasury.proposeAction(poolId, recipient, 500e18);
+    }
