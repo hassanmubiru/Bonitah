@@ -24,7 +24,6 @@ global.fetch = jest.fn();
 
 describe('IpfsService - Storage Failure Handling', () => {
   let service: IpfsService;
-  let configService: ConfigService;
   let mockFetch: jest.MockedFunction<typeof fetch>;
 
   const testJwtToken = 'test-pinata-jwt-token';
@@ -46,7 +45,6 @@ describe('IpfsService - Storage Failure Handling', () => {
     }).compile();
 
     service = module.get<IpfsService>(IpfsService);
-    configService = module.get<ConfigService>(ConfigService);
     mockFetch = fetch as jest.MockedFunction<typeof fetch>;
   });
 
