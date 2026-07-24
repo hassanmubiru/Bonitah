@@ -112,10 +112,10 @@ describe('ThemeToggle', () => {
       mockTheme = 'dark';
       mockSetTheme.mockClear();
 
-      const { rerender } = render(<ThemeToggle />);
+      const { rerender } = renderThemeToggle();
       rerender(<ThemeToggle />);
 
-      await user.click(screen.getByRole('button'));
+      await user.click(screen.getByRole('button', { name: /switch to light theme/i }));
       expect(mockSetTheme).toHaveBeenCalledWith('light');
     });
 
