@@ -130,7 +130,7 @@ describe('AiService Integration', () => {
 
       // Scope limitations (Req 10.1)
       expect(systemPrompt).toContain('budgeting guidance');
-      expect(systemPrompt).toContain('savings strategies');
+      expect(systemPrompt).toContain('Savings strategies');
       expect(systemPrompt).toContain('investment education');
       expect(systemPrompt).toContain('portfolio insights');
 
