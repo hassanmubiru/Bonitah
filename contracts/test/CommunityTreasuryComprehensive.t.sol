@@ -445,3 +445,248 @@ contract CommunityTreasuryComprehensiveTest is Test {
         // The function exists and is access-controlled - that's sufficient for this test
         vm.stopPrank();
     }
+    // ========== EDGE CASES AND BOUNDARY CONDITIONS (Req 15.1) ==========
+    
+    /**
+     * Test minimum and maximum circle parameters
+     */
+    function test_EdgeCase_CircleParameterBoundaries() public {
+        // Test minimum valid parameters
+        vm.prank(user1);
+        uint256 poolId1 = treasury.createCircle(2, 1); // Min members, min threshold
+        
+        ICommunityTreasury.Circle memory circle1 = treasury.getCircle(poolId1);
+        assertEq(circle1.maxMembers, 2);
+        assertEq(circle1.approvalThreshold, 1);
+        
+        // Test maximum valid parameters
+        vm.prank(user2);
+        uint256 poolId2 = treasury.createCircle(1000, 100); // Max members, max threshold
+        
+        ICommunityTreasury.Circle memory circle2 = treasury.getCircle(poolId2);
+        assertEq(circle2.maxMembers, 1000);
+        assertEq(circle2.approvalThreshold, 100);
+    }
+    
+    /**
+     * Test treasury action execution with minimal threshold
+     */
+    function test_EdgeCase_MinimalThresholdExecution() public {
+        // Create large circle with 1% threshold - only 1 vote needed
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(100, 1);
+        
+        vm.prank(user1);
+        treasury.contribute(poolId, 1000e18);
+        
+        vm.prank(user1);
+        uint256 actionId = treasury.proposeAction(poolId, recipient, 500e18);
+        
+        // Single vote should execute due to 1% threshold
+        vm.prank(user1);
+        treasury.vote(actionId);
+        
+        ICommunityTreasury.TreasuryAction memory action = treasury.getAction(actionId);
+        assertTrue(action.executed, "Action should execute with minimal threshold");
+        assertEq(token.balanceOf(recipient), 500e18);
+    }
+    
+    /**
+     * Test treasury action execution with maximum threshold
+     */
+    function test_EdgeCase_MaximalThresholdExecution() public {
+        // Create 3-member circle with 100% threshold - all 3 must vote
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(3, 100);
+        
+        vm.prank(user2);
+        treasury.joinCircle(poolId);
+        vm.prank(user3);
+        treasury.joinCircle(poolId);
+        
+        vm.prank(user1);
+        treasury.contribute(poolId, 1500e18);
+        
+        vm.prank(user1);
+        uint256 actionId = treasury.proposeAction(poolId, recipient, 500e18);
+        
+        // First two votes - should not execute yet
+        vm.prank(user1);
+        treasury.vote(actionId);
+        vm.prank(user2);
+        treasury.vote(actionId);
+        
+        ICommunityTreasury.TreasuryAction memory action = treasury.getAction(actionId);
+        assertFalse(action.executed, "Action should not execute with incomplete votes");
+        
+        // Third vote - should execute
+        vm.prank(user3);
+        treasury.vote(actionId);
+        
+        action = treasury.getAction(actionId);
+        assertTrue(action.executed, "Action should execute when all members vote");
+        assertEq(token.balanceOf(recipient), 500e18);
+    }
+    
+    /**
+     * Test ownership share precision with very small contributions
+     */
+    function test_EdgeCase_OwnershipSharePrecision() public {
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        vm.prank(user2);
+        treasury.joinCircle(poolId);
+        
+        // User1 contributes 1 wei, user2 contributes 1 million tokens
+        vm.prank(user1);
+        treasury.contributeToPool(poolId, 1);
+        vm.prank(user2);
+        treasury.contributeToPool(poolId, 1000000e18);
+        
+        uint256 totalContributions = 1 + 1000000e18;
+        
+        // Test ownership shares calculation
+        uint256 user1Share = treasury.ownershipShare(poolId, user1);
+        uint256 user2Share = treasury.ownershipShare(poolId, user2);
+        
+        // User1 should have minimal but non-zero share
+        assertGt(user1Share, 0, "Even tiny contribution should have non-zero share");
+        assertEq(user1Share, (1 * 1e6) / totalContributions, "User1 share calculation");
+        assertEq(user2Share, (1000000e18 * 1e6) / totalContributions, "User2 share calculation");
+        
+        // Shares should sum to 100%
+        assertEq(user1Share + user2Share, 1e6, "Shares should sum to 1e6 ppm");
+    }
+    /**
+     * Test contribution history with rapid successive contributions
+     */
+    function test_EdgeCase_RapidSuccessiveContributions() public {
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        
+        uint256 numContributions = 20;
+        uint256 baseAmount = 100e18;
+        
+        // Make rapid contributions in the same block
+        for (uint256 i = 0; i < numContributions; i++) {
+            vm.prank(user1);
+            treasury.contributeToPool(poolId, baseAmount + i * 10e18);
+        }
+        
+        // Verify all contributions are recorded
+        ICommunityTreasury.Contribution[] memory history = treasury.contributionHistory(poolId, user1);
+        assertEq(history.length, numContributions, "All rapid contributions should be recorded");
+        
+        // Verify amounts are correct
+        for (uint256 i = 0; i < numContributions; i++) {
+            assertEq(history[i].amount, baseAmount + i * 10e18, "Rapid contribution amount incorrect");
+        }
+        
+        // Verify total contributions
+        uint256 expectedTotal = 0;
+        for (uint256 i = 0; i < numContributions; i++) {
+            expectedTotal += baseAmount + i * 10e18;
+        }
+        assertEq(treasury.memberTotalContributions(poolId, user1), expectedTotal);
+    }
+    
+    /**
+     * Test yield distribution with zero yield edge case
+     */
+    function test_EdgeCase_ZeroYieldDistribution() public {
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        vm.prank(user2);
+        treasury.joinCircle(poolId);
+        
+        vm.prank(user1);
+        treasury.contributeToPool(poolId, 1000e18);
+        vm.prank(user2);
+        treasury.contributeToPool(poolId, 500e18);
+        
+        // Test zero yield distribution
+        assertEq(treasury.yieldDistribution(poolId, user1, 0), 0);
+        assertEq(treasury.yieldDistribution(poolId, user2, 0), 0);
+    }
+    
+    /**
+     * Test action execution when treasury has insufficient balance
+     */
+    function test_EdgeCase_InsufficientTreasuryBalance() public {
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        vm.prank(user2);
+        treasury.joinCircle(poolId);
+        
+        // Contribute only 100 tokens
+        vm.prank(user1);
+        treasury.contribute(poolId, 100e18);
+        
+        // Propose action for more than treasury balance
+        vm.prank(user1);
+        uint256 actionId = treasury.proposeAction(poolId, recipient, 200e18);
+        
+        // Both users vote to approve
+        vm.prank(user1);
+        treasury.vote(actionId);
+        
+        // This should revert due to insufficient treasury balance
+        vm.prank(user2);
+        vm.expectRevert(); // Arithmetic underflow/overflow
+        treasury.vote(actionId);
+    }
+    
+    // ========== INTEGRATION TESTS ==========
+    
+    /**
+     * Test complete workflow: create -> join -> contribute -> vote -> execute
+     */
+    function test_Integration_CompleteWorkflow() public {
+        // 1. Create circle
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(5, 60);
+        
+        // 2. Users join
+        vm.prank(user2);
+        treasury.joinCircle(poolId);
+        vm.prank(user3);
+        treasury.joinCircle(poolId);
+        
+        // 3. Users contribute
+        vm.prank(user1);
+        treasury.contribute(poolId, 1000e18);
+        vm.prank(user2);
+        treasury.contribute(poolId, 500e18);
+        vm.prank(user3);
+        treasury.contributeToPool(poolId, 750e18); // Mix of circle and pool contributions
+        
+        // 4. Propose action
+        vm.prank(user1);
+        uint256 actionId = treasury.proposeAction(poolId, recipient, 800e18);
+        
+        // 5. Vote (need 60% of 3 members = 2 votes)
+        vm.prank(user1);
+        treasury.vote(actionId);
+        vm.prank(user2);
+        treasury.vote(actionId); // This should execute the action
+        
+        // 6. Verify final state
+        ICommunityTreasury.TreasuryAction memory action = treasury.getAction(actionId);
+        assertTrue(action.executed, "Action should be executed");
+        assertEq(token.balanceOf(recipient), 800e18, "Recipient should receive funds");
+        
+        ICommunityTreasury.Circle memory circle = treasury.getCircle(poolId);
+        assertEq(circle.treasuryBalance, 700e18, "Treasury balance should be reduced"); // 1500 - 800
+        
+        // Verify contribution histories
+        ICommunityTreasury.Contribution[] memory history1 = treasury.contributionHistory(poolId, user1);
+        ICommunityTreasury.Contribution[] memory history3 = treasury.contributionHistory(poolId, user3);
+        
+        assertEq(history1.length, 1, "User1 should have 1 contribution");
+        assertEq(history3.length, 1, "User3 should have 1 contribution");
+        
+        // Verify pool contributions (user3 used contributeToPool)
+        assertEq(treasury.memberTotalContributions(poolId, user3), 750e18);
+        assertEq(treasury.ownershipShare(poolId, user3), 1000000); // 750/750 * 1e6 = 100% (only pool contributor)
+    }
+}
