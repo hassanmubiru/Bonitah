@@ -435,25 +435,30 @@ contract CommunityTreasuryComprehensiveUnitTest is Test {
         vm.prank(user1);
         uint256 actionId = maliciousTreasury.proposeAction(poolId, user3, actionAmount);
         
-        // Configure malicious token for attack on vote
-        maliciousToken.setAttackParams(poolId, CONTRIBUTION_AMOUNT, actionId);
-        maliciousToken.disableAttack(); // Don't attack on first vote
-        
         // First vote
         vm.prank(user1);
         maliciousTreasury.vote(actionId);
         
         // Enable attack for final vote (which will trigger execution and transfer)
+        maliciousToken.setAttackParams(poolId, CONTRIBUTION_AMOUNT, actionId);
         maliciousToken.enableAttack();
         
         // Final vote - should execute action but block reentrancy
+        // The reentrancy protection is working if this doesn't revert
         vm.prank(user2);
         maliciousTreasury.vote(actionId);
         
         // Verify action executed normally
         ICommunityTreasury.TreasuryAction memory action = maliciousTreasury.getAction(actionId);
         assertTrue(action.executed);
-        assertEq(maliciousToken.balanceOf(user3), actionAmount);
+        
+        // Verify only one execution occurred (reentrancy blocked)
+        ICommunityTreasury.Circle memory circle = maliciousTreasury.getCircle(poolId);
+        assertEq(circle.treasuryBalance, CONTRIBUTION_AMOUNT - actionAmount, "Treasury should have correct remaining balance");
+        
+        // Verify user3 received exactly the action amount (no double payment from reentrancy)
+        uint256 expectedBalance = INITIAL_BALANCE + actionAmount;
+        assertEq(maliciousToken.balanceOf(user3), expectedBalance, "User3 should have initial balance + action amount only");
     }
 
     /// @notice Test that normal operations work correctly (no false positives from reentrancy guard)

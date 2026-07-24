@@ -349,3 +349,30 @@ describe('Certificate Issuance and Failure Integration (Task 16.4)', () => {
         id: courseId,
         onChainId: '0x000000000000000000000000000000000000000000000000000000000000000a',
         title: 'State Preservation Course',
+        lessons: [{ id: 'lesson-1' }, { id: 'lesson-2' }],
+      };
+
+      (prismaService.course.findUnique as jest.Mock).mockResolvedValue(mockCourse);
+      (prismaService.lessonProgress.count as jest.Mock).mockResolvedValue(2);
+
+      // First attempt - IPFS fails
+      (ipfsService.storeCertificateMetadata as jest.Mock).mockRejectedValueOnce(
+        new Error('Temporary IPFS failure')
+      );
+
+      await expect(educationService.issueCertificate(userId, walletAddress, courseId))
+        .rejects.toThrow(InternalServerErrorException);
+
+      // Second attempt - should succeed
+      (ipfsService.storeCertificateMetadata as jest.Mock).mockResolvedValueOnce(
+        'QmStatePreservationHash'
+      );
+
+      const result = await educationService.issueCertificate(userId, walletAddress, courseId);
+
+      // Verify lesson completion check occurred both times
+      expect(prismaService.lessonProgress.count).toHaveBeenCalledTimes(2);
+      expect(result.ipfsCid).toBe('QmStatePreservationHash');
+    });
+  });
+});
