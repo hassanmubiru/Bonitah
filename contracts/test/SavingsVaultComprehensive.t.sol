@@ -9,38 +9,6 @@ import {MockERC20} from "../src/mocks/MockERC20.sol";
 import {ISavingsVault} from "../src/interfaces/ISavingsVault.sol";
 import {IRegistry} from "../src/interfaces/IRegistry.sol";
 
-/// @title ReentrantAttacker
-/// @notice Mock contract to test reentrancy protection
-contract ReentrantAttacker {
-    SavingsVault public vault;
-    MockERC20 public token;
-    bool public attacking;
-    uint256 public attackCount;
-    
-    constructor(SavingsVault _vault, MockERC20 _token) {
-        vault = _vault;
-        token = _token;
-    }
-    
-    function startAttack() external {
-        attacking = true;
-        attackCount = 0;
-        token.approve(address(vault), type(uint256).max);
-        vault.deposit(1e18);
-        vault.withdraw(1e18);
-    }
-    
-    // This will be called if there's a reentrancy vulnerability
-    function onReceive() external {
-        if (attacking && attackCount < 5) { // Limit to prevent infinite loop
-            attackCount++;
-            if (vault.availableBalance(address(this)) > 0) {
-                vault.withdraw(vault.availableBalance(address(this)));
-            }
-        }
-    }
-}
-
 /// @title SavingsVaultComprehensiveTest
 /// @notice Comprehensive unit, event, revert, and reentrancy tests for SavingsVault.
 /// @dev Validates Requirements 4.6, 13.2, 13.3, 13.4, 13.5, 15.1, 15.2, 15.3 implementation.
