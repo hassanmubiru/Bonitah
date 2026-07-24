@@ -125,9 +125,12 @@ describe('Integration Tests - Theme, Responsiveness, and Accessibility', () => {
       const breakpoints = [320, 768, 1024];
 
       for (const width of breakpoints) {
+        // Clean up any previous renders by clearing the document body
+        document.body.innerHTML = '';
+        
         Object.defineProperty(window, 'innerWidth', { value: width, writable: true });
 
-        render(<TestApp />);
+        const { unmount } = render(<TestApp />);
 
         // Tab through elements
         await user.tab(); // Skip link
@@ -141,6 +144,9 @@ describe('Integration Tests - Theme, Responsiveness, and Accessibility', () => {
 
         await user.tab(); // First element in main content
         expect(screen.getByRole('button', { name: 'Test Button' })).toHaveFocus();
+        
+        // Clean up after each iteration
+        unmount();
       }
     });
 
@@ -153,10 +159,11 @@ describe('Integration Tests - Theme, Responsiveness, and Accessibility', () => {
         // Reset for each breakpoint test
         localStorage.clear();
         document.documentElement.className = '';
+        document.body.innerHTML = '';
 
         Object.defineProperty(window, 'innerWidth', { value: width, writable: true });
 
-        render(<TestApp />);
+        const { unmount } = render(<TestApp />);
 
         const startTime = Date.now();
 
@@ -172,6 +179,9 @@ describe('Integration Tests - Theme, Responsiveness, and Accessibility', () => {
 
         const endTime = Date.now();
         expect(endTime - startTime).toBeLessThan(1000);
+        
+        // Clean up after each iteration
+        unmount();
       }
     });
 
