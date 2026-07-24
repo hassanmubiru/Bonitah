@@ -86,7 +86,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Assert deposit/withdraw/goal/lock event args, one revert test per custom error, and a reentrancy-attack test
     - _Requirements: 4.6, 13.2, 13.3, 13.4, 13.5, 15.1, 15.2, 15.3_
 
-- [-] 5. Implement the CommunityTreasury contract
+- [x] 5. Implement the CommunityTreasury contract
   - [x] 5.1 Implement savings circles in `CommunityTreasury.sol`
     - Implement `createCircle`, `joinCircle`, `contribute`, `proposeAction`, `vote`, threshold-based execution, per-member contribution history, `nonReentrant` on value moves, and events
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11, 13.6, 13.7, 13.8_
