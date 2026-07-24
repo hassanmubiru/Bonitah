@@ -50,6 +50,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     EducationModule,
     TransactionsModule,
     AnalyticsModule,
+    AiModule,
   ],
   providers: [
     {
