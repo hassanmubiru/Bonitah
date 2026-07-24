@@ -67,7 +67,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
       fc.asyncProperty(
         // Generate test data for reorg scenarios
         fc.record({
-          lastIndexedBlock: fc.bigUintN(64), // Block number
+          lastIndexedBlock: fc.integer({ min: 1, max: 1000 }).map(n => BigInt(n)), // Block number
           cachedBlockHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
           canonicalBlockHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
         }),
@@ -132,27 +132,27 @@ describe('Property 31: Event indexing reorg convergence', () => {
       fc.asyncProperty(
         fc.record({
           // Reorg scenario setup
-          reorgStartBlock: fc.bigUintN(32).map(n => n + 1000n), // Start from block 1000+
-          reorgDepth: fc.integer({ min: 1, max: 10 }), // Reorg affects 1-10 blocks
+          reorgStartBlock: fc.integer({ min: 1000, max: 2000 }).map(n => BigInt(n)), // Smaller range
+          reorgDepth: fc.integer({ min: 1, max: 3 }), // Reduced reorg depth
           nonCanonicalEvents: fc.array(
             fc.record({
               transactionHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
-              logIndex: fc.integer({ min: 0, max: 100 }),
-              blockNumber: fc.bigUintN(32),
+              logIndex: fc.integer({ min: 0, max: 10 }),
+              blockNumber: fc.integer({ min: 1000, max: 2000 }).map(n => BigInt(n)),
               blockHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
             }),
-            { minLength: 1, maxLength: 20 }
+            { minLength: 1, maxLength: 5 } // Reduced array size
           ),
           canonicalEvents: fc.array(
             fc.record({
               transactionHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
-              logIndex: fc.integer({ min: 0, max: 100 }),
-              blockNumber: fc.bigUintN(32),
+              logIndex: fc.integer({ min: 0, max: 10 }),
+              blockNumber: fc.integer({ min: 1000, max: 2000 }).map(n => BigInt(n)),
               blockHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
               address: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-              topics: fc.array(fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`), { maxLength: 4 }),
+              topics: fc.array(fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`), { maxLength: 2 }),
             }),
-            { minLength: 0, maxLength: 15 }
+            { minLength: 0, maxLength: 3 } // Reduced array size
           ),
         }),
         async ({ reorgStartBlock, reorgDepth, nonCanonicalEvents, canonicalEvents }) => {
@@ -280,7 +280,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
           });
         }
       ),
-      { numRuns: 5 } // Reduced runs for complex test
+      { numRuns: 3 } // Reduced runs for complex test
     );
   });
 

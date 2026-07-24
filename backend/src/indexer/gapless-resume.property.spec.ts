@@ -37,7 +37,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
             cachedEvent: {
               findFirst: jest.fn(),
               findMany: jest.fn(),
-              deleteMany: jest.fn(),
+              deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
               upsert: jest.fn(),
               count: jest.fn(),
             },
