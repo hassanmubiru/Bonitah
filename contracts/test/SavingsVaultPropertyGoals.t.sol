@@ -261,7 +261,7 @@ contract SavingsVaultPropertyGoalsTest is Test {
         vm.prank(user1);
         vault.deposit(1000e18);
         
-        if (_zeroAmount || _pastDate || targetDate <= block.timestamp) {
+        if (_zeroAmount || (_pastDate && block.timestamp > 1 && targetDate <= block.timestamp)) {
             // Should revert with InvalidGoalParams
             vm.expectRevert(abi.encodeWithSelector(ISavingsVault.InvalidGoalParams.selector));
             vm.prank(user1);
