@@ -1,5 +1,5 @@
 // Setup testing-library/jest-dom custom matchers
-import '@testing-library/jest-dom';
+require('@testing-library/jest-dom');
 
 // Global test utilities
 global.ResizeObserver = jest.fn().mockImplementation(() => ({

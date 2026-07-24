@@ -11,9 +11,9 @@
     "lint": "next lint --max-warnings 0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "clean": "rm -rf .next out",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
-    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --watch",
-    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@bfn/shared": "workspace:*",
