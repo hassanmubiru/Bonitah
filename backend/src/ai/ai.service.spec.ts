@@ -130,12 +130,14 @@ describe('AiService', () => {
   describe('Service Unavailability Handling (Req 10.8)', () => {
     it('should return service unavailable when OpenAI is not configured', async () => {
       // Create service without OpenAI API key
-      mockEnvService.openaiApiKey = undefined;
+      const envWithoutOpenAI = {
+        openaiApiKey: undefined,
+      } as jest.Mocked<EnvService>;
       
       const module: TestingModule = await Test.createTestingModule({
         providers: [
           AiService,
-          { provide: EnvService, useValue: mockEnvService },
+          { provide: EnvService, useValue: envWithoutOpenAI },
           { provide: PrismaService, useValue: mockPrismaService },
           { provide: ChainReadService, useValue: mockChainReadService },
         ],
@@ -301,10 +303,10 @@ describe('AiService', () => {
       const result = await service.getConversations(userId, 10);
 
       expect(result).toHaveLength(2);
-      expect(result[0].id).toBe('conv1');
-      expect(result[0].lastMessage).toBe('Latest message');
-      expect(result[1].id).toBe('conv2');
-      expect(result[1].lastMessage).toBeNull();
+      expect(result[0]?.id).toBe('conv1');
+      expect(result[0]?.lastMessage).toBe('Latest message');
+      expect(result[1]?.id).toBe('conv2');
+      expect(result[1]?.lastMessage).toBeNull();
     });
   });
 });
