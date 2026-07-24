@@ -134,7 +134,7 @@ describe('Integration Tests - Theme, Responsiveness, and Accessibility', () => {
         expect(screen.getByText('Skip to main content')).toHaveFocus();
 
         await user.tab(); // Brand link
-        expect(screen.getByRole('link')).toHaveFocus();
+        expect(screen.getByRole('link', { name: /bonitah financial network/i })).toHaveFocus();
 
         await user.tab(); // Theme button
         expect(screen.getByRole('button', { name: /switch/i })).toHaveFocus();
@@ -184,7 +184,7 @@ describe('Integration Tests - Theme, Responsiveness, and Accessibility', () => {
       expect(initialResults).toHaveNoViolations();
 
       // Theme transition
-      const themeButton = screen.getByRole('button');
+      const themeButton = screen.getByRole('button', { name: /switch to dark theme/i });
       await user.click(themeButton);
 
       // Check accessibility during transition (immediate)
