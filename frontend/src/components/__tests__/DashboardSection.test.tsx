@@ -197,7 +197,7 @@ describe('Component Tests for Loading/Error/Retry States', () => {
 
     it('maintains loading state during retries without showing placeholder values', async () => {
       let attemptCount = 0;
-      mockPublicClient.readContract.mockImplementation(() => {
+      mockReadContract.mockImplementation(() => {
         attemptCount++;
         if (attemptCount < 3) {
           return Promise.reject(new Error('Network request failed'));
