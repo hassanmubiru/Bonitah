@@ -276,7 +276,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 10: IPFS upload boundary validation**
     - **Validates: Requirements 3.5, 3.8**
 
-  - [ ] 15.3 Write unit tests for storage-failure handling
+  - [x] 15.3 Write unit tests for storage-failure handling
     - Assert failure returns an error and no CID
     - _Requirements: 3.9, 8.9_
 

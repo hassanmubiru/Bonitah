@@ -221,7 +221,7 @@ describe('Integration Tests - Theme, Responsiveness, and Accessibility', () => {
       const user = userEvent.setup();
       render(<TestApp />);
 
-      const themeButton = screen.getByRole('button');
+      const themeButton = screen.getByRole('button', { name: /switch to dark theme/i });
 
       // Rapidly switch themes
       await user.click(themeButton); // light -> dark
@@ -268,7 +268,7 @@ describe('Integration Tests - Theme, Responsiveness, and Accessibility', () => {
 
       // Theme toggle should still work
       const user = userEvent.setup();
-      const themeButton = screen.getByRole('button');
+      const themeButton = screen.getByRole('button', { name: /switch to dark theme/i });
       await user.click(themeButton);
 
       await waitFor(() => {
@@ -281,7 +281,7 @@ describe('Integration Tests - Theme, Responsiveness, and Accessibility', () => {
       render(<TestApp />);
 
       // Focus the theme button
-      const themeButton = screen.getByRole('button');
+      const themeButton = screen.getByRole('button', { name: /switch to dark theme/i });
       themeButton.focus();
       expect(themeButton).toHaveFocus();
 
