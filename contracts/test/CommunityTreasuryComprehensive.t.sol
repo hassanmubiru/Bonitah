@@ -94,3 +94,88 @@ contract CommunityTreasuryComprehensiveTest is Test {
         vm.prank(user2);
         treasury.joinCircle(poolId);
     }
+    /**
+     * Test ContributionMade event emission for circle contributions (Req 13.7)
+     */
+    function test_EventEmission_ContributionMade_Circle() public {
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        
+        uint256 amount = 1000e18;
+        vm.expectEmit(true, true, false, true);
+        emit ContributionMade(user1, poolId, amount);
+        
+        vm.prank(user1);
+        treasury.contribute(poolId, amount);
+    }
+    
+    /**
+     * Test ContributionMade event emission for pool contributions (Req 13.7)
+     */
+    function test_EventEmission_ContributionMade_Pool() public {
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        
+        uint256 amount = 1500e18;
+        vm.expectEmit(true, true, false, true);
+        emit ContributionMade(user1, poolId, amount);
+        
+        vm.prank(user1);
+        treasury.contributeToPool(poolId, amount);
+    }
+    
+    /**
+     * Test VoteCast event emission (Req 13.8)
+     */
+    function test_EventEmission_VoteCast() public {
+        // Setup circle with members and contribution
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        vm.prank(user2);
+        treasury.joinCircle(poolId);
+        
+        vm.prank(user1);
+        treasury.contribute(poolId, 1000e18);
+        
+        // Propose action
+        vm.prank(user1);
+        uint256 actionId = treasury.proposeAction(poolId, recipient, 500e18);
+        
+        vm.expectEmit(true, true, false, false);
+        emit VoteCast(user1, actionId);
+        
+        vm.prank(user1);
+        treasury.vote(actionId);
+    }
+    
+    /**
+     * Test ActionExecuted event emission (Req 13.8)
+     */
+    function test_EventEmission_ActionExecuted() public {
+        // Setup circle with members and contribution
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        vm.prank(user2);
+        treasury.joinCircle(poolId);
+        
+        vm.prank(user1);
+        treasury.contribute(poolId, 1000e18);
+        
+        // Propose action
+        vm.prank(user1);
+        uint256 actionId = treasury.proposeAction(poolId, recipient, 500e18);
+        
+        // First vote - no execution yet
+        vm.prank(user1);
+        treasury.vote(actionId);
+        
+        // Second vote should trigger execution and emit ActionExecuted
+        vm.expectEmit(true, true, false, true);
+        emit ActionExecuted(actionId, recipient, 500e18);
+        
+        vm.prank(user2);
+        treasury.vote(actionId);
+        
+        // Verify execution occurred
+        assertEq(token.balanceOf(recipient), 500e18);
+    }
