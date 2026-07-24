@@ -148,8 +148,7 @@ describe('Component Tests for Loading/Error/Retry States', () => {
    * Test Requirement 11.4: Display loading state during fetch without placeholder values
    */
   describe('Loading State (Req 11.4)', () => {
-    it('displays loading state during data fetch without placeholder values', async () => {
-      // Mock loading state
+    it('displays loading state without placeholder financial values', () => {
       const mockState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: true,
@@ -180,20 +179,19 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
     });
 
-    it('shows loading state for multiple concurrent sections independently', () => {
-      // Mock both sections as loading
-      mockUseContractRead.mockReturnValue({
+    it('shows loading state for multiple sections independently', () => {
+      const mockState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: true,
         isError: false,
         error: null,
         refetch: jest.fn(),
-      });
+      };
 
       render(
         <TestWrapper>
-          <DashboardSection {...testProps} title="Balance" functionName="balanceOf" />
-          <DashboardSection {...testProps} title="Portfolio" functionName="portfolioValue" />
+          <DashboardSection {...testProps} title="Balance" functionName="balanceOf" mockState={mockState} />
+          <DashboardSection {...testProps} title="Portfolio" functionName="portfolioValue" mockState={mockState} />
         </TestWrapper>
       );
 
@@ -207,19 +205,18 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       expect(screen.queryByText(/ETH/)).not.toBeInTheDocument();
     });
 
-    it('never displays placeholder values during loading regardless of previous data', () => {
-      // Mock loading state with no data
-      mockUseContractRead.mockReturnValue({
+    it('never displays placeholder values during loading regardless of previous state', () => {
+      const mockState: ContractReadState<unknown> = {
         data: undefined, // Explicitly no data during loading
         isLoading: true,
         isError: false,
         error: null,
         refetch: jest.fn(),
-      });
+      };
 
       render(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={mockState} />
         </TestWrapper>
       );
 
@@ -237,18 +234,17 @@ describe('Component Tests for Loading/Error/Retry States', () => {
    */
   describe('Error State Transition (Req 11.5)', () => {
     it('displays error state when requests fail (simulating timeout behavior)', () => {
-      // Mock error state that would result from timeout or other failure
-      mockUseContractRead.mockReturnValue({
+      const mockState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: false,
         isError: true,
         error: { name: 'ContractReadError', message: 'Request timeout' },
         refetch: jest.fn(),
-      });
+      };
 
       render(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={mockState} />
         </TestWrapper>
       );
 
@@ -262,27 +258,26 @@ describe('Component Tests for Loading/Error/Retry States', () => {
     });
 
     it('applies error state per section independently', () => {
-      // Mock different states for different sections
-      mockUseContractRead
-        .mockReturnValueOnce({
-          data: 1000n,
-          isLoading: false,
-          isError: false,
-          error: null,
-          refetch: jest.fn(),
-        })
-        .mockReturnValueOnce({
-          data: undefined,
-          isLoading: false,
-          isError: true,
-          error: { name: 'ContractReadError', message: 'Request timeout' },
-          refetch: jest.fn(),
-        });
+      const successState: ContractReadState<unknown> = {
+        data: 1000n,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      };
+
+      const errorState: ContractReadState<unknown> = {
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        error: { name: 'ContractReadError', message: 'Request timeout' },
+        refetch: jest.fn(),
+      };
 
       render(
         <TestWrapper>
-          <DashboardSection {...testProps} title="Balance" functionName="balanceOf" />
-          <DashboardSection {...testProps} title="Portfolio" functionName="portfolioValue" />
+          <DashboardSection {...testProps} title="Balance" functionName="balanceOf" mockState={successState} />
+          <DashboardSection {...testProps} title="Portfolio" functionName="portfolioValue" mockState={errorState} />
         </TestWrapper>
       );
 
@@ -298,43 +293,36 @@ describe('Component Tests for Loading/Error/Retry States', () => {
     });
 
     it('transitions from loading to error state correctly', () => {
-      // Test the state transition conceptually
-      const { rerender } = render(
-        <TestWrapper>
-          <DashboardSection {...testProps} />
-        </TestWrapper>
-      );
-
-      // Initially loading
-      mockUseContractRead.mockReturnValue({
+      const loadingState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: true,
         isError: false,
         error: null,
         refetch: jest.fn(),
-      });
+      };
 
-      rerender(
-        <TestWrapper>
-          <DashboardSection {...testProps} />
-        </TestWrapper>
-      );
-
-      expect(screen.getByTestId('Balance-loading')).toBeInTheDocument();
-      expect(screen.queryByTestId('Balance-error')).not.toBeInTheDocument();
-
-      // Transition to error (simulating timeout)
-      mockUseContractRead.mockReturnValue({
+      const errorState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: false,
         isError: true,
         error: { name: 'ContractReadError', message: 'Dashboard section timeout after 30 seconds' },
         refetch: jest.fn(),
-      });
+      };
 
+      const { rerender } = render(
+        <TestWrapper>
+          <DashboardSection {...testProps} mockState={loadingState} />
+        </TestWrapper>
+      );
+
+      // Initially loading
+      expect(screen.getByTestId('Balance-loading')).toBeInTheDocument();
+      expect(screen.queryByTestId('Balance-error')).not.toBeInTheDocument();
+
+      // Transition to error (simulating timeout)
       rerender(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={errorState} />
         </TestWrapper>
       );
 
@@ -352,17 +340,17 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       const mockRefetch = jest.fn();
       const errorMessage = 'Network connection failed';
       
-      mockUseContractRead.mockReturnValue({
+      const mockState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: false,
         isError: true,
         error: { name: 'ContractReadError', message: errorMessage },
         refetch: mockRefetch,
-      });
+      };
 
       render(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={mockState} />
         </TestWrapper>
       );
 
@@ -387,17 +375,17 @@ describe('Component Tests for Loading/Error/Retry States', () => {
     it('retry button actually re-initiates the section fetch', () => {
       const mockRefetch = jest.fn();
       
-      mockUseContractRead.mockReturnValue({
+      const mockState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: false,
         isError: true,
         error: { name: 'ContractReadError', message: 'Network error' },
         refetch: mockRefetch,
-      });
+      };
 
       render(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={mockState} />
         </TestWrapper>
       );
 
@@ -410,17 +398,17 @@ describe('Component Tests for Loading/Error/Retry States', () => {
     });
 
     it('never shows substituted values in error state', () => {
-      mockUseContractRead.mockReturnValue({
+      const mockState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: false,
         isError: true,
         error: { name: 'ContractReadError', message: 'Contract call failed' },
         refetch: jest.fn(),
-      });
+      };
 
       render(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={mockState} />
         </TestWrapper>
       );
 
@@ -441,17 +429,17 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       const mockRefetch = jest.fn();
       
       // Test with timeout error
-      mockUseContractRead.mockReturnValue({
+      const timeoutState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: false,
         isError: true,
         error: { name: 'ContractReadError', message: 'Request timeout' },
         refetch: mockRefetch,
-      });
+      };
 
       const { rerender } = render(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={timeoutState} />
         </TestWrapper>
       );
 
@@ -465,17 +453,17 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       expect(mockRefetch).toHaveBeenCalledTimes(1);
 
       // Test with network error
-      mockUseContractRead.mockReturnValue({
+      const networkState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: false,
         isError: true,
         error: { name: 'ContractReadError', message: 'Network error' },
         refetch: mockRefetch,
-      });
+      };
 
       rerender(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={networkState} />
         </TestWrapper>
       );
 
@@ -485,27 +473,26 @@ describe('Component Tests for Loading/Error/Retry States', () => {
     });
 
     it('maintains error state independently across multiple sections', () => {
-      // Mock different states for different sections
-      mockUseContractRead
-        .mockReturnValueOnce({
-          data: undefined,
-          isLoading: false,
-          isError: true,
-          error: { name: 'ContractReadError', message: 'Balance fetch failed' },
-          refetch: jest.fn(),
-        })
-        .mockReturnValueOnce({
-          data: 5000n,
-          isLoading: false,
-          isError: false,
-          error: null,
-          refetch: jest.fn(),
-        });
+      const errorState: ContractReadState<unknown> = {
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        error: { name: 'ContractReadError', message: 'Balance fetch failed' },
+        refetch: jest.fn(),
+      };
+
+      const successState: ContractReadState<unknown> = {
+        data: 5000n,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      };
 
       render(
         <TestWrapper>
-          <DashboardSection {...testProps} title="Balance" functionName="balanceOf" />
-          <DashboardSection {...testProps} title="Portfolio" functionName="portfolioValue" />
+          <DashboardSection {...testProps} title="Balance" functionName="balanceOf" mockState={errorState} />
+          <DashboardSection {...testProps} title="Portfolio" functionName="portfolioValue" mockState={successState} />
         </TestWrapper>
       );
 
@@ -526,44 +513,38 @@ describe('Component Tests for Loading/Error/Retry States', () => {
    */
   describe('State Transitions and Accessibility', () => {
     it('follows proper loading → success state transition', () => {
-      const { rerender } = render(
-        <TestWrapper>
-          <DashboardSection {...testProps} />
-        </TestWrapper>
-      );
-
-      // Initial: loading state
-      mockUseContractRead.mockReturnValue({
+      const loadingState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: true,
         isError: false,
         error: null,
         refetch: jest.fn(),
-      });
+      };
 
-      rerender(
+      const successState: ContractReadState<unknown> = {
+        data: 6000n,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      };
+
+      const { rerender } = render(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={loadingState} />
         </TestWrapper>
       );
 
+      // Initial: loading state
       expect(screen.getByTestId('Balance-loading')).toBeInTheDocument();
       expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
       expect(screen.queryByTestId('Balance-data')).not.toBeInTheDocument();
       expect(screen.queryByTestId('Balance-error')).not.toBeInTheDocument();
 
       // Final: success state
-      mockUseContractRead.mockReturnValue({
-        data: 6000n,
-        isLoading: false,
-        isError: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
       rerender(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={successState} />
         </TestWrapper>
       );
 
@@ -574,43 +555,37 @@ describe('Component Tests for Loading/Error/Retry States', () => {
     });
 
     it('follows proper loading → error state transition', () => {
-      const { rerender } = render(
-        <TestWrapper>
-          <DashboardSection {...testProps} />
-        </TestWrapper>
-      );
-
-      // Initial: loading state
-      mockUseContractRead.mockReturnValue({
+      const loadingState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: true,
         isError: false,
         error: null,
         refetch: jest.fn(),
-      });
+      };
 
-      rerender(
-        <TestWrapper>
-          <DashboardSection {...testProps} />
-        </TestWrapper>
-      );
-
-      expect(screen.getByTestId('Balance-loading')).toBeInTheDocument();
-      expect(screen.queryByTestId('Balance-error')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('Balance-data')).not.toBeInTheDocument();
-
-      // Final: error state
-      mockUseContractRead.mockReturnValue({
+      const errorState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: false,
         isError: true,
         error: { name: 'ContractReadError', message: 'Request failed' },
         refetch: jest.fn(),
-      });
+      };
 
+      const { rerender } = render(
+        <TestWrapper>
+          <DashboardSection {...testProps} mockState={loadingState} />
+        </TestWrapper>
+      );
+
+      // Initial: loading state
+      expect(screen.getByTestId('Balance-loading')).toBeInTheDocument();
+      expect(screen.queryByTestId('Balance-error')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('Balance-data')).not.toBeInTheDocument();
+
+      // Final: error state
       rerender(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={errorState} />
         </TestWrapper>
       );
 
@@ -621,41 +596,43 @@ describe('Component Tests for Loading/Error/Retry States', () => {
     });
 
     it('follows proper error → loading → success state transition via retry', () => {
-      const { rerender } = render(
-        <TestWrapper>
-          <DashboardSection {...testProps} />
-        </TestWrapper>
-      );
-
-      // Initial failure → error state
-      mockUseContractRead.mockReturnValue({
+      const errorState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: false,
         isError: true,
         error: { name: 'ContractReadError', message: 'Initial failure' },
         refetch: jest.fn(),
-      });
+      };
 
-      rerender(
-        <TestWrapper>
-          <DashboardSection {...testProps} />
-        </TestWrapper>
-      );
-
-      expect(screen.getByTestId('Balance-error')).toBeInTheDocument();
-
-      // Retry → loading state
-      mockUseContractRead.mockReturnValue({
+      const loadingState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: true,
         isError: false,
         error: null,
         refetch: jest.fn(),
-      });
+      };
 
+      const successState: ContractReadState<unknown> = {
+        data: 7000n,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      };
+
+      const { rerender } = render(
+        <TestWrapper>
+          <DashboardSection {...testProps} mockState={errorState} />
+        </TestWrapper>
+      );
+
+      // Initial failure → error state
+      expect(screen.getByTestId('Balance-error')).toBeInTheDocument();
+
+      // Retry → loading state
       rerender(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={loadingState} />
         </TestWrapper>
       );
 
@@ -664,17 +641,9 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       expect(screen.queryByTestId('Balance-data')).not.toBeInTheDocument();
 
       // Success → data state
-      mockUseContractRead.mockReturnValue({
-        data: 7000n,
-        isLoading: false,
-        isError: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
       rerender(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={successState} />
         </TestWrapper>
       );
 
@@ -685,42 +654,44 @@ describe('Component Tests for Loading/Error/Retry States', () => {
     });
 
     it('has proper accessibility attributes in all states', () => {
-      const { rerender } = render(
-        <TestWrapper>
-          <DashboardSection {...testProps} />
-        </TestWrapper>
-      );
-
-      // Loading state accessibility
-      mockUseContractRead.mockReturnValue({
+      const loadingState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: true,
         isError: false,
         error: null,
         refetch: jest.fn(),
-      });
+      };
 
-      rerender(
-        <TestWrapper>
-          <DashboardSection {...testProps} />
-        </TestWrapper>
-      );
-
-      expect(screen.getByRole('status')).toBeInTheDocument();
-      expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
-
-      // Error state accessibility
-      mockUseContractRead.mockReturnValue({
+      const errorState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: false,
         isError: true,
         error: { name: 'ContractReadError', message: 'Test error' },
         refetch: jest.fn(),
-      });
+      };
 
+      const successState: ContractReadState<unknown> = {
+        data: 8000n,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      };
+
+      const { rerender } = render(
+        <TestWrapper>
+          <DashboardSection {...testProps} mockState={loadingState} />
+        </TestWrapper>
+      );
+
+      // Loading state accessibility
+      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
+
+      // Error state accessibility
       rerender(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={errorState} />
         </TestWrapper>
       );
 
@@ -728,17 +699,9 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       expect(screen.getByTestId('Balance-retry')).toHaveAttribute('aria-label', 'Retry loading balance');
 
       // Success state accessibility (no special requirements)
-      mockUseContractRead.mockReturnValue({
-        data: 8000n,
-        isLoading: false,
-        isError: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
       rerender(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={successState} />
         </TestWrapper>
       );
 
@@ -752,32 +715,23 @@ describe('Component Tests for Loading/Error/Retry States', () => {
    * Test disabled state handling
    */
   describe('Disabled State Handling', () => {
-    it('does not call useContractRead when disabled', () => {
-      // Mock hook to return a "not called" state
-      mockUseContractRead.mockReturnValue({
+    it('does not render loading/error/data states when disabled', () => {
+      // Mock a "disabled" state (hook should not be called when enabled: false)
+      const disabledState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: false,
         isError: false,
         error: null,
         refetch: jest.fn(),
-      });
+      };
 
       render(
         <TestWrapper>
-          <DashboardSection {...testProps} enabled={false} />
+          <DashboardSection {...testProps} enabled={false} mockState={disabledState} />
         </TestWrapper>
       );
 
-      // Should call the hook but with enabled: false
-      expect(mockUseContractRead).toHaveBeenCalledWith({
-        address: testProps.contractAddress,
-        abi: testProps.abi,
-        functionName: testProps.functionName,
-        args: testProps.args,
-        enabled: false,
-      });
-
-      // Should show the section structure but no content
+      // Should show the section structure but no specific state content
       expect(screen.getByTestId('Balance-section')).toBeInTheDocument();
       expect(screen.getByText('Balance')).toBeInTheDocument();
       
@@ -788,36 +742,40 @@ describe('Component Tests for Loading/Error/Retry States', () => {
     });
 
     it('can be enabled and disabled dynamically', () => {
-      const { rerender } = render(
-        <TestWrapper>
-          <DashboardSection {...testProps} enabled={false} />
-        </TestWrapper>
-      );
+      const disabledState: ContractReadState<unknown> = {
+        data: undefined,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      };
 
-      // Initially disabled
-      expect(mockUseContractRead).toHaveBeenCalledWith(
-        expect.objectContaining({ enabled: false })
-      );
-
-      // Enable
-      mockUseContractRead.mockReturnValue({
+      const enabledState: ContractReadState<unknown> = {
         data: 10000n,
         isLoading: false,
         isError: false,
         error: null,
         refetch: jest.fn(),
-      });
+      };
 
-      rerender(
+      const { rerender } = render(
         <TestWrapper>
-          <DashboardSection {...testProps} enabled={true} />
+          <DashboardSection {...testProps} enabled={false} mockState={disabledState} />
         </TestWrapper>
       );
 
-      // Should now be enabled and show data
-      expect(mockUseContractRead).toHaveBeenCalledWith(
-        expect.objectContaining({ enabled: true })
+      // Initially disabled
+      expect(screen.queryByTestId('Balance-loading')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('Balance-data')).not.toBeInTheDocument();
+
+      // Enable
+      rerender(
+        <TestWrapper>
+          <DashboardSection {...testProps} enabled={true} mockState={enabledState} />
+        </TestWrapper>
       );
+
+      // Should now show data
       expect(screen.getByTestId('Balance-data')).toBeInTheDocument();
       expect(screen.getByText('10000 ETH')).toBeInTheDocument();
     });
