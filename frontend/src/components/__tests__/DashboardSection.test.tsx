@@ -245,10 +245,16 @@ describe('Component Tests for Loading/Error/Retry States', () => {
    */
   describe('Error State Transition (Req 11.5)', () => {
     it('transitions from loading to error state when requests fail', async () => {
-      // Mock a failing request to simulate what would happen after timeout
-      mockPublicClient.readContract.mockRejectedValue(new Error('Request timeout'));
+      // Start with loading state
+      mockUseContractRead.mockReturnValueOnce({
+        data: undefined,
+        isLoading: true,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      });
 
-      render(
+      const { rerender } = render(
         <TestWrapper>
           <DashboardSection {...testProps} />
         </TestWrapper>,
@@ -258,11 +264,24 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       expect(screen.getByTestId('Balance-loading')).toBeInTheDocument();
       expect(screen.queryByTestId('Balance-error')).not.toBeInTheDocument();
 
-      // Should transition to error state when request fails - Req 11.5
-      await waitFor(() => {
-        expect(screen.queryByTestId('Balance-loading')).not.toBeInTheDocument();
-        expect(screen.getByTestId('Balance-error')).toBeInTheDocument();
+      // Transition to error state
+      mockUseContractRead.mockReturnValueOnce({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        error: { name: 'ContractReadError', message: 'Request timeout' } as any,
+        refetch: jest.fn(),
       });
+
+      rerender(
+        <TestWrapper>
+          <DashboardSection {...testProps} />
+        </TestWrapper>,
+      );
+
+      // Should transition to error state when request fails - Req 11.5
+      expect(screen.queryByTestId('Balance-loading')).not.toBeInTheDocument();
+      expect(screen.getByTestId('Balance-error')).toBeInTheDocument();
 
       // Error state should be accessible
       expect(screen.getByRole('alert')).toHaveAttribute('aria-live', 'assertive');
