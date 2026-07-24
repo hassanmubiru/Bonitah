@@ -44,7 +44,7 @@ describe('Event Indexer 60s Timing (e2e)', () => {
       JWT_SECRET: 'test-secret-32-chars-long-enough-for-hmac',
       JWT_EXPIRES_IN: '24h',
       PINATA_JWT: 'test-pinata-jwt-token-for-testing',
-      ISSUER_PRIVATE_KEY: 'test-issuer-key-for-e2e-testing',
+      ISSUER_PRIVATE_KEY: '0x' + '1'.repeat(64), // Valid 32-byte private key for testing
       OPENAI_API_KEY: 'test-openai-api-key-for-testing',
     });
 
