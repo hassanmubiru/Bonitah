@@ -389,7 +389,7 @@ describe('AI Timeout and Unavailability Integration', () => {
 
       // Mock some reads to succeed, others to fail
       let callCount = 0;
-      mockChainReadService.read.mockImplementation((params: any) => {
+      mockChainReadService.read.mockImplementation((_params: any) => {
         callCount++;
         if (callCount === 1) {
           // First call (savings balance) succeeds
