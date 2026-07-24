@@ -95,13 +95,9 @@ describe('AI Timeout and Unavailability Integration', () => {
         chat: {
           completions: {
             create: jest.fn().mockImplementation(() => {
-              // Return a promise that resolves after 35 seconds (exceeds 30s timeout)
-              return new Promise((resolve) => {
-                setTimeout(() => {
-                  resolve({
-                    choices: [{ message: { content: 'This response is too slow' } }],
-                  });
-                }, 35000); // 35 seconds - exceeds timeout
+              // Return a promise that never resolves (simulates hanging request)
+              return new Promise(() => {
+                // This promise never resolves, so timeout will kick in
               });
             }),
           },
@@ -129,7 +125,7 @@ describe('AI Timeout and Unavailability Integration', () => {
         where: { userId },
         orderBy: { createdAt: 'desc' },
       });
-    }, 40000); // Set Jest timeout to 40s to allow for the 35s mock delay
+    }, 35000); // Set Jest timeout to 35s to allow for the 30s timeout
 
     it('should enforce exact 30-second timeout boundary', async () => {
       const question = 'Explain investment principles';
