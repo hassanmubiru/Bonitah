@@ -242,15 +242,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Poll finalized head, `getLogs` from last+1, idempotent upsert on `(txHash, logIndex)` with provenance, reorg detection/repair, and gapless resume with backoff on network loss
     - _Requirements: 12.1, 12.2, 12.5, 12.6, 13.10_
 
-  - [-] 13.2 Write property test for reorg convergence
+  - [ ] 13.2 Write property test for reorg convergence
     - **Property 31: Event indexing converges to canonical chain state**
     - **Validates: Requirements 12.5**
 
-  - [-] 13.3 Write property test for gapless resume
+  - [ ] 13.3 Write property test for gapless resume
     - **Property 32: Indexing resumes gaplessly**
     - **Validates: Requirements 12.6**
 
-  - [-] 13.4 Write integration test for 60s indexing timing
+  - [ ] 13.4 Write integration test for 60s indexing timing
     - Verify a finalized event is cached with provenance within the required window
     - _Requirements: 12.1, 12.2_
 
@@ -259,11 +259,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `/transactions` (own-wallet scope, descending block, <=100/page, empty set for none) and `/analytics/portfolio` provenanced series
     - _Requirements: 11.1, 12.3, 12.4_
 
-  - [-] 14.2 Write property test for transaction history scoping/ordering/paging
+  - [ ] 14.2 Write property test for transaction history scoping/ordering/paging
     - **Property 30: Transaction history is scoped, ordered, and paged**
     - **Validates: Requirements 11.2, 12.3**
 
-  - [-] 14.3 Write unit tests for empty and boundary pagination
+  - [ ] 14.3 Write unit tests for empty and boundary pagination
     - Test empty result set and max-page-size behavior
     - _Requirements: 12.3, 12.4_
 
@@ -443,7 +443,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Prerequisites and ordered steps for Base Sepolia contract deployment and service deployment
     - _Requirements: 18.5_
 
-- [-] 25. Final checkpoint
+- [ ] 25. Final checkpoint
   - Ensure all suites pass across contracts, backend, and frontend and CI is green; ask the user if questions arise.
 
 ## Notes
