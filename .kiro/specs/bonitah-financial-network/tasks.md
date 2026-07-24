@@ -298,19 +298,19 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 8.3, 8.4, 8.9, 8.10_
 
 - [ ] 17. Implement the AI Assistant module
-  - [ ] 17.1 Implement the AI assistant service
+  - [x] 17.1 Implement the AI assistant service
     - Validate question length (<=2000), read on-chain figures read-only via ChainRead (unavailable on failure, never fabricated), scope the OpenAI system prompt, enforce a 30s timeout with retained history, and persist conversation history
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.8, 10.9_
 
-  - [ ] 17.2 Write property test for AI question length boundary
+  - [x] 17.2 Write property test for AI question length boundary
     - **Property 29: AI question length boundary**
     - **Validates: Requirements 10.7**
 
-  - [ ] 17.3 Write property test for AI non-signing guarantee
+  - [x] 17.3 Write property test for AI non-signing guarantee
     - **Property 28: AI assistant never signs or submits transactions**
     - **Validates: Requirements 10.2**
 
-  - [ ] 17.4 Write integration tests for AI timeout/unavailability
+  - [x] 17.4 Write integration tests for AI timeout/unavailability
     - Assert 503 with retained history on timeout/unavailable and unavailable-figure handling on read failure
     - _Requirements: 10.8, 10.9_
 
