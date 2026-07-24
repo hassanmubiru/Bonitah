@@ -67,16 +67,6 @@ describe('Event Indexer 60s Timing (e2e)', () => {
       transport: http(process.env['BASE_SEPOLIA_RPC_URL']),
     });
 
-    // Set up wallet client for creating test transactions (if needed)
-    if (process.env['TEST_PRIVATE_KEY']) {
-      const account = privateKeyToAccount(process.env['TEST_PRIVATE_KEY'] as `0x${string}`);
-      walletClient = createWalletClient({
-        account,
-        chain: baseSepolia,
-        transport: http(process.env['BASE_SEPOLIA_RPC_URL']),
-      });
-    }
-
     // Clean up test data before starting
     await prisma.cachedEvent.deleteMany({});
     await prisma.indexerState.deleteMany({});
@@ -110,7 +100,7 @@ describe('Event Indexer 60s Timing (e2e)', () => {
       
       // Record initial state
       const initialEventCount = await prisma.cachedEvent.count();
-      const initialBlock = await publicClient.getBlockNumber({ blockTag: 'finalized' });
+      const initialBlock = await publicClient.getBlockNumber();
       
       console.log(`Starting indexing timing test at block ${initialBlock}`);
       console.log(`Initial cached event count: ${initialEventCount}`);

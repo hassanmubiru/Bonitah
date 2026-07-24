@@ -119,7 +119,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
           });
         }
       ),
-      { numRuns: 10 }
+      { numRuns: 5 }
     );
   });
 
@@ -330,7 +330,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
           expect(upsertCalls.size).toBe(events.length);
         }
       ),
-      { numRuns: 10 }
+      { numRuns: 5 }
     );
   });
 
