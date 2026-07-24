@@ -150,17 +150,17 @@ describe('Component Tests for Loading/Error/Retry States', () => {
   describe('Loading State (Req 11.4)', () => {
     it('displays loading state during data fetch without placeholder values', async () => {
       // Mock loading state
-      mockUseContractRead.mockReturnValue({
+      const mockState: ContractReadState<unknown> = {
         data: undefined,
         isLoading: true,
         isError: false,
         error: null,
         refetch: jest.fn(),
-      });
+      };
 
       render(
         <TestWrapper>
-          <DashboardSection {...testProps} />
+          <DashboardSection {...testProps} mockState={mockState} />
         </TestWrapper>
       );
 
