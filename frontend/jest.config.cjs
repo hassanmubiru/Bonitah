@@ -11,6 +11,7 @@ const customJestConfig = {
   testEnvironment: 'jsdom',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@bfn/shared$': '<rootDir>/__mocks__/@bfn/shared.ts',
   },
   collectCoverageFrom: ['src/**/*.{js,jsx,ts,tsx}', '!src/**/*.d.ts', '!src/app/globals.css'],
   testMatch: ['**/__tests__/**/*.{js,jsx,ts,tsx}', '**/*(*.)@(spec|test).{js,jsx,ts,tsx}'],
