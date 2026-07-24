@@ -3,7 +3,9 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { type Address, type Abi, readContract } from 'viem';
 import { usePublicClient } from 'wagmi';
-import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
+
+// Import BASE_SEPOLIA_CHAIN_ID directly to avoid module issues  
+const BASE_SEPOLIA_CHAIN_ID = 84532;
 
 /**
  * Contract read error types for proper error handling.

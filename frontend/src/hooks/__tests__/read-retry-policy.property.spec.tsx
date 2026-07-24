@@ -6,7 +6,9 @@ import { type PublicClient, createPublicClient, http, type Address, type Abi } f
 import { baseSepolia } from 'viem/chains';
 
 import { useContractRead } from '../useContractRead';
-import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
+
+// Import BASE_SEPOLIA_CHAIN_ID directly to avoid module issues
+const BASE_SEPOLIA_CHAIN_ID = 84532;
 
 /**
  * Property 3: Read retry policy is bounded and correct
