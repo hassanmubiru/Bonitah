@@ -214,7 +214,7 @@ export class AiService {
    * Get user's financial context from on-chain data (Req 10.3).
    * On read failure, marks figures as unavailable and never fabricates (Req 10.9).
    */
-  private async getUserFinancialContext(walletAddress: string): Promise<string> {
+  private async getUserFinancialContext(address: string): Promise<string> {
     const context: string[] = [];
 
     try {
@@ -222,7 +222,7 @@ export class AiService {
       const savingsResult = await this.chainRead.read({
         contract: 'SavingsVault' as ContractName,
         functionName: 'availableBalance',
-        args: [walletAddress],
+        args: [address],
       });
 
       context.push(
