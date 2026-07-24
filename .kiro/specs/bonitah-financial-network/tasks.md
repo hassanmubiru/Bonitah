@@ -82,7 +82,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 14: Locked savings time-lock round-trip**
     - **Validates: Requirements 5.3, 5.4, 5.5, 5.8**
 
-  - [ ] 4.7 Write unit, event, revert, and reentrancy tests for SavingsVault
+  - [x] 4.7 Write unit, event, revert, and reentrancy tests for SavingsVault
     - Assert deposit/withdraw/goal/lock event args, one revert test per custom error, and a reentrancy-attack test
     - _Requirements: 4.6, 13.2, 13.3, 13.4, 13.5, 15.1, 15.2, 15.3_
 
