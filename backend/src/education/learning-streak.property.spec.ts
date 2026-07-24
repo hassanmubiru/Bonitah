@@ -227,12 +227,12 @@ describe('Property 21: Learning streak consecutive-day count', () => {
 
           // Use jest to spy on Date constructor to control "today"
           const realDate = Date;
-          const mockDate = jest.spyOn(global, 'Date').mockImplementation((...args) => {
+          const mockDate = jest.spyOn(global, 'Date').mockImplementation(((...args: any[]) => {
             if (args.length === 0) {
               return today;
             }
             return new realDate(...args);
-          });
+          }) as any);
 
           try {
             // Execute lesson completion (which triggers streak update)
@@ -288,12 +288,12 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           });
 
           // Mock Date constructor to control "today"
-          const mockDate = jest.spyOn(global, 'Date').mockImplementation((...args) => {
+          const mockDate = jest.spyOn(global, 'Date').mockImplementation(((...args: any[]) => {
             if (args.length === 0) {
               return today;
             }
             return new Date(...args);
-          });
+          }) as any);
 
           try {
             // Update lesson/progress mocks for this user
