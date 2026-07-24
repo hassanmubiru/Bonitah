@@ -20,7 +20,6 @@ import { IpfsService } from '../ipfs/ipfs.service';
  */
 describe('Property 21: Learning streak consecutive-day count', () => {
   let service: EducationService;
-  let prismaService: PrismaService;
 
   // Mock data for consistent testing
   const mockUserId = 'test-user-id';
@@ -66,13 +65,12 @@ describe('Property 21: Learning streak consecutive-day count', () => {
     }).compile();
 
     service = module.get<EducationService>(EducationService);
-    prismaService = module.get<PrismaService>(PrismaService);
 
     // Setup mock config values
     mockConfigService.getOrThrow.mockImplementation((key: string) => {
       const config: Record<string, string> = {
-        'ISSUER_PRIVATE_KEY': '0x' + 'a'.repeat(64), // Valid 32-byte private key
-        'BASE_SEPOLIA_RPC_URL': 'https://sepolia.base.org',
+        ISSUER_PRIVATE_KEY: '0x' + 'a'.repeat(64), // Valid 32-byte private key
+        BASE_SEPOLIA_RPC_URL: 'https://sepolia.base.org',
       };
       return config[key];
     });
@@ -109,7 +107,7 @@ describe('Property 21: Learning streak consecutive-day count', () => {
         async (today) => {
           // Mock no existing streak
           mockPrismaService.learningStreak.findUnique.mockResolvedValueOnce(null);
-          
+
           // Mock streak creation
           const expectedStreakData = {
             userId: mockUserId,
@@ -136,9 +134,9 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           } finally {
             Date.now = originalDateNow;
           }
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -193,9 +191,9 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           } finally {
             Date.now = originalDateNow;
           }
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -235,9 +233,9 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           } finally {
             Date.now = originalDateNow;
           }
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -293,9 +291,9 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           } finally {
             Date.now = originalDateNow;
           }
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -316,14 +314,14 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           // Set up yesterday and today with different hours
           const yesterday = new Date(baseDate);
           yesterday.setHours(hour1, 30, 0, 0);
-          
+
           const today = new Date(baseDate);
           today.setDate(today.getDate() + 1);
           today.setHours(hour2, 30, 0, 0);
 
           // Even if less than 24 hours apart, should still increment if different calendar days
           const timeDiff = today.getTime() - yesterday.getTime();
-          
+
           // Skip test if same calendar day (edge case)
           if (yesterday.toDateString() === today.toDateString()) {
             return;
@@ -370,9 +368,9 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           } finally {
             Date.now = originalDateNow;
           }
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -430,9 +428,9 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           } finally {
             Date.now = originalDateNow;
           }
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -468,9 +466,9 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           expect(mockPrismaService.learningStreak.findUnique).toHaveBeenCalledWith({
             where: { userId: mockUserId },
           });
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -481,7 +479,7 @@ describe('Property 21: Learning streak consecutive-day count', () => {
   it('returns default values for users with no learning streak', () => {
     fc.assert(
       fc.property(
-        fc.string().filter(s => s.length > 0), // Non-empty user ID
+        fc.string().filter((s) => s.length > 0), // Non-empty user ID
         async (userId) => {
           // Mock no existing streak
           mockPrismaService.learningStreak.findUnique.mockResolvedValueOnce(null);
@@ -495,9 +493,9 @@ describe('Property 21: Learning streak consecutive-day count', () => {
           expect(mockPrismaService.learningStreak.findUnique).toHaveBeenCalledWith({
             where: { userId },
           });
-        }
+        },
       ),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 });
