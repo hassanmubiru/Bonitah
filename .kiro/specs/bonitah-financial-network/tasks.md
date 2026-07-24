@@ -242,15 +242,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Poll finalized head, `getLogs` from last+1, idempotent upsert on `(txHash, logIndex)` with provenance, reorg detection/repair, and gapless resume with backoff on network loss
     - _Requirements: 12.1, 12.2, 12.5, 12.6, 13.10_
 
-  - [~] 13.2 Write property test for reorg convergence
+  - [-] 13.2 Write property test for reorg convergence
     - **Property 31: Event indexing converges to canonical chain state**
     - **Validates: Requirements 12.5**
 
-  - [~] 13.3 Write property test for gapless resume
+  - [-] 13.3 Write property test for gapless resume
     - **Property 32: Indexing resumes gaplessly**
     - **Validates: Requirements 12.6**
 
-  - [~] 13.4 Write integration test for 60s indexing timing
+  - [-] 13.4 Write integration test for 60s indexing timing
     - Verify a finalized event is cached with provenance within the required window
     - _Requirements: 12.1, 12.2_
 
