@@ -1,4 +1,10 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createWalletClient, http, Account, getContract } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -30,13 +36,13 @@ export class EducationService {
     // Initialize issuer account for certificate issuance (Req 8.3)
     const privateKey = this.configService.getOrThrow<string>('ISSUER_PRIVATE_KEY');
     this.issuerAccount = privateKeyToAccount(privateKey as `0x${string}`);
-    
+
     // Get Education contract address (would be loaded from shared package after deployment)
     this.educationContractAddress = this.configService.get<string>(
       'EDUCATION_CONTRACT_ADDRESS',
-      '0x0000000000000000000000000000000000000000' // Placeholder until deployed
+      '0x0000000000000000000000000000000000000000', // Placeholder until deployed
     );
-    
+
     this.logger.log(`Education service initialized with issuer: ${this.issuerAccount.address}`);
   }
 
@@ -135,7 +141,9 @@ export class EducationService {
     // Update learning streak (Req 8.2)
     await this.updateLearningStreak(userId);
 
-    this.logger.log(`Lesson completed: user=${userId}, lesson=${lessonId}, course=${lesson.course.title}`);
+    this.logger.log(
+      `Lesson completed: user=${userId}, lesson=${lessonId}, course=${lesson.course.title}`,
+    );
 
     return {
       progress,
@@ -220,7 +228,10 @@ export class EducationService {
       cid = await this.ipfsService.storeCertificateMetadata(metadata);
     } catch (error) {
       // On IPFS failure, leave prior state unchanged (Req 8.9)
-      this.logger.error(`IPFS storage failed for certificate: user=${userId}, course=${courseId}`, error);
+      this.logger.error(
+        `IPFS storage failed for certificate: user=${userId}, course=${courseId}`,
+        error,
+      );
       throw new InternalServerErrorException('Certificate metadata storage failed');
     }
 
@@ -234,7 +245,9 @@ export class EducationService {
 
       // For now, skip the actual on-chain call if contract address is not set
       if (this.educationContractAddress === '0x0000000000000000000000000000000000000000') {
-        this.logger.warn(`Education contract not deployed, skipping on-chain issuance for user=${userId}, course=${courseId}`);
+        this.logger.warn(
+          `Education contract not deployed, skipping on-chain issuance for user=${userId}, course=${courseId}`,
+        );
         return {
           transactionHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
           ipfsCid: cid,
@@ -252,14 +265,18 @@ export class EducationService {
         throw new InternalServerErrorException('Contract write methods not available');
       }
 
-      const txHash = await (educationContract.write as any).issueCertificate([
+      interface ContractWrite {
+        issueCertificate: (args: [string, string, string]) => Promise<string>;
+      }
+
+      const txHash = await (educationContract.write as ContractWrite).issueCertificate([
         walletAddress as `0x${string}`,
         course.onChainId as `0x${string}`,
         cid,
       ]);
 
       this.logger.log(
-        `Certificate issued: user=${userId}, course=${courseId}, tx=${txHash}, cid=${cid}`
+        `Certificate issued: user=${userId}, course=${courseId}, tx=${txHash}, cid=${cid}`,
       );
 
       return {
@@ -270,7 +287,10 @@ export class EducationService {
     } catch (error) {
       // If on-chain call fails, the IPFS metadata is already stored but that's acceptable
       // The user can retry certificate issuance with the same metadata
-      this.logger.error(`On-chain certificate issuance failed: user=${userId}, course=${courseId}`, error);
+      this.logger.error(
+        `On-chain certificate issuance failed: user=${userId}, course=${courseId}`,
+        error,
+      );
       throw new InternalServerErrorException('Certificate issuance failed');
     }
   }
@@ -283,9 +303,7 @@ export class EducationService {
    * @returns Progress information
    */
   async getUserProgress(userId: string, courseId?: string) {
-    const whereClause = courseId
-      ? { userId, lesson: { courseId } }
-      : { userId };
+    const whereClause = courseId ? { userId, lesson: { courseId } } : { userId };
 
     const progress = await this.prisma.lessonProgress.findMany({
       where: whereClause,

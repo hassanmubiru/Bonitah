@@ -1,13 +1,7 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Controller, Get, Post, Param, UseGuards, Request } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AuthenticatedRequest } from '../auth/auth.types';
 import { EducationService } from './education.service';
 
 /**
@@ -51,7 +45,7 @@ export class EducationController {
    * Records lesson completion for the authenticated user.
    */
   @Post('lessons/:id/complete')
-  async completeLesson(@Param('id') lessonId: string, @Request() req: any) {
+  async completeLesson(@Param('id') lessonId: string, @Request() req: AuthenticatedRequest) {
     const userId = req.user.userId; // From JWT payload
     return this.educationService.completeLesson(userId, lessonId);
   }
@@ -64,7 +58,7 @@ export class EducationController {
    * on-chain issuance. Returns transaction hash and IPFS CID (Req 8.3, 8.4).
    */
   @Post('courses/:id/certificate')
-  async issueCertificate(@Param('id') courseId: string, @Request() req: any) {
+  async issueCertificate(@Param('id') courseId: string, @Request() req: AuthenticatedRequest) {
     const { userId, address } = req.user; // From JWT payload
     return this.educationService.issueCertificate(userId, address, courseId);
   }
@@ -77,13 +71,16 @@ export class EducationController {
    * Returns lesson completion progress for the authenticated user.
    */
   @Get('progress')
-  async getUserProgress(@Request() req: any) {
+  async getUserProgress(@Request() req: AuthenticatedRequest) {
     const userId = req.user.userId;
     return this.educationService.getUserProgress(userId);
   }
 
   @Get('progress/:courseId')
-  async getCourseProgress(@Param('courseId') courseId: string, @Request() req: any) {
+  async getCourseProgress(
+    @Param('courseId') courseId: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
     const userId = req.user.userId;
     return this.educationService.getUserProgress(userId, courseId);
   }
@@ -95,7 +92,7 @@ export class EducationController {
    * Returns current consecutive-day learning streak.
    */
   @Get('streak')
-  async getLearningStreak(@Request() req: any) {
+  async getLearningStreak(@Request() req: AuthenticatedRequest) {
     const userId = req.user.userId;
     return this.educationService.getLearningStreak(userId);
   }
