@@ -47,8 +47,8 @@ contract MaliciousERC20 is MockERC20 {
         attacker = _attacker;
     }
     
-    function transfer(address to, uint256 amount) public override returns (bool) {
-        bool result = super.transfer(to, amount);
+    function transfer(address to, uint256 amount) external override returns (bool) {
+        bool result = MockERC20.transfer(to, amount);
         if (to == attacker) {
             ReentrantAttacker(attacker).onTransfer();
         }
