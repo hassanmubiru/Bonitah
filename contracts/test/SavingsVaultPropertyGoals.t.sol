@@ -169,7 +169,7 @@ contract SavingsVaultPropertyGoalsTest is Test {
         // Test additional contribution to first goal
         uint256 contrib1_2 = bound(_contrib1_2, 0, vault.availableBalance(user1));
         if (contrib1_2 > 0) {
-            uint256 savedBefore = vault.goals(user1, 0).savedAmount;
+            (,,,uint256 savedBefore,) = vault.goals(user1, 0);
             
             vm.prank(user1);
             vault.contributeToGoal(0, contrib1_2);
