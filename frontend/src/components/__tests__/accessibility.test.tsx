@@ -219,7 +219,7 @@ describe('Accessibility Tests', () => {
       render(<SiteHeader />);
       
       // Link should have descriptive text, not just "click here" or "read more"
-      const brandLink = screen.getByRole('link');
+      const brandLink = screen.getByRole('link', { name: /bonitah financial network/i });
       expect(brandLink).toHaveAccessibleName();
       expect(brandLink.textContent).toBe('Bonitah Financial Network');
     });

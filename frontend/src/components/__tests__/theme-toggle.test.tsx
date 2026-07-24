@@ -100,9 +100,9 @@ describe('ThemeToggle', () => {
 
     it('should handle theme switching correctly', async () => {
       const user = userEvent.setup();
-      renderThemeToggle();
+      const { rerender } = renderThemeToggle();
 
-      const button = screen.getByRole('button');
+      const button = screen.getByRole('button', { name: /switch to dark theme/i });
 
       // Click to switch from light to dark
       await user.click(button);
@@ -112,7 +112,6 @@ describe('ThemeToggle', () => {
       mockTheme = 'dark';
       mockSetTheme.mockClear();
 
-      const { rerender } = renderThemeToggle();
       rerender(<ThemeToggle />);
 
       await user.click(screen.getByRole('button', { name: /switch to light theme/i }));

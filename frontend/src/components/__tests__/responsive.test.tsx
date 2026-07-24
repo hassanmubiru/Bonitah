@@ -152,8 +152,11 @@ describe('Responsive Design Tests', () => {
       const testBreakpoints = [320, 480, 768, 1024, 1280, 1920];
 
       testBreakpoints.forEach((width) => {
+        // Clean up any previous renders
+        document.body.innerHTML = '';
+        
         setViewportSize(width);
-        render(<SiteHeader />);
+        const { unmount } = render(<SiteHeader />);
 
         const header = screen.getByRole('banner');
         const headerContainer = header.querySelector('.mx-auto');
@@ -168,6 +171,9 @@ describe('Responsive Design Tests', () => {
 
         // Should have proper padding at all sizes
         expect(headerContainer).toHaveClass('px-4');
+        
+        // Clean up after each iteration
+        unmount();
       });
     });
 

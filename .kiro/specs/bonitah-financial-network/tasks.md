@@ -285,7 +285,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement courses/lessons content, lesson-completion with dedupe, course progress, and consecutive-day learning streak in off-chain data
     - _Requirements: 8.1, 8.2, 8.6, 8.8_
 
-  - [ ] 16.2 Write property test for the learning streak
+  - [x] 16.2 Write property test for the learning streak
     - **Property 21: Learning streak equals consecutive-day count**
     - **Validates: Requirements 8.2**
 
