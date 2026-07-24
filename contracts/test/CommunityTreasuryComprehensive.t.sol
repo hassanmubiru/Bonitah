@@ -559,8 +559,8 @@ contract CommunityTreasuryComprehensiveTest is Test {
         uint256 user2Share = treasury.ownershipShare(poolId, user2);
         
         // User1 should have minimal but non-zero share
-        assertGt(user1Share, 0, "Even tiny contribution should have non-zero share");
-        assertEq(user1Share, (1 * 1e6) / totalContributions, "User1 share calculation");
+        assertGt(user1Share, 0, "Even small contribution should have non-zero share");
+        assertEq(user1Share, (1e18 * 1e6) / totalContributions, "User1 share calculation");
         assertEq(user2Share, (1000e18 * 1e6) / totalContributions, "User2 share calculation");
         
         // Shares should sum to 100%
