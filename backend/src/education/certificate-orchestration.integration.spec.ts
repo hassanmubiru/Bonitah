@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from '../app.module';
 import { PrismaService } from '../prisma/prisma.service';
 import { IpfsService } from '../ipfs/ipfs.service';
+import { EnvService } from '../config/env.service';
 
 /**
  * Integration test for Task 16.3: Certificate orchestration module.
@@ -34,8 +35,9 @@ describe('Certificate Orchestration Integration (Task 16.3)', () => {
             'ISSUER_PRIVATE_KEY': '0x0123456789012345678901234567890123456789012345678901234567890123',
             'BASE_SEPOLIA_RPC_URL': 'https://sepolia.base.org',
             'PINATA_JWT': 'test-pinata-jwt',
+            'JWT_EXPIRES_IN': '24h',
           };
-          return config[key] || key;
+          return config[key] || '24h'; // Default to valid session time format
         }),
         get: jest.fn().mockImplementation((key: string, defaultValue: string) => {
           if (key === 'EDUCATION_CONTRACT_ADDRESS') {

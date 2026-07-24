@@ -8,9 +8,16 @@ jest.mock('@/hooks/useContractRead', () => ({
   useContractRead: jest.fn(),
 }));
 
+// Mock wagmi's usePublicClient
+jest.mock('wagmi', () => ({
+  usePublicClient: jest.fn(),
+}));
+
 import { useContractRead } from '@/hooks/useContractRead';
+import { usePublicClient } from 'wagmi';
 
 const mockUseContractRead = useContractRead as jest.MockedFunction<typeof useContractRead>;
+const mockUsePublicClient = usePublicClient as jest.MockedFunction<typeof usePublicClient>;
 
 // Test component that uses the read hooks to demonstrate loading/error/retry states
 interface DashboardSectionProps {
