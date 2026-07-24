@@ -748,3 +748,81 @@ describe('Authentication Flow Component Tests', () => {
     });
   });
 });
+    it('shows connected wallet information when wallet is connected', () => {
+      mockUseAccount.mockReturnValue({
+        isConnected: true,
+        address: testAddress,
+        chainId: 84532,
+      });
+
+      render(<AuthPage />);
+
+      // Should show connection success
+      expect(screen.getByText('Wallet Connected')).toBeInTheDocument();
+      expect(screen.getByText(`${testAddress.slice(0, 6)}...${testAddress.slice(-4)}`)).toBeInTheDocument();
+
+      // Step 1 should show as completed
+      const step1Indicator = screen.getByText('Step 1: Connect Your Wallet')
+        .parentElement?.querySelector('.h-2.w-2.rounded-full');
+      expect(step1Indicator).toHaveClass('bg-green-500');
+    });
+  });
+
+  /**
+   * Test Requirement 2.3: Wrong network prompt and switching behavior
+   */
+  describe('Wrong Network Tests (Req 2.3)', () => {
+    it('wraps content with NetworkGuard for network enforcement', () => {
+      render(<AuthPage />);
+
+      // NetworkGuard should always wrap the auth content
+      expect(screen.getByTestId('network-guard')).toBeInTheDocument();
+      expect(mockNetworkGuard).toHaveBeenCalled();
+
+      // The auth content should be inside the NetworkGuard
+      const networkGuard = screen.getByTestId('network-guard');
+      expect(networkGuard).toContainElement(screen.getByText('Welcome to BFN'));
+    });
+
+    it('renders auth content normally when NetworkGuard allows it', () => {
+      render(<AuthPage />);
+
+      // Should show normal auth flow content
+      expect(screen.getByText('Welcome to BFN')).toBeInTheDocument();
+      expect(screen.getByText('Step 1: Connect Your Wallet')).toBeInTheDocument();
+      expect(screen.getByText('Connect your wallet and sign in securely')).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * Test Requirement 2.5: Handle user declining to sign SIWE message
+   */
+  describe('Sign Decline Tests (Req 2.5)', () => {
+    beforeEach(() => {
+      // Set up connected wallet for signing tests
+      mockUseAccount.mockReturnValue({
+        isConnected: true,
+        address: testAddress,
+        chainId: 84532,
+      });
+    });
+
+    it('displays error when user declines to sign SIWE message', async () => {
+      const user = userEvent.setup();
+
+      // Mock sign-in rejection
+      mockAuthState.error = 'User rejected signing';
+
+      render(<AuthPage />);
+
+      // Should show both steps when wallet is connected
+      expect(screen.getByText('Step 1: Connect Your Wallet')).toBeInTheDocument();
+      expect(screen.getByText('Step 2: Sign Authentication Message')).toBeInTheDocument();
+
+      // Should show error message
+      expect(screen.getByText('User rejected signing')).toBeInTheDocument();
+
+      // Error should be in an alert element
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent('User rejected signing');
+    });
