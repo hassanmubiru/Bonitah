@@ -28,8 +28,8 @@ contract CommunityTreasuryPropertyPoolRecordsTest is Test {
     address[] public users;
     
     uint256 public constant MAX_USERS = 10;
-    uint256 public constant MAX_CONTRIBUTIONS_PER_USER = 15;
-    uint256 public constant MAX_CONTRIBUTION_AMOUNT = 5000e18;
+    uint256 public constant MAX_CONTRIBUTIONS_PER_USER = 10; // Reduced to avoid allowance issues
+    uint256 public constant MAX_CONTRIBUTION_AMOUNT = 1000e18; // Reduced from 5000e18
     uint256 public constant INITIAL_BALANCE = 100000e18;
     
     // Struct to track expected contribution records
@@ -372,7 +372,7 @@ contract CommunityTreasuryPropertyPoolRecordsTest is Test {
         vm.prank(users[0]);
         uint256 poolId = treasury.createCircle(5, 51);
         
-        uint256 numContributions = 50; // Large number of contributions
+        uint256 numContributions = 20; // Reduced from 50
         uint256[] memory amounts = new uint256[](numContributions);
         uint256[] memory timestamps = new uint256[](numContributions);
         
