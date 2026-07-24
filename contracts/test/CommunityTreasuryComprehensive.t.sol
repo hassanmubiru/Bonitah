@@ -268,3 +268,92 @@ contract CommunityTreasuryComprehensiveTest is Test {
         vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.NotMember.selector, user2, poolId));
         treasury.proposeAction(poolId, recipient, 500e18);
     }
+    /**
+     * Test ZeroAmount error for contributions and actions
+     */
+    function test_Revert_ZeroAmount() public {
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        
+        // Zero amount circle contribution
+        vm.prank(user1);
+        vm.expectRevert(ICommunityTreasury.ZeroAmount.selector);
+        treasury.contribute(poolId, 0);
+        
+        // Zero amount pool contribution  
+        vm.prank(user1);
+        vm.expectRevert(ICommunityTreasury.ZeroAmount.selector);
+        treasury.contributeToPool(poolId, 0);
+        
+        // Zero amount action proposal
+        vm.prank(user1);
+        vm.expectRevert(ICommunityTreasury.ZeroAmount.selector);
+        treasury.proposeAction(poolId, recipient, 0);
+    }
+    
+    /**
+     * Test AlreadyVoted error
+     */
+    function test_Revert_AlreadyVoted() public {
+        // Setup circle and contribution
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        vm.prank(user1);
+        treasury.contribute(poolId, 1000e18);
+        
+        // Propose action
+        vm.prank(user1);
+        uint256 actionId = treasury.proposeAction(poolId, recipient, 500e18);
+        
+        // First vote succeeds
+        vm.prank(user1);
+        treasury.vote(actionId);
+        
+        // Second vote from same user should fail
+        vm.prank(user1);
+        vm.expectRevert(abi.encodeWithSelector(ICommunityTreasury.AlreadyVoted.selector, user1, actionId));
+        treasury.vote(actionId);
+    }
+    
+    /**
+     * Test UnknownAction error
+     */
+    function test_Revert_UnknownAction() public {
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        
+        uint256 nonExistentActionId = 999;
+        
+        // Voting on non-existent action
+        vm.prank(user1);
+        vm.expectRevert(abi.encodeWithSelector(treasury.UnknownAction.selector, nonExistentActionId));
+        treasury.vote(nonExistentActionId);
+    }
+    
+    /**
+     * Test InvalidRecipient error
+     */
+    function test_Revert_InvalidRecipient() public {
+        vm.prank(user1);
+        uint256 poolId = treasury.createCircle(10, 51);
+        
+        // Proposing action with zero address recipient
+        vm.prank(user1);
+        vm.expectRevert(treasury.InvalidRecipient.selector);
+        treasury.proposeAction(poolId, address(0), 500e18);
+    }
+    
+    // ========== REENTRANCY PROTECTION TESTS (Req 6.8, 15.3) ==========
+    
+    /**
+     * Test reentrancy protection on contribute function
+     */
+    function test_ReentrancyProtection_Contribute() public {
+        vm.prank(address(attacker));
+        uint256 poolId = treasury.createCircle(10, 51);
+        
+        // Attacker attempts reentrancy attack during contribution
+        vm.prank(address(attacker));
+        vm.expectRevert("ReentrancyGuard: reentrant call");
+        attacker.attackContribute(poolId, 1000e18);
+    }
