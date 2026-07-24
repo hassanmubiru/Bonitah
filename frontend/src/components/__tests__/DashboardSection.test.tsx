@@ -118,12 +118,6 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
 
-// Mock wagmi's usePublicClient hook
-const mockPublicClient = {
-  readContract: jest.fn(),
-  chainId: 84532,
-};
-
 describe('Component Tests for Loading/Error/Retry States', () => {
   const testProps = {
     title: 'Balance',

@@ -46,6 +46,11 @@ describe('Certificate Orchestration Integration (Task 16.3)', () => {
           return defaultValue;
         }),
       })
+      .overrideProvider(EnvService)
+      .useValue({
+        jwtExpiresIn: '24h',
+        jwtSecret: 'test-secret-key-for-integration-tests',
+      })
       .compile();
 
     app = moduleFixture.createNestApplication();
