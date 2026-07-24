@@ -20,6 +20,7 @@ import { IpfsService } from '../ipfs/ipfs.service';
  */
 describe('Property 21: Learning streak consecutive-day count', () => {
   let service: EducationService;
+  let mockPrismaService: any;
 
   // Mock data for consistent testing
   const mockUserId = 'test-user-id';
@@ -28,21 +29,6 @@ describe('Property 21: Learning streak consecutive-day count', () => {
     id: mockLessonId,
     courseId: 'course1',
     course: { title: 'Test Course' },
-  };
-
-  const mockPrismaService = {
-    lesson: {
-      findUnique: jest.fn(),
-    },
-    lessonProgress: {
-      findUnique: jest.fn(),
-      create: jest.fn(),
-    },
-    learningStreak: {
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-    },
   };
 
   const mockIpfsService = {
@@ -64,7 +50,24 @@ describe('Property 21: Learning streak consecutive-day count', () => {
       return defaultValue;
     }),
   };
+
   beforeEach(async () => {
+    // Create fresh mock for each test
+    mockPrismaService = {
+      lesson: {
+        findUnique: jest.fn(),
+      },
+      lessonProgress: {
+        findUnique: jest.fn(),
+        create: jest.fn(),
+      },
+      learningStreak: {
+        findUnique: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+      },
+    };
+
     const module = await Test.createTestingModule({
       providers: [
         EducationService,
@@ -84,10 +87,6 @@ describe('Property 21: Learning streak consecutive-day count', () => {
       userId: mockUserId,
       lessonId: mockLessonId,
     });
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
   });
 
   /**
