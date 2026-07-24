@@ -65,9 +65,8 @@ contract SavingsVaultComprehensiveTest is Test {
     event LockReleased(address indexed user, uint256 indexed lockId, uint256 amount);
     
     function setUp() public {
-        // Deploy tokens
+        // Deploy token
         token = new MockERC20("Test Token", "TEST", 18);
-        maliciousToken = new MaliciousERC20();
         
         // Deploy Registry proxy
         Registry registryImpl = new Registry();
