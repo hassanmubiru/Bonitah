@@ -8,8 +8,8 @@ import { TransactionsQuery } from '@bfn/shared';
  * Property 30: Transaction history is scoped, ordered, and paged
  * **Validates: Requirements 12.3**
  *
- * This property test validates that cached events are returned scoped to the requesting 
- * user's wallet address, ordered by descending block number, and properly paginated 
+ * This property test validates that cached events are returned scoped to the requesting
+ * user's wallet address, ordered by descending block number, and properly paginated
  * with at most 100 events per response.
  *
  * Key requirements tested:
@@ -56,43 +56,46 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
       fc.asyncProperty(
         fc.record({
           // Target user wallet address
-          userWallet: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
+          userWallet: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}`),
           // Other wallet addresses that should NOT appear in results
           otherWallets: fc.array(
-            fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-            { minLength: 1, maxLength: 5 }
+            fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}`),
+            { minLength: 1, maxLength: 5 },
           ),
           // Events for the target user
           userEvents: fc.array(
             fc.record({
               id: fc.string(),
-              contractAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
+              contractAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}`),
               eventName: fc.string(),
-              transactionHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
+              transactionHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map((s) => `0x${s}`),
               blockNumber: fc.bigInt({ min: 1n, max: 1000000n }),
-              blockHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
+              blockHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map((s) => `0x${s}`),
               logIndex: fc.integer({ min: 0, max: 100 }),
               payload: fc.record({ amount: fc.string(), from: fc.string() }),
               createdAt: fc.date(),
             }),
-            { minLength: 0, maxLength: 10 }
+            { minLength: 0, maxLength: 10 },
           ),
           query: fc.record({
-            cursor: fc.option(fc.bigInt({ min: 1n, max: 1000000n }).map(n => n.toString()), { nil: undefined }),
+            cursor: fc.option(
+              fc.bigInt({ min: 1n, max: 1000000n }).map((n) => n.toString()),
+              { nil: undefined },
+            ),
             limit: fc.integer({ min: 1, max: 100 }),
           }),
         }),
         async ({ userWallet, otherWallets, userEvents, query }) => {
           // Ensure other wallets are different from user wallet
-          const distinctOtherWallets = otherWallets.filter(w => 
-            w.toLowerCase() !== userWallet.toLowerCase()
+          const distinctOtherWallets = otherWallets.filter(
+            (w) => w.toLowerCase() !== userWallet.toLowerCase(),
           );
           if (distinctOtherWallets.length === 0) {
             return; // Skip if no distinct other wallets
           }
 
           // Attach wallet addresses to events
-          const userEventsWithWallet = userEvents.map(event => ({
+          const userEventsWithWallet = userEvents.map((event) => ({
             ...event,
             walletAddress: userWallet.toLowerCase(),
           }));
@@ -108,16 +111,16 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
               where: expect.objectContaining({
                 walletAddress: userWallet.toLowerCase(), // Normalized to lowercase
               }),
-            })
+            }),
           );
 
           // Property: All returned events belong to the requesting user's wallet
-          result.events.forEach(event => {
+          result.events.forEach((event) => {
             expect(event.walletAddress).toBe(userWallet.toLowerCase());
           });
-        }
+        },
       ),
-      { numRuns: 50 } // Reduce runs to avoid memory issues
+      { numRuns: 50 }, // Reduce runs to avoid memory issues
     );
   });
 
@@ -129,30 +132,33 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
     await fc.assert(
       fc.asyncProperty(
         fc.record({
-          walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
+          walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}`),
           events: fc.array(
             fc.record({
               id: fc.string(),
-              contractAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
+              contractAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}`),
               eventName: fc.string(),
-              transactionHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
+              transactionHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map((s) => `0x${s}`),
               blockNumber: fc.bigInt({ min: 1n, max: 1000000n }),
-              blockHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
+              blockHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map((s) => `0x${s}`),
               logIndex: fc.integer({ min: 0, max: 100 }),
               payload: fc.record({}),
               createdAt: fc.date(),
             }),
-            { minLength: 2, maxLength: 10 } // At least 2 events to test ordering, reduce from 20
+            { minLength: 2, maxLength: 10 }, // At least 2 events to test ordering, reduce from 20
           ),
           query: fc.record({
-            cursor: fc.option(fc.bigInt({ min: 1n, max: 1000000n }).map(n => n.toString()), { nil: undefined }),
+            cursor: fc.option(
+              fc.bigInt({ min: 1n, max: 1000000n }).map((n) => n.toString()),
+              { nil: undefined },
+            ),
             limit: fc.integer({ min: 1, max: 100 }),
           }),
         }),
         async ({ walletAddress, events, query }) => {
           // Sort events by descending block number for expected result
           const sortedEvents = events
-            .map(event => ({ ...event, walletAddress: walletAddress.toLowerCase() }))
+            .map((event) => ({ ...event, walletAddress: walletAddress.toLowerCase() }))
             .sort((a, b) => Number(b.blockNumber - a.blockNumber));
 
           // Mock Prisma responses
@@ -166,7 +172,7 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
               orderBy: {
                 blockNumber: 'desc', // Descending order (most recent first)
               },
-            })
+            }),
           );
 
           // Property: Returned events are ordered by descending block number
@@ -174,16 +180,18 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
             for (let i = 0; i < result.events.length - 1; i++) {
               const current = result.events[i];
               const next = result.events[i + 1];
-              
+
               if (current && next) {
                 // Current block number should be >= next block number (descending)
-                expect(Number(current.blockNumber)).toBeGreaterThanOrEqual(Number(next.blockNumber));
+                expect(Number(current.blockNumber)).toBeGreaterThanOrEqual(
+                  Number(next.blockNumber),
+                );
               }
             }
           }
-        }
+        },
       ),
-      { numRuns: 50 } // Reduce runs to avoid memory issues
+      { numRuns: 50 }, // Reduce runs to avoid memory issues
     );
   });
 
@@ -195,10 +203,13 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
     await fc.assert(
       fc.asyncProperty(
         fc.record({
-          walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
+          walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}`),
           requestedLimit: fc.integer({ min: 1, max: 500 }), // Test limits above 100
           totalEvents: fc.integer({ min: 0, max: 200 }),
-          cursor: fc.option(fc.bigInt({ min: 1n, max: 1000000n }).map(n => n.toString()), { nil: undefined }),
+          cursor: fc.option(
+            fc.bigInt({ min: 1n, max: 1000000n }).map((n) => n.toString()),
+            { nil: undefined },
+          ),
         }),
         async ({ walletAddress, requestedLimit, totalEvents, cursor }) => {
           const query: TransactionsQuery = { cursor, limit: requestedLimit };
@@ -224,18 +235,18 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
 
           // Property: Effective limit is at most 100 (Requirement 12.3)
           const expectedLimit = Math.min(requestedLimit, 100);
-          
+
           expect(prisma.cachedEvent.findMany).toHaveBeenCalledWith(
             expect.objectContaining({
               take: expectedLimit, // Should never exceed 100
-            })
+            }),
           );
 
           // Property: Returned events never exceed 100
           expect(result.events.length).toBeLessThanOrEqual(100);
-        }
+        },
       ),
-      { numRuns: 50 } // Reduce runs to avoid memory issues
+      { numRuns: 50 }, // Reduce runs to avoid memory issues
     );
   });
 
@@ -243,32 +254,31 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
    * Property: Empty result set when no events exist for the user
    * Requirements: 12.4 (empty result set for no cached events)
    */
-  it('returns empty result set when no events exist for user', () => {
-    fc.assert(
-      fc.property(
+  it('returns empty result set when no events exist for user', async () => {
+    await fc.assert(
+      fc.asyncProperty(
         fc.record({
-          walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-          pagination: fc.record({
-            page: fc.integer({ min: 1, max: 5 }),
+          walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}`),
+          query: fc.record({
+            cursor: fc.option(
+              fc.bigInt({ min: 1n, max: 1000000n }).map((n) => n.toString()),
+              { nil: undefined },
+            ),
             limit: fc.integer({ min: 1, max: 100 }),
           }),
         }),
-        async ({ walletAddress, pagination }) => {
+        async ({ walletAddress, query }) => {
           // Mock empty results
           (prisma.cachedEvent.findMany as jest.Mock).mockResolvedValue([]);
-          (prisma.cachedEvent.count as jest.Mock).mockResolvedValue(0);
 
-          const result = await service.getTransactionHistory(walletAddress, pagination);
+          const result = await service.getTransactionHistory(walletAddress, query);
 
           // Property: Empty result set without error (Requirement 12.4)
           expect(result.events).toEqual([]);
-          expect(result.pagination.totalCount).toBe(0);
-          expect(result.pagination.totalPages).toBe(0);
-          expect(result.pagination.hasNextPage).toBe(false);
-          expect(result.pagination.hasPreviousPage).toBe(false);
-        }
+          expect(result.nextCursor).toBeNull();
+        },
       ),
-      { numRuns: 50 }
+      { numRuns: 25 }, // Reduce runs to avoid memory issues
     );
   });
 
@@ -280,7 +290,7 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
     fc.assert(
       fc.property(
         fc.record({
-          walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
+          walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}`),
           totalEvents: fc.integer({ min: 0, max: 500 }),
           page: fc.integer({ min: 1, max: 10 }),
           limit: fc.integer({ min: 1, max: 100 }),
@@ -289,7 +299,7 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
           const effectiveLimit = Math.min(limit, 100);
           const skip = (page - 1) * effectiveLimit;
           const eventsOnPage = Math.max(0, Math.min(effectiveLimit, totalEvents - skip));
-          
+
           // Generate mock events for the current page
           const mockEvents = Array.from({ length: eventsOnPage }, (_, i) => ({
             id: `event-${skip + i}`,
@@ -328,11 +338,11 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
             expect.objectContaining({
               skip: (page - 1) * effectiveLimit,
               take: effectiveLimit,
-            })
+            }),
           );
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -345,13 +355,15 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
       fc.property(
         fc.record({
           // Mixed case wallet address
-          walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 })
-            .map(s => `0x${s}`)
-            .map(addr => {
+          walletAddress: fc
+            .hexaString({ minLength: 40, maxLength: 40 })
+            .map((s) => `0x${s}`)
+            .map((addr) => {
               // Randomly mix uppercase and lowercase
-              return addr.split('').map(c => 
-                Math.random() > 0.5 ? c.toUpperCase() : c.toLowerCase()
-              ).join('');
+              return addr
+                .split('')
+                .map((c) => (Math.random() > 0.5 ? c.toUpperCase() : c.toLowerCase()))
+                .join('');
             }),
           pagination: fc.record({
             page: fc.integer({ min: 1, max: 3 }),
@@ -371,7 +383,7 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
               where: {
                 walletAddress: walletAddress.toLowerCase(), // Always lowercase
               },
-            })
+            }),
           );
 
           expect(prisma.cachedEvent.count).toHaveBeenCalledWith({
@@ -379,9 +391,9 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
               walletAddress: walletAddress.toLowerCase(), // Always lowercase
             },
           });
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });
