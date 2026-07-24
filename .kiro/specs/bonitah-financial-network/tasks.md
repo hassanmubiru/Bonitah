@@ -74,7 +74,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `createGoal`, `contributeToGoal`, `lockFunds`, `withdrawLocked`, `portfolioValue`, MIN/MAX lock constants, and goal/lock events
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 13.4, 13.5_
 
-  - [ ] 4.5 Write property test for goal lifecycle
+  - [x] 4.5 Write property test for goal lifecycle
     - **Property 13: Goal lifecycle correctness**
     - **Validates: Requirements 5.1, 5.2, 5.7**
 
