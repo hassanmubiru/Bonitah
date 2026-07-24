@@ -325,3 +325,113 @@ contract SavingsVaultTask4_7Test is Test {
         vm.prank(user1);
         vault.withdraw(excessAmount);
     }
+    
+    /// @notice Test InsufficientAvailableBalance error on contributeToGoal
+    function testRevert_InsufficientAvailableBalance_ContributeToGoal() public {
+        // Create a goal first
+        vm.prank(user1);
+        vault.createGoal(GOAL_TARGET, block.timestamp + 30 days);
+        
+        uint256 available = vault.availableBalance(user1); // Should be 0
+        uint256 excessAmount = available + 1;
+        
+        vm.expectRevert(abi.encodeWithSelector(
+            ISavingsVault.InsufficientAvailableBalance.selector,
+            excessAmount,
+            available
+        ));
+        vm.prank(user1);
+        vault.contributeToGoal(0, excessAmount);
+    }
+    
+    /// @notice Test InsufficientAvailableBalance error on lockFunds
+    function testRevert_InsufficientAvailableBalance_LockFunds() public {
+        uint256 available = vault.availableBalance(user1); // Should be 0
+        uint256 excessAmount = available + 1;
+        
+        vm.expectRevert(abi.encodeWithSelector(
+            ISavingsVault.InsufficientAvailableBalance.selector,
+            excessAmount,
+            available
+        ));
+        vm.prank(user1);
+        vault.lockFunds(excessAmount, LOCK_DURATION);
+    }
+    
+    /// @notice Test VaultPaused error on deposit
+    function testRevert_VaultPaused_Deposit() public {
+        vm.prank(admin);
+        vault.pause();
+        
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.VaultPaused.selector));
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+    }
+    
+    /// @notice Test VaultPaused error on withdraw
+    function testRevert_VaultPaused_Withdraw() public {
+        // First deposit
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        vm.prank(admin);
+        vault.pause();
+        
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.VaultPaused.selector));
+        vm.prank(user1);
+        vault.withdraw(WITHDRAW_AMOUNT);
+    }
+    
+    /// @notice Test InvalidGoalParams error for zero target amount
+    function testRevert_InvalidGoalParams_ZeroTarget() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.InvalidGoalParams.selector));
+        vm.prank(user1);
+        vault.createGoal(0, block.timestamp + 30 days);
+    }
+    
+    /// @notice Test InvalidGoalParams error for past target date
+    function testRevert_InvalidGoalParams_PastDate() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.InvalidGoalParams.selector));
+        vm.prank(user1);
+        vault.createGoal(GOAL_TARGET, block.timestamp - 1);
+    }
+    
+    /// @notice Test InvalidGoalParams error for current timestamp
+    function testRevert_InvalidGoalParams_CurrentTimestamp() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.InvalidGoalParams.selector));
+        vm.prank(user1);
+        vault.createGoal(GOAL_TARGET, block.timestamp);
+    }
+    
+    /// @notice Test InvalidGoalParams error for contributing to non-existent goal
+    function testRevert_InvalidGoalParams_NonExistentGoal() public {
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        // Try to contribute to goal ID 999 which doesn't exist
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.InvalidGoalParams.selector));
+        vm.prank(user1);
+        vault.contributeToGoal(999, 100e18);
+    }
+    
+    /// @notice Test InvalidLockDuration error for too short duration
+    function testRevert_InvalidLockDuration_TooShort() public {
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        uint256 tooShort = 1 hours; // Less than MIN_LOCK (1 day)
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.InvalidLockDuration.selector, tooShort));
+        vm.prank(user1);
+        vault.lockFunds(LOCK_AMOUNT, tooShort);
+    }
+    
+    /// @notice Test InvalidLockDuration error for too long duration
+    function testRevert_InvalidLockDuration_TooLong() public {
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        uint256 tooLong = 6 * 365 days; // More than MAX_LOCK (5 years)
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.InvalidLockDuration.selector, tooLong));
+        vm.prank(user1);
+        vault.lockFunds(LOCK_AMOUNT, tooLong);
+    }

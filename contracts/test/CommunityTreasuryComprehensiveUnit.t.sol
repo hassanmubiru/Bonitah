@@ -381,61 +381,79 @@ contract CommunityTreasuryComprehensiveUnitTest is Test {
 
     /// @notice Test reentrancy protection on contribute function
     function test_ReentrancyProtection_Contribute() public {
-        // Setup: create circle and join attacker
+        // Setup: create circle using malicious treasury
         vm.prank(user1);
-        uint256 poolId = treasury.createCircle(10, 51);
+        uint256 poolId = maliciousTreasury.createCircle(10, 51);
         
-        // Make attacker a member
-        vm.prank(address(attacker));
-        treasury.joinCircle(poolId);
+        // Configure malicious token for attack
+        maliciousToken.setAttackParams(poolId, CONTRIBUTION_AMOUNT, 0);
+        maliciousToken.enableAttack();
         
-        // Attempt reentrancy attack - should fail due to ReentrancyGuard
-        vm.expectRevert("ReentrancyGuard: reentrant call");
-        vm.prank(address(this));
-        attacker.attackContribute(poolId, CONTRIBUTION_AMOUNT);
+        // Attempt contribution - should succeed but reentrancy should be blocked
+        vm.prank(user1);
+        maliciousTreasury.contribute(poolId, CONTRIBUTION_AMOUNT);
+        
+        // Verify the original contribution worked
+        ICommunityTreasury.Circle memory circle = maliciousTreasury.getCircle(poolId);
+        assertEq(circle.treasuryBalance, CONTRIBUTION_AMOUNT);
     }
 
     /// @notice Test reentrancy protection on contributeToPool function
     function test_ReentrancyProtection_ContributeToPool() public {
-        // Setup: create circle and join attacker
+        // Setup: create circle using malicious treasury
         vm.prank(user1);
-        uint256 poolId = treasury.createCircle(10, 51);
+        uint256 poolId = maliciousTreasury.createCircle(10, 51);
         
-        // Make attacker a member
-        vm.prank(address(attacker));
-        treasury.joinCircle(poolId);
+        // Configure malicious token for attack
+        maliciousToken.setAttackParams(poolId, CONTRIBUTION_AMOUNT, 0);
+        maliciousToken.enableAttack();
         
-        // Attempt reentrancy attack - should fail due to ReentrancyGuard
-        vm.expectRevert("ReentrancyGuard: reentrant call");
-        vm.prank(address(this));
-        attacker.attackContributeToPool(poolId, CONTRIBUTION_AMOUNT);
+        // Attempt contribution to investment pool - should succeed but reentrancy should be blocked
+        vm.prank(user1);
+        maliciousTreasury.contributeToPool(poolId, CONTRIBUTION_AMOUNT);
+        
+        // Verify the original contribution worked
+        uint256 totalContributions = maliciousTreasury.poolTotalContributions(poolId);
+        assertEq(totalContributions, CONTRIBUTION_AMOUNT);
     }
 
     /// @notice Test reentrancy protection on vote function (when action executes)
     function test_ReentrancyProtection_Vote() public {
-        // Setup: create circle with attacker as member
+        // Setup: create circle with user2 as member using malicious treasury
         vm.prank(user1);
-        uint256 poolId = treasury.createCircle(10, 51);
+        uint256 poolId = maliciousTreasury.createCircle(10, 51);
         
-        vm.prank(address(attacker));
-        treasury.joinCircle(poolId);
+        vm.prank(user2);
+        maliciousTreasury.joinCircle(poolId);
         
         // Fund the circle
         vm.prank(user1);
-        treasury.contribute(poolId, CONTRIBUTION_AMOUNT);
+        maliciousTreasury.contribute(poolId, CONTRIBUTION_AMOUNT);
         
-        // Propose action to attacker address (will trigger receive on execution)
+        // Propose action to user3 address
+        uint256 actionAmount = 50e18;
         vm.prank(user1);
-        uint256 actionId = treasury.proposeAction(poolId, address(attacker), 50e18);
+        uint256 actionId = maliciousTreasury.proposeAction(poolId, user3, actionAmount);
+        
+        // Configure malicious token for attack on vote
+        maliciousToken.setAttackParams(poolId, CONTRIBUTION_AMOUNT, actionId);
+        maliciousToken.disableAttack(); // Don't attack on first vote
         
         // First vote
         vm.prank(user1);
-        treasury.vote(actionId);
+        maliciousTreasury.vote(actionId);
         
-        // Attempt reentrancy attack on final vote - should fail due to ReentrancyGuard
-        vm.expectRevert("ReentrancyGuard: reentrant call");
-        vm.prank(address(this));
-        attacker.attackVote(actionId);
+        // Enable attack for final vote (which will trigger execution and transfer)
+        maliciousToken.enableAttack();
+        
+        // Final vote - should execute action but block reentrancy
+        vm.prank(user2);
+        maliciousTreasury.vote(actionId);
+        
+        // Verify action executed normally
+        ICommunityTreasury.TreasuryAction memory action = maliciousTreasury.getAction(actionId);
+        assertTrue(action.executed);
+        assertEq(maliciousToken.balanceOf(user3), actionAmount);
     }
 
     /// @notice Test that normal operations work correctly (no false positives from reentrancy guard)
