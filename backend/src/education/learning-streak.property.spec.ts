@@ -125,6 +125,7 @@ describe('Property 21: Learning streak consecutive-day count', () => {
       { numRuns: 100 },
     );
   });
+
   /**
    * Property: Non-existent streak returns default values
    * Requirements: 8.2 (default streak values)
@@ -152,98 +153,175 @@ describe('Property 21: Learning streak consecutive-day count', () => {
   });
 
   /**
-   * Property: Lesson completion triggers streak update logic
-   * Requirements: 8.2 (consecutive day count and streak logic)
+   * Core Property: Learning streak equals consecutive-day count
+   * **Validates: Requirements 8.2**
    * 
-   * This tests the streak retrieval and validation logic.
-   * We verify the correct database interactions occur for lesson completion.
+   * This property validates that the learning streak calculation follows the rule:
+   * "the number of consecutive calendar days on which the user has completed at least one lesson"
+   * 
+   * We test various scenarios:
+   * 1. First lesson completion (streak = 1)
+   * 2. Consecutive day lesson completion (streak increments)
+   * 3. Same day multiple completions (streak unchanged)
+   * 4. Gap in activity (streak resets to 1)
    */
-  it('validates streak behavior through database operations', () => {
+  it('validates that learning streak equals consecutive-day count', () => {
     fc.assert(
       fc.asyncProperty(
         fc.record({
-          hasExistingStreak: fc.boolean(),
-          currentStreak: fc.integer({ min: 1, max: 100 }),
+          // Test scenario: existing streak and time gap
+          existingStreak: fc.integer({ min: 1, max: 50 }),
+          daysSinceLastActive: fc.integer({ min: 0, max: 10 }), // 0 = same day, 1 = consecutive, >1 = gap
         }),
-        async ({ hasExistingStreak, currentStreak }) => {
-          // Setup: lesson completion should always succeed
-          const someDate = new Date('2024-01-15');
-          someDate.setHours(0, 0, 0, 0);
+        async ({ existingStreak, daysSinceLastActive }) => {
+          // Set up base date for consistent testing
+          const baseDate = new Date('2024-01-15');
+          baseDate.setHours(0, 0, 0, 0);
+          
+          const lastActiveDay = new Date(baseDate);
+          const today = new Date(baseDate);
+          today.setDate(today.getDate() + daysSinceLastActive);
+          today.setHours(0, 0, 0, 0);
 
-          // Make sure lesson exists and no duplicate progress
-          mockPrismaService.lesson.findUnique.mockResolvedValueOnce(mockLesson);
-          mockPrismaService.lessonProgress.findUnique.mockResolvedValueOnce(null); // No duplicate
-
-          // Mock lesson progress creation
-          mockPrismaService.lessonProgress.create.mockResolvedValueOnce({
-            id: 'progress-id',
+          // Mock existing streak
+          const existingStreakRecord = {
+            id: 'streak-id',
             userId: mockUserId,
-            lessonId: mockLessonId,
-          });
+            currentStreak: existingStreak,
+            lastActiveDay: lastActiveDay,
+          };
 
-          if (hasExistingStreak) {
-            // Test with an existing streak
-            mockPrismaService.learningStreak.findUnique.mockResolvedValueOnce({
+          mockPrismaService.learningStreak.findUnique.mockResolvedValueOnce(existingStreakRecord);
+
+          // Calculate expected streak based on consecutive-day rule
+          let expectedStreak: number;
+          let expectedLastActiveDay: Date;
+
+          if (daysSinceLastActive === 0) {
+            // Same day - no change to streak count
+            expectedStreak = existingStreak;
+            expectedLastActiveDay = lastActiveDay; // No update expected for same day
+          } else if (daysSinceLastActive === 1) {
+            // Consecutive day - increment streak
+            expectedStreak = existingStreak + 1;
+            expectedLastActiveDay = today;
+          } else {
+            // Gap in activity - reset streak to 1
+            expectedStreak = 1;
+            expectedLastActiveDay = today;
+          }
+
+          // Mock the update/create calls based on expected behavior
+          if (daysSinceLastActive === 0) {
+            // Same day - no database update should occur
+            mockPrismaService.learningStreak.update.mockResolvedValueOnce(existingStreakRecord);
+          } else {
+            // Different day - should update
+            mockPrismaService.learningStreak.update.mockResolvedValueOnce({
               id: 'streak-id',
               userId: mockUserId,
-              currentStreak,
-              lastActiveDay: someDate,
-            });
-
-            // Mock possible update operation
-            mockPrismaService.learningStreak.update.mockResolvedValueOnce({
-              currentStreak: currentStreak + 1,
-              lastActiveDay: expect.any(Date),
-            });
-          } else {
-            // Test first lesson completion - should create new streak
-            mockPrismaService.learningStreak.findUnique.mockResolvedValueOnce(null);
-            mockPrismaService.learningStreak.create.mockResolvedValueOnce({
-              userId: mockUserId,
-              currentStreak: 1,
-              lastActiveDay: someDate,
+              currentStreak: expectedStreak,
+              lastActiveDay: expectedLastActiveDay,
             });
           }
 
-          // Execute the lesson completion
-          const result = await service.completeLesson(mockUserId, mockLessonId);
-
-          // Verify lesson completion succeeded
-          expect(result).toEqual({
-            progress: expect.objectContaining({
-              id: 'progress-id',
-              userId: mockUserId,
-              lessonId: mockLessonId,
-            }),
-            courseId: 'course1',
-            courseTitle: 'Test Course',
+          // Use jest to spy on Date constructor to control "today"
+          const realDate = Date;
+          const mockDate = jest.spyOn(global, 'Date').mockImplementation((...args) => {
+            if (args.length === 0) {
+              return today;
+            }
+            return new realDate(...args);
           });
 
-          // Verify lesson progress was created
-          expect(mockPrismaService.lessonProgress.create).toHaveBeenCalledWith({
-            data: { userId: mockUserId, lessonId: mockLessonId },
-          });
+          try {
+            // Execute lesson completion (which triggers streak update)
+            await service.completeLesson(mockUserId, mockLessonId);
 
-          // Verify streak logic was triggered
-          expect(mockPrismaService.learningStreak.findUnique).toHaveBeenCalledWith({
-            where: { userId: mockUserId },
-          });
-
-          if (!hasExistingStreak) {
-            // Should create new streak for first lesson
-            expect(mockPrismaService.learningStreak.create).toHaveBeenCalledWith({
-              data: {
-                userId: mockUserId,
-                currentStreak: 1,
-                lastActiveDay: expect.any(Date),
-              },
+            // Verify the streak update logic was called correctly
+            expect(mockPrismaService.learningStreak.findUnique).toHaveBeenCalledWith({
+              where: { userId: mockUserId },
             });
+
+            if (daysSinceLastActive === 0) {
+              // Same day - should not trigger update
+              expect(mockPrismaService.learningStreak.update).not.toHaveBeenCalled();
+              expect(mockPrismaService.learningStreak.create).not.toHaveBeenCalled();
+            } else {
+              // Different day - should trigger update with correct streak value
+              expect(mockPrismaService.learningStreak.update).toHaveBeenCalledWith({
+                where: { userId: mockUserId },
+                data: {
+                  currentStreak: expectedStreak,
+                  lastActiveDay: expectedLastActiveDay,
+                },
+              });
+            }
+          } finally {
+            mockDate.mockRestore();
           }
-          // Note: For existing streaks, the exact update behavior depends on the current date
-          // vs lastActiveDay, which we can't easily control in this test setup
         },
       ),
       { numRuns: 100 },
+    );
+  });
+
+  /**
+   * Property: First lesson completion creates streak of 1
+   * **Validates: Requirements 8.2**
+   */
+  it('creates initial learning streak of 1 for first lesson completion', () => {
+    fc.assert(
+      fc.asyncProperty(
+        fc.string().filter((s) => s.length > 0),
+        async (userId) => {
+          // No existing streak
+          mockPrismaService.learningStreak.findUnique.mockResolvedValueOnce(null);
+          
+          const today = new Date('2024-01-15');
+          today.setHours(0, 0, 0, 0);
+
+          mockPrismaService.learningStreak.create.mockResolvedValueOnce({
+            userId,
+            currentStreak: 1,
+            lastActiveDay: today,
+          });
+
+          // Mock Date constructor to control "today"
+          const mockDate = jest.spyOn(global, 'Date').mockImplementation((...args) => {
+            if (args.length === 0) {
+              return today;
+            }
+            return new Date(...args);
+          });
+
+          try {
+            // Update lesson/progress mocks for this user
+            const userLesson = { ...mockLesson, id: `lesson-${userId}` };
+            mockPrismaService.lesson.findUnique.mockResolvedValueOnce(userLesson);
+            mockPrismaService.lessonProgress.findUnique.mockResolvedValueOnce(null);
+            mockPrismaService.lessonProgress.create.mockResolvedValueOnce({
+              id: `progress-${userId}`,
+              userId,
+              lessonId: userLesson.id,
+            });
+
+            await service.completeLesson(userId, userLesson.id);
+
+            // Verify first lesson completion creates streak = 1
+            expect(mockPrismaService.learningStreak.create).toHaveBeenCalledWith({
+              data: {
+                userId,
+                currentStreak: 1,
+                lastActiveDay: today,
+              },
+            });
+          } finally {
+            mockDate.mockRestore();
+          }
+        },
+      ),
+      { numRuns: 50 },
     );
   });
 });
