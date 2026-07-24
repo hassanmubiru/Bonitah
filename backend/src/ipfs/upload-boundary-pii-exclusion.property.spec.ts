@@ -286,14 +286,14 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
   });
 
   /**
-   * Property: Certificate metadata PII exclusion
-   * Requirements: 3.8 (exclude PII from certificate metadata)
+   * Property: Certificate metadata PII exclusion with comprehensive patterns
+   * Requirements: 3.8 (exclude PII from certificate metadata - comprehensive validation)
    */
-  it('rejects certificate metadata containing PII', async () => {
+  it('rejects certificate metadata containing comprehensive PII patterns', async () => {
     await fc.assert(
       fc.asyncProperty(
         fc.oneof(
-          // PII in values
+          // PII in values - patterns that ARE detected by validateNoPII
           fc.record({
             certificateType: fc.constant('completion'),
             recipientInfo: fc.constant('john.doe@email.com'), // Email PII
@@ -304,10 +304,25 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
             userPhone: fc.constant('555-123-4567'), // Phone PII
             issuedDate: fc.constant('2024-01-01'),
           }),
+          fc.record({
+            certificateType: fc.constant('completion'),
+            socialSecurity: fc.constant('123-45-6789'), // SSN PII
+            issuedDate: fc.constant('2024-01-01'),
+          }),
+          fc.record({
+            certificateType: fc.constant('completion'),
+            paymentCard: fc.constant('1234-5678-9012-3456'), // Credit card PII
+            issuedDate: fc.constant('2024-01-01'),
+          }),
           // PII in keys
           fc.record({
             certificateType: fc.constant('completion'),
             ssn_number: fc.constant('redacted'), // PII key name
+            issuedDate: fc.constant('2024-01-01'),
+          }),
+          fc.record({
+            certificateType: fc.constant('completion'),
+            email_address: fc.constant('redacted'), // PII key name
             issuedDate: fc.constant('2024-01-01'),
           }),
         ),
