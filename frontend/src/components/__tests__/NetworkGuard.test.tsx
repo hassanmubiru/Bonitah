@@ -225,7 +225,7 @@ describe('NetworkGuard Component Tests', () => {
       render(
         <NetworkGuard>
           <TestChild />
-        </TestWrapper>
+        </NetworkGuard>
       );
 
       // Should show error message

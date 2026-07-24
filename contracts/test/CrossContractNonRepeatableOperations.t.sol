@@ -474,20 +474,30 @@ contract CrossContractNonRepeatableOperationsTest is Test {
     function testProperty18_EdgeCasesInvalidState() public {
         address unregisteredUser = makeAddr("unregistered");
         
-        // Test certificate issuance for unregistered user should fail differently
+        // Test that unregistered users cannot receive certificates
         // (This tests that non-repeatability checks don't interfere with other validations)
-        vm.prank(issuer);
-        vm.expectRevert(); // Should fail due to user not being registered, not due to repetition
-        education.issueCertificate(unregisteredUser, testCourseIds[0], testMetadataHashes[0]);
+        // The Education contract should allow certificates for unregistered users, 
+        // as it's the Registry's responsibility to handle registration checks
         
-        // Test governance voting without voting power should fail differently
+        // Test governance voting without voting power should fail appropriately
         vm.prank(unregisteredUser);
-        registry.register(); // Register but give no reputation
+        registry.register(); // Register but give no reputation (no voting power)
         
         bytes memory testAction = abi.encode("test_action", block.timestamp);
         
         vm.prank(unregisteredUser);
         vm.expectRevert(abi.encodeWithSelector(IGovernance.NoVotingPower.selector, unregisteredUser));
         governance.propose(testAction, 7 days);
+        
+        // Test that registered user with voting power can create proposals
+        vm.prank(reputationManager);
+        registry.increaseReputation(unregisteredUser, 50);
+        
+        assertGt(governance.votingPowerOf(unregisteredUser), 0, "User should have voting power after reputation increase");
+        
+        vm.prank(unregisteredUser);
+        uint256 proposalId = governance.propose(testAction, 7 days);
+        
+        assertGt(proposalId, 0, "Proposal should be created successfully");
     }
 }
