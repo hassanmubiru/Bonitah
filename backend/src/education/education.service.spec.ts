@@ -40,18 +40,7 @@ describe('EducationService', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        EducationService,
-        { provide: PrismaService, useValue: mockPrismaService },
-        { provide: IpfsService, useValue: mockIpfsService },
-        { provide: ConfigService, useValue: mockConfigService },
-      ],
-    }).compile();
-
-    service = module.get<EducationService>(EducationService);
-
-    // Mock config values
+    // Set up mocks before creating the module
     mockConfigService.getOrThrow.mockImplementation((key: string) => {
       const config: Record<string, string> = {
         'ISSUER_PRIVATE_KEY': '0x0123456789012345678901234567890123456789012345678901234567890123',
@@ -66,6 +55,17 @@ describe('EducationService', () => {
       }
       return defaultValue;
     });
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        EducationService,
+        { provide: PrismaService, useValue: mockPrismaService },
+        { provide: IpfsService, useValue: mockIpfsService },
+        { provide: ConfigService, useValue: mockConfigService },
+      ],
+    }).compile();
+
+    service = module.get<EducationService>(EducationService);
   });
 
   afterEach(() => {
