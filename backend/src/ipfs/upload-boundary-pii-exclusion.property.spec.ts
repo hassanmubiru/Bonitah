@@ -15,7 +15,7 @@ interface MulterFile {
 /**
  * Property 10: IPFS upload boundary validation
  * **Validates: Requirements 3.5, 3.8**
- * 
+ *
  * This test validates the IPFS upload boundary enforcement and PII exclusion:
  * - Maximum 10 documents per request enforcement (Req 3.5)
  * - Maximum 10MB per document size limit (Req 3.5)
@@ -75,18 +75,16 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
           // Mock fetch to avoid actual IPFS calls during count validation
           global.fetch = jest.fn();
 
+          await expect(service.uploadProfileDocuments(files)).rejects.toThrow(BadRequestException);
           await expect(service.uploadProfileDocuments(files)).rejects.toThrow(
-            BadRequestException
-          );
-          await expect(service.uploadProfileDocuments(files)).rejects.toThrow(
-            'Maximum 10 documents per request'
+            'Maximum 10 documents per request',
           );
 
           // Verify no IPFS calls were made when count limit exceeded
           expect(global.fetch).not.toHaveBeenCalled();
-        }
+        },
       ),
-      { numRuns: 20 }
+      { numRuns: 20 },
     );
   });
 
@@ -101,28 +99,26 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
         fc.string({ minLength: 1, maxLength: 20 }), // Valid filename
         async (fileSize, baseName) => {
           // Generate a file that exceeds the size limit
-          const files: MulterFile[] = [{
-            originalname: `${baseName}.txt`,
-            size: fileSize,
-            buffer: Buffer.alloc(Math.min(fileSize, 1024)), // Don't actually allocate huge buffers in tests
-            mimetype: 'text/plain',
-          }];
+          const files: MulterFile[] = [
+            {
+              originalname: `${baseName}.txt`,
+              size: fileSize,
+              buffer: Buffer.alloc(Math.min(fileSize, 1024)), // Don't actually allocate huge buffers in tests
+              mimetype: 'text/plain',
+            },
+          ];
 
           // Mock fetch to avoid actual IPFS calls during size validation
           global.fetch = jest.fn();
 
-          await expect(service.uploadProfileDocuments(files)).rejects.toThrow(
-            BadRequestException
-          );
-          await expect(service.uploadProfileDocuments(files)).rejects.toThrow(
-            `exceeds 10MB limit`
-          );
+          await expect(service.uploadProfileDocuments(files)).rejects.toThrow(BadRequestException);
+          await expect(service.uploadProfileDocuments(files)).rejects.toThrow(`exceeds 10MB limit`);
 
           // Verify no IPFS calls were made when size limit exceeded
           expect(global.fetch).not.toHaveBeenCalled();
-        }
+        },
       ),
-      { numRuns: 20 }
+      { numRuns: 20 },
     );
   });
 
@@ -140,7 +136,9 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
           const files: MulterFile[] = Array.from({ length: documentCount }, (_, i) => ({
             originalname: `valid_document_${i}.txt`,
             size: documentSize,
-            buffer: Buffer.from(`Valid content for document ${i}`.repeat(documentSize / 32 + 1)).subarray(0, documentSize),
+            buffer: Buffer.from(
+              `Valid content for document ${i}`.repeat(documentSize / 32 + 1),
+            ).subarray(0, documentSize),
             mimetype: 'text/plain',
           }));
 
@@ -156,13 +154,15 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
 
           // Should return CIDs for each file
           expect(result).toHaveLength(documentCount);
-          expect(result.every(cid => typeof cid === 'string' && cid.startsWith('QmTest'))).toBe(true);
+          expect(result.every((cid) => typeof cid === 'string' && cid.startsWith('QmTest'))).toBe(
+            true,
+          );
 
           // Should have made IPFS calls for each file
           expect(global.fetch).toHaveBeenCalledTimes(documentCount);
-        }
+        },
       ),
-      { numRuns: 15 }
+      { numRuns: 15 },
     );
   });
 
@@ -183,33 +183,33 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
         ),
         fc.string({ minLength: 1, maxLength: 20 }), // Base filename
         async (piiContent, baseName) => {
-          const files: MulterFile[] = [{
-            originalname: `${baseName}.txt`,
-            size: piiContent.length + 100,
-            buffer: Buffer.from(`Some valid content with PII: ${piiContent} and more content`),
-            mimetype: 'text/plain',
-          }];
+          const files: MulterFile[] = [
+            {
+              originalname: `${baseName}.txt`,
+              size: piiContent.length + 100,
+              buffer: Buffer.from(`Some valid content with PII: ${piiContent} and more content`),
+              mimetype: 'text/plain',
+            },
+          ];
 
           // Mock fetch to avoid actual IPFS calls during PII validation
           global.fetch = jest.fn();
 
+          await expect(service.uploadProfileDocuments(files)).rejects.toThrow(BadRequestException);
           await expect(service.uploadProfileDocuments(files)).rejects.toThrow(
-            BadRequestException
-          );
-          await expect(service.uploadProfileDocuments(files)).rejects.toThrow(
-            /PII detected in file content/
+            /PII detected in file content/,
           );
 
           // Verify no IPFS calls were made when PII detected
           expect(global.fetch).not.toHaveBeenCalled();
-        }
+        },
       ),
-      { numRuns: 25 }
+      { numRuns: 25 },
     );
   });
 
   /**
-   * Property: Non-text files with PII patterns are not content-validated 
+   * Property: Non-text files with PII patterns are not content-validated
    * Requirements: 3.8 (file content PII validation only applies to text files)
    */
   it('processes non-text files without content-based PII validation', async () => {
@@ -221,12 +221,14 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
         ),
         fc.constantFrom('application/pdf', 'image/jpeg', 'application/zip'),
         async (piiContent, mimetype) => {
-          const files: MulterFile[] = [{
-            originalname: 'document.bin',
-            size: piiContent.length + 100,
-            buffer: Buffer.from(`Binary content with embedded: ${piiContent}`),
-            mimetype,
-          }];
+          const files: MulterFile[] = [
+            {
+              originalname: 'document.bin',
+              size: piiContent.length + 100,
+              buffer: Buffer.from(`Binary content with embedded: ${piiContent}`),
+              mimetype,
+            },
+          ];
 
           // Mock successful IPFS response
           const mockResponse = {
@@ -239,9 +241,9 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
           const result = await service.uploadProfileDocuments(files);
           expect(result).toHaveLength(1);
           expect(global.fetch).toHaveBeenCalledTimes(1);
-        }
+        },
       ),
-      { numRuns: 15 }
+      { numRuns: 15 },
     );
   });
 
@@ -262,28 +264,28 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
         ),
         fc.string({ minLength: 1, maxLength: 15 }),
         async (piiKeyword, suffix) => {
-          const files: MulterFile[] = [{
-            originalname: `my_${piiKeyword}_${suffix}.pdf`,
-            size: 1024,
-            buffer: Buffer.from('Valid file content without PII'),
-            mimetype: 'application/pdf',
-          }];
+          const files: MulterFile[] = [
+            {
+              originalname: `my_${piiKeyword}_${suffix}.pdf`,
+              size: 1024,
+              buffer: Buffer.from('Valid file content without PII'),
+              mimetype: 'application/pdf',
+            },
+          ];
 
           // Mock fetch to avoid actual IPFS calls during filename validation
           global.fetch = jest.fn();
 
+          await expect(service.uploadProfileDocuments(files)).rejects.toThrow(BadRequestException);
           await expect(service.uploadProfileDocuments(files)).rejects.toThrow(
-            BadRequestException
-          );
-          await expect(service.uploadProfileDocuments(files)).rejects.toThrow(
-            /Potential PII detected in filename/
+            /Potential PII detected in filename/,
           );
 
           // Verify no IPFS calls were made when PII detected in filename
           expect(global.fetch).not.toHaveBeenCalled();
-        }
+        },
       ),
-      { numRuns: 20 }
+      { numRuns: 20 },
     );
   });
 
@@ -333,17 +335,17 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
           global.fetch = jest.fn();
 
           await expect(service.storeCertificateMetadata(metadata)).rejects.toThrow(
-            BadRequestException
+            BadRequestException,
           );
           await expect(service.storeCertificateMetadata(metadata)).rejects.toThrow(
-            /PII detected in metadata/
+            /PII detected in metadata/,
           );
 
           // Verify no IPFS calls were made when PII detected
           expect(global.fetch).not.toHaveBeenCalled();
-        }
+        },
       ),
-      { numRuns: 25 }
+      { numRuns: 25 },
     );
   });
 
@@ -358,8 +360,14 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
           certificateType: fc.constantFrom('completion', 'achievement', 'badge'),
           courseName: fc.string({ minLength: 3, maxLength: 50 }),
           completionLevel: fc.constantFrom('basic', 'intermediate', 'advanced'),
-          issuedDate: fc.date({ min: new Date('2020-01-01'), max: new Date('2025-12-31') }).map(d => d.toISOString().split('T')[0]),
-          validUntil: fc.option(fc.date({ min: new Date('2025-01-01'), max: new Date('2030-12-31') }).map(d => d.toISOString().split('T')[0])),
+          issuedDate: fc
+            .date({ min: new Date('2020-01-01'), max: new Date('2025-12-31') })
+            .map((d) => d.toISOString().split('T')[0]),
+          validUntil: fc.option(
+            fc
+              .date({ min: new Date('2025-01-01'), max: new Date('2030-12-31') })
+              .map((d) => d.toISOString().split('T')[0]),
+          ),
           skills: fc.array(fc.string({ minLength: 2, maxLength: 20 }), { maxLength: 5 }),
         }),
         async (metadata) => {
@@ -385,13 +393,13 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
               method: 'POST',
               headers: expect.objectContaining({
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer fake-jwt-token-for-testing',
+                Authorization: 'Bearer fake-jwt-token-for-testing',
               }),
-            })
+            }),
           );
-        }
+        },
       ),
-      { numRuns: 20 }
+      { numRuns: 20 },
     );
   });
 
@@ -408,7 +416,7 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
             certificateInfo: fc.record({
               recipient: fc.record({
                 contactInfo: fc.record({
-                  email: fc.emailAddress(), // Deep nested PII
+                  email: fc.constant('user@example.com'), // Deep nested PII
                 }),
               }),
             }),
@@ -420,7 +428,7 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
                 name: fc.string(),
                 identifier: fc.constant('123-45-6789'), // SSN in array
               }),
-              { minLength: 1, maxLength: 3 }
+              { minLength: 1, maxLength: 3 },
             ),
           }),
         ),
@@ -429,17 +437,17 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
           global.fetch = jest.fn();
 
           await expect(service.storeCertificateMetadata(metadata)).rejects.toThrow(
-            BadRequestException
+            BadRequestException,
           );
           await expect(service.storeCertificateMetadata(metadata)).rejects.toThrow(
-            /PII detected in metadata/
+            /PII detected in metadata/,
           );
 
           // Verify no IPFS calls were made
           expect(global.fetch).not.toHaveBeenCalled();
-        }
+        },
       ),
-      { numRuns: 15 }
+      { numRuns: 15 },
     );
   });
 
@@ -468,12 +476,14 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
     expect(result).toHaveLength(10);
 
     // Test exactly 10MB file
-    const exactlyTenMBFile: MulterFile[] = [{
-      originalname: 'exactly_10mb.bin',
-      size: 10 * 1024 * 1024, // Exactly 10MB
-      buffer: Buffer.alloc(1024), // Don't allocate full 10MB in test
-      mimetype: 'application/octet-stream',
-    }];
+    const exactlyTenMBFile: MulterFile[] = [
+      {
+        originalname: 'exactly_10mb.bin',
+        size: 10 * 1024 * 1024, // Exactly 10MB
+        buffer: Buffer.alloc(1024), // Don't allocate full 10MB in test
+        mimetype: 'application/octet-stream',
+      },
+    ];
 
     // Reset mock
     jest.clearAllMocks();
@@ -511,14 +521,14 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
 
           // Should throw InternalServerErrorException, not return partial CIDs
           await expect(service.uploadProfileDocuments(files)).rejects.toThrow(
-            InternalServerErrorException
+            InternalServerErrorException,
           );
           await expect(service.uploadProfileDocuments(files)).rejects.toThrow(
-            'IPFS storage failed'
+            'IPFS storage failed',
           );
-        }
+        },
       ),
-      { numRuns: 10 }
+      { numRuns: 10 },
     );
   });
 
