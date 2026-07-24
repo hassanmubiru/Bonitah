@@ -270,3 +270,58 @@ contract SavingsVaultTask4_7Test is Test {
         vm.prank(user1);
         vault.withdraw(0);
     }
+    
+    /// @notice Test ZeroAmount error on contributeToGoal
+    function testRevert_ZeroAmount_ContributeToGoal() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.ZeroAmount.selector));
+        vm.prank(user1);
+        vault.contributeToGoal(0, 0);
+    }
+    
+    /// @notice Test ZeroAmount error on lockFunds
+    function testRevert_ZeroAmount_LockFunds() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.ZeroAmount.selector));
+        vm.prank(user1);
+        vault.lockFunds(0, LOCK_DURATION);
+    }
+    
+    /// @notice Test ZeroAmount error on withdrawLocked for non-existent lock
+    function testRevert_ZeroAmount_WithdrawLocked_NonExistent() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.ZeroAmount.selector));
+        vm.prank(user1);
+        vault.withdrawLocked(999); // Non-existent lock ID
+    }
+    
+    /// @notice Test ZeroAmount error on withdrawLocked for already released lock
+    function testRevert_ZeroAmount_WithdrawLocked_AlreadyReleased() public {
+        // Deposit, lock, wait, and release
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        vm.prank(user1);
+        vault.lockFunds(LOCK_AMOUNT, LOCK_DURATION);
+        
+        vm.warp(block.timestamp + LOCK_DURATION + 1);
+        
+        vm.prank(user1);
+        vault.withdrawLocked(0); // First withdrawal should succeed
+        
+        // Second attempt should revert with ZeroAmount (already released)
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.ZeroAmount.selector));
+        vm.prank(user1);
+        vault.withdrawLocked(0);
+    }
+    
+    /// @notice Test InsufficientAvailableBalance error on withdraw
+    function testRevert_InsufficientAvailableBalance_Withdraw() public {
+        uint256 available = vault.availableBalance(user1); // Should be 0
+        uint256 excessAmount = available + 1;
+        
+        vm.expectRevert(abi.encodeWithSelector(
+            ISavingsVault.InsufficientAvailableBalance.selector,
+            excessAmount,
+            available
+        ));
+        vm.prank(user1);
+        vault.withdraw(excessAmount);
+    }
