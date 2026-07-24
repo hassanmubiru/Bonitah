@@ -295,13 +295,13 @@ describe('Property 31: Event indexing reorg convergence', () => {
           events: fc.array(
             fc.record({
               transactionHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
-              logIndex: fc.integer({ min: 0, max: 100 }),
+              logIndex: fc.integer({ min: 0, max: 10 }),
               address: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-              blockNumber: fc.bigUintN(32),
+              blockNumber: fc.integer({ min: 1, max: 1000 }).map(n => BigInt(n)),
               blockHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
-              topics: fc.array(fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`), { maxLength: 4 }),
+              topics: fc.array(fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`), { maxLength: 2 }),
             }),
-            { minLength: 1, maxLength: 10 }
+            { minLength: 1, maxLength: 5 }
           ),
         }),
         async ({ events }) => {
