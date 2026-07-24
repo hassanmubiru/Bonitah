@@ -142,7 +142,7 @@ describe('Task 18.3: Comprehensive Frontend Foundation Tests', () => {
       render(<TestApp />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /switch to dark theme/i })).toBeInTheDocument();
       });
 
       const startTime = Date.now();
@@ -172,7 +172,7 @@ describe('Task 18.3: Comprehensive Frontend Foundation Tests', () => {
       const { unmount } = render(<TestApp />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /switch to dark theme/i })).toBeInTheDocument();
       });
 
       const themeButton = screen.getByRole('button', { name: /switch to dark theme/i });

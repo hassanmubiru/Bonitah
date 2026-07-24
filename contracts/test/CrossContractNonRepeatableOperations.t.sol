@@ -45,9 +45,9 @@ contract CrossContractNonRepeatableOperationsTest is Test {
     address public reputationManager = makeAddr("reputationManager");
     
     // Test data arrays for fuzzing
-    address[] public testUsers;
-    bytes32[] public testCourseIds;
-    string[] public testMetadataHashes;
+    address[] internal testUsers;
+    bytes32[] internal testCourseIds;
+    string[] internal testMetadataHashes;
     
     uint256 public constant MAX_USERS = 20;
     uint256 public constant MAX_COURSES = 10;

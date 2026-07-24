@@ -403,6 +403,9 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
         vm.assume(unauthorizedCaller != address(0));
         vm.assume(!registry.hasRole(BFNRoles.VERIFIER_ROLE, unauthorizedCaller));
         
+        // Capture initial state (user is already verified from the authorized test)
+        IRegistry.UserProfile memory initialProfile = registry.getProfile(authorizedUser);
+        
         // Multiple attempts should all revert consistently
         for (uint i = 0; i < 3; i++) {
             vm.prank(unauthorizedCaller);
@@ -417,7 +420,8 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
         }
         
         // State should remain unchanged after all attempts
-        IRegistry.UserProfile memory profile = registry.getProfile(authorizedUser);
-        assertTrue(profile.verified, "State should remain unchanged after multiple unauthorized attempts");
+        IRegistry.UserProfile memory finalProfile = registry.getProfile(authorizedUser);
+        assertEq(finalProfile.verified, initialProfile.verified, "Verified status should remain unchanged after multiple unauthorized attempts");
+        assertEq(finalProfile.reputationScore, initialProfile.reputationScore, "Reputation should remain unchanged after multiple unauthorized attempts");
     }
 }
