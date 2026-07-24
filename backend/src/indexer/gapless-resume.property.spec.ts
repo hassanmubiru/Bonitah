@@ -89,18 +89,14 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           mockPublicClient.getBlockNumber.mockResolvedValue(interruptionPoint);
           
           // Mock no reorg
-          mockPublicClient.getBlock.mockImplementation(({ blockNumber }: { blockNumber: bigint }) => ({
+          mockPublicClient.getBlock.mockImplementation(({ blockNumber }: { blockNumber: bigint }) => Promise.resolve({
             number: blockNumber,
             hash: `0x${blockNumber.toString(16).padStart(64, '0')}`,
           }));
 
           // Track processed blocks in phase 1
           const phase1ProcessedBlocks: bigint[] = [];
-          let getLogsCalls = 0;
           mockPublicClient.getLogs.mockImplementation(({ fromBlock, toBlock }: { fromBlock: bigint, toBlock: bigint }) => {
-            getLogsCalls++;
-            console.log(`Phase 1: getLogs called with range ${fromBlock}-${toBlock}, call #${getLogsCalls}`);
-            
             const events: any[] = [];
             for (let block = fromBlock; block <= toBlock; block++) {
               phase1ProcessedBlocks.push(block);
@@ -113,7 +109,6 @@ describe('Property 32: Indexing resumes gaplessly', () => {
                 topics: [`0x${'topic'.repeat(12)}00`],
               });
             }
-            console.log(`Phase 1: Processing ${events.length} events for blocks ${fromBlock}-${toBlock}`);
             return Promise.resolve(events);
           });
 
@@ -129,17 +124,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
 
           // Execute phase 1 indexing
           const indexNewBlocks = (indexerService as any).indexNewBlocks.bind(indexerService);
-          console.log(`Phase 1: About to call indexNewBlocks. initialBlock=${initialBlock}, interruptionPoint=${interruptionPoint}`);
-          
-          // Add debugging for state retrieval
-          const getIndexerState = (indexerService as any).getIndexerState.bind(indexerService);
-          const state = await getIndexerState();
-          const currentBlockNumber = await mockPublicClient.getBlockNumber();
-          console.log(`Phase 1: State - lastIndexedBlock=${state.lastIndexedBlock}, currentBlock=${currentBlockNumber}`);
-          console.log(`Phase 1: Condition check - ${state.lastIndexedBlock} >= ${currentBlockNumber} = ${state.lastIndexedBlock >= currentBlockNumber}`);
-          
           await indexNewBlocks();
-          console.log(`Phase 1: indexNewBlocks completed. Processed blocks: ${phase1ProcessedBlocks.length}, getLogs calls: ${getLogsCalls}`);
 
           // Verify phase 1 completed successfully
           expect(phase1ProcessedBlocks.length).toBeGreaterThan(0);
