@@ -57,7 +57,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Assert `UserRegistered`/`ProfileUpdated`/`UserVerified` args and one revert test per custom error
     - _Requirements: 13.1, 15.1, 15.2, 15.3_
 
-- [ ] 4. Implement the SavingsVault contract
+- [-] 4. Implement the SavingsVault contract
   - [x] 4.1 Implement deposit/withdraw core in `SavingsVault.sol`
     - Implement `deposit`, `withdraw`, `availableBalance` with `SafeERC20`, `ReentrancyGuard`, `Pausable`, registration checks, and events
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 13.2, 13.3_
