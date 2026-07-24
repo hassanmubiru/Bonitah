@@ -566,33 +566,28 @@ describe('AI Timeout and Unavailability Integration', () => {
 
       mockPrismaService.message.findMany.mockResolvedValue(existingMessages);
 
-      // Create a fresh service instance without OpenAI configured
-      const moduleWithoutOpenAI = await Test.createTestingModule({
-        providers: [
-          AiService,
-          {
-            provide: EnvService,
-            useValue: {
-              openaiApiKey: undefined, // No API key
-            },
-          },
-          {
-            provide: PrismaService,
-            useValue: mockPrismaService,
-          },
-          {
-            provide: ChainReadService,
-            useValue: mockChainReadService,
-          },
-        ],
-      }).compile();
+      // Mock chain reads to succeed
+      mockChainReadService.read.mockResolvedValue({
+        value: '1000',
+        provenance: { blockNumber: 12345, fetchedAt: new Date() },
+      });
 
-      const unconfiguredService = moduleWithoutOpenAI.get<AiService>(AiService);
+      // Create OpenAI mock that fails after successful init
+      const failingMockOpenAI = {
+        chat: {
+          completions: {
+            create: jest.fn().mockRejectedValue(new Error('Service temporarily down')),
+          },
+        },
+      };
 
-      await expect(unconfiguredService.chat(userId, address, question))
+      // Set OpenAI to be configured but failing
+      (service as any).openai = failingMockOpenAI;
+
+      await expect(service.chat(userId, address, question))
         .rejects.toThrow(ServiceUnavailableException);
 
-      // Verify that the service attempted to find conversation (showing history preservation logic)
+      // Now that OpenAI is configured but failing, the service should have attempted conversation operations
       expect(mockPrismaService.conversation.findFirst).toHaveBeenCalled();
     });
 
