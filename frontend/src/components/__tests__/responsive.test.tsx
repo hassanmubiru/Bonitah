@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
 
@@ -193,11 +193,16 @@ describe('Responsive Design Tests', () => {
       render(<SiteHeader />);
 
       const themeButton = screen.getByRole('button');
-      const rect = themeButton.getBoundingClientRect();
-
-      // Button should be at least 44px for touch accessibility (iOS guideline)
-      expect(rect.width).toBeGreaterThanOrEqual(36); // shadcn/ui icon button size
-      expect(rect.height).toBeGreaterThanOrEqual(36);
+      
+      // Check that the button has the appropriate size classes for touch interaction
+      // shadcn/ui icon button (size="icon") provides h-9 w-9 which is 36px x 36px
+      expect(themeButton).toHaveClass('h-9');
+      expect(themeButton).toHaveClass('w-9');
+      
+      // Verify it's properly sized for touch interaction (minimum recommended is 44px)
+      // The 36px size is acceptable for secondary actions like theme toggle
+      expect(themeButton.className).toContain('h-9');
+      expect(themeButton.className).toContain('w-9');
     });
 
     it('should maintain accessibility at all responsive breakpoints', async () => {

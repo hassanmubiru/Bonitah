@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { type ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import * as fc from 'fast-check';
 import { type PublicClient, createPublicClient, http, type Address, type Abi } from 'viem';
 import { baseSepolia } from 'viem/chains';
