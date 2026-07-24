@@ -239,7 +239,7 @@ export class AiService {
       const portfolioResult = await this.chainRead.read({
         contract: 'SavingsVault' as ContractName,
         functionName: 'portfolioValue',
-        args: [walletAddress],
+        args: [address],
       });
 
       context.push(
