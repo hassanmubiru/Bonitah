@@ -217,17 +217,23 @@ contract SavingsVaultPropertyBalanceTest is Test {
                         vm.prank(user);
                         vault.createGoal(available * 2, block.timestamp + 30 days);
                     }
-                    uint256 amount = bound(seed >> 8, 1e17, available / 2);
-                    vm.prank(user);
-                    vault.contributeToGoal(0, amount);
+                    uint256 maxAmount = available / 2;
+                    if (maxAmount >= 1e17) {
+                        uint256 amount = bound(seed >> 8, 1e17, maxAmount);
+                        vm.prank(user);
+                        vault.contributeToGoal(0, amount);
+                    }
                 }
             } else {
                 // Lock funds
                 uint256 available = vault.availableBalance(user);
                 if (available > 1e17) {
-                    uint256 amount = bound(seed >> 8, 1e17, available / 2);
-                    vm.prank(user);
-                    vault.lockFunds(amount, 1 days);
+                    uint256 maxAmount = available / 2;
+                    if (maxAmount >= 1e17) {
+                        uint256 amount = bound(seed >> 8, 1e17, maxAmount);
+                        vm.prank(user);
+                        vault.lockFunds(amount, 1 days);
+                    }
                 }
             }
             
