@@ -563,8 +563,8 @@ contract CommunityTreasuryComprehensiveTest is Test {
         assertEq(user1Share, (1e18 * 1e6) / totalContributions, "User1 share calculation");
         assertEq(user2Share, (1000e18 * 1e6) / totalContributions, "User2 share calculation");
         
-        // Shares should sum to 100%
-        assertEq(user1Share + user2Share, 1e6, "Shares should sum to 1e6 ppm");
+        // Shares should sum to 100% (allow for 1 ppm rounding error)
+        assertApproxEqAbs(user1Share + user2Share, 1e6, 1, "Shares should sum to 1e6 ppm");
     }
     /**
      * Test contribution history with rapid successive contributions
