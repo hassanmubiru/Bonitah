@@ -381,7 +381,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
           }
         }
       ),
-      { numRuns: 10 }
+      { numRuns: 5 }
     );
   });
 

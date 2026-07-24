@@ -243,7 +243,7 @@ describe('Event Indexer 60s Timing (e2e)', () => {
     it('should maintain gapless indexing without skipping blocks', async () => {
       // This test verifies the indexer processes blocks sequentially without gaps
       
-      const startingBlock = await publicClient.getBlockNumber({ blockTag: 'finalized' });
+      const startingBlock = await publicClient.getBlockNumber();
       
       // Start indexer
       await indexerService.startIndexing();
