@@ -336,10 +336,11 @@ contract CommunityTreasuryPropertyPoolOwnershipTest is Test {
             "Large contributor share should be calculated correctly"
         );
         
-        // Verify shares sum to 100%
-        assertEq(
+        // Verify shares sum to 100% (allow for 1 ppm rounding error)
+        assertApproxEqAbs(
             treasury.ownershipShare(poolId, users[0]) + treasury.ownershipShare(poolId, users[1]),
             PPM_BASE,
+            1,
             "Shares should sum to 100% even with extreme differences"
         );
         

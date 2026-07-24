@@ -69,9 +69,12 @@ contract CommunityTreasuryPropertyPoolRecordsTest is Test {
         uint8 maxContributionsPerUser,
         uint256 seed
     ) public {
-        // Bound inputs to reasonable ranges
+        // Bound inputs to reasonable ranges with valid parameter checking
         numUsers = uint8(bound(numUsers, 1, MAX_USERS));
         maxContributionsPerUser = uint8(bound(maxContributionsPerUser, 1, MAX_CONTRIBUTIONS_PER_USER));
+        
+        // Skip if numUsers is 0 (invalid for circle creation)
+        vm.assume(numUsers > 0);
         
         // Create pool and add users
         vm.prank(users[0]);
