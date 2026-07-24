@@ -17,9 +17,9 @@ export interface AuthState {
   /** Authentication error if any */
   error: string | null;
   /** Authenticated user's address if signed in */
-  address?: string;
+  address?: string | undefined;
   /** User's role if signed in */
-  role?: string;
+  role?: string | undefined;
 }
 
 /**
