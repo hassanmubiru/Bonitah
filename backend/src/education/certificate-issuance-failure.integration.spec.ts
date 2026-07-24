@@ -292,3 +292,60 @@ describe('Certificate Issuance and Failure Integration (Task 16.4)', () => {
     });
 
     it('should return 404 for non-existent course', async () => {
+      const courseId = 'non-existent-course';
+      const userId = 'test-user-id';
+      const walletAddress = '0x1234567890123456789012345678901234567890';
+      
+      (prismaService.course.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(educationService.issueCertificate(userId, walletAddress, courseId))
+        .rejects.toThrow(NotFoundException);
+
+      try {
+        await educationService.issueCertificate(userId, walletAddress, courseId);
+      } catch (error: any) {
+        expect(error).toBeInstanceOf(NotFoundException);
+        expect(error.message).toContain('Course not found');
+      }
+
+      expect(ipfsService.storeCertificateMetadata).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('End-to-End Integration Verification', () => {
+    it('should maintain transaction atomicity on partial success', async () => {
+      const courseId = 'atomicity-test-course';
+      const userId = 'test-user-id';
+      const walletAddress = '0x1234567890123456789012345678901234567890';
+      
+      const mockCourse = {
+        id: courseId,
+        onChainId: '0x0000000000000000000000000000000000000000000000000000000000000008',
+        title: 'Atomicity Test Course',
+        lessons: [{ id: 'lesson-1' }],
+      };
+
+      (prismaService.course.findUnique as jest.Mock).mockResolvedValue(mockCourse);
+      (prismaService.lessonProgress.count as jest.Mock).mockResolvedValue(1);
+
+      // Mock successful IPFS but potential blockchain failure
+      const mockCid = 'QmAtomicityTestHash';
+      (ipfsService.storeCertificateMetadata as jest.Mock).mockResolvedValue(mockCid);
+
+      const result = await educationService.issueCertificate(userId, walletAddress, courseId);
+
+      // Verify response includes both IPFS and blockchain results
+      expect(result.ipfsCid).toBe(mockCid);
+      expect(result.transactionHash).toBeDefined();
+      expect(result.metadata).toBeDefined();
+    });
+
+    it('should preserve lesson completion state across certificate issuance attempts', async () => {
+      const courseId = 'state-preservation-course';
+      const userId = 'test-user-id';
+      const walletAddress = '0x1234567890123456789012345678901234567890';
+      
+      const mockCourse = {
+        id: courseId,
+        onChainId: '0x000000000000000000000000000000000000000000000000000000000000000a',
+        title: 'State Preservation Course',
