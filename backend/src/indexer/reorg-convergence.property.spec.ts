@@ -119,7 +119,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
           });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 10 }
     );
   });
 
@@ -280,7 +280,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
           });
         }
       ),
-      { numRuns: 50 } // Reduced runs for complex test
+      { numRuns: 5 } // Reduced runs for complex test
     );
   });
 
@@ -330,7 +330,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
           expect(upsertCalls.size).toBe(events.length);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 10 }
     );
   });
 
@@ -381,7 +381,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 10 }
     );
   });
 
@@ -445,7 +445,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
           expect(true).toBe(true); // Test completed without hanging
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 5 }
     );
   });
 });

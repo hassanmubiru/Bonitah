@@ -198,10 +198,10 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
   });
 
   /**
-   * Property: Service respects the limit parameter passed to it
+   * Property: Service uses cursor pagination (limit + 1 fetch pattern)
    * Requirements: 12.3 (proper pagination)
-   * Note: The 100-event limit is enforced at the API layer via transactionsQuerySchema validation,
-   * not in the service layer. The service assumes valid input.
+   * The service fetches limit + 1 records to detect if there are more pages,
+   * but returns at most 'limit' records to the caller.
    */
   it('respects the limit parameter passed to it', async () => {
     await fc.assert(
@@ -209,18 +209,20 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
         fc.record({
           walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}`),
           requestedLimit: fc.integer({ min: 1, max: 100 }), // Test within valid range
-          totalEvents: fc.integer({ min: 0, max: 200 }),
           cursor: fc.option(
             fc.bigInt({ min: 1n, max: 1000000n }).map((n) => n.toString()),
             { nil: undefined },
           ),
         }),
-        async ({ walletAddress, requestedLimit, totalEvents, cursor }) => {
+        async ({ walletAddress, requestedLimit, cursor }) => {
+          // Clear any previous calls before each property test run
+          jest.clearAllMocks();
+          
           const query: TransactionsQuery = { cursor, limit: requestedLimit };
 
-          // Generate mock events
+          // Generate mock events - ensure we have more than the requested limit to test pagination
           const mockEvents = Array.from(
-            { length: Math.min(totalEvents, requestedLimit) },
+            { length: requestedLimit + 2 }, // Always generate more than requested to test pagination
             (_, i) => ({
               id: `event-${i}`,
               contractAddress: `0x${'a'.repeat(40)}`,
@@ -240,10 +242,10 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
 
           const result = await service.getTransactionHistory(walletAddress, query);
 
-          // Property: Service uses the exact limit passed to it
-          expect(prisma.cachedEvent.findMany).toHaveBeenCalledWith(
+          // Property: Service uses limit + 1 for cursor pagination (to detect if there are more pages)
+          expect(prisma.cachedEvent.findMany).toHaveBeenLastCalledWith(
             expect.objectContaining({
-              take: requestedLimit, // Should use the exact requested limit
+              take: requestedLimit + 1, // Service fetches limit + 1 for cursor pagination
             }),
           );
 

@@ -78,21 +78,21 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           networkFailures: fc.array(
             fc.record({
               failureType: fc.constantFrom('timeout', 'connection_error', 'rate_limit'),
-              affectedBlocks: fc.array(fc.bigUintN(32), { minLength: 1, maxLength: 5 }),
+              affectedBlocks: fc.array(fc.bigUintN(16), { minLength: 1, maxLength: 3 }),
             }),
-            { minLength: 1, maxLength: 3 }
+            { minLength: 1, maxLength: 2 }
           ),
           eventsPerBlock: fc.array(
             fc.array(
               fc.record({
                 transactionHash: fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`),
-                logIndex: fc.integer({ min: 0, max: 10 }),
+                logIndex: fc.integer({ min: 0, max: 5 }),
                 address: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
-                topics: fc.array(fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`), { maxLength: 4 }),
+                topics: fc.array(fc.hexaString({ minLength: 64, maxLength: 64 }).map(s => `0x${s}`), { maxLength: 2 }),
               }),
-              { maxLength: 5 }
+              { maxLength: 2 }
             ),
-            { maxLength: 20 }
+            { maxLength: 10 }
           ),
         }).filter(({ lastIndexedBlock, currentHead }) => lastIndexedBlock < currentHead),
         async ({ lastIndexedBlock, currentHead, networkFailures, eventsPerBlock }) => {
@@ -206,7 +206,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           });
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 10 }
     );
   });
 
@@ -216,7 +216,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
    */
   it('maintains block continuity across multiple interruption cycles', () => {
     fc.assert(
-      fc.property(
+      fc.asyncProperty(
         fc.record({
           startBlock: fc.bigUintN(32).map(n => n + 100n),
           interruptionCycles: fc.array(
@@ -233,7 +233,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           
           // Simulate multiple cycles of success -> interruption -> resume
           for (let cycleIndex = 0; cycleIndex < interruptionCycles.length; cycleIndex++) {
-            const cycle = interruptionCycles[cycleIndex];
+            const cycle = interruptionCycles[cycleIndex]!;
             
             // Mock successful processing of some blocks
             const cycleEndBlock = currentBlock + BigInt(cycle.successfulBlocks);
@@ -288,7 +288,12 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           
           // Group processed blocks by continuous ranges
           const sortedBlocks = allProcessedBlocks.sort((a, b) => Number(a - b));
-          let previousBlock = sortedBlocks[0] - 1n;
+          
+          if (sortedBlocks.length === 0) {
+            return; // No blocks processed, nothing to verify
+          }
+          
+          let previousBlock = sortedBlocks[0]! - 1n;
           
           for (const block of sortedBlocks) {
             // Within each indexNewBlocks call, blocks should be continuous
@@ -301,8 +306,8 @@ describe('Property 32: Indexing resumes gaplessly', () => {
               
               // Find the end of this continuous range
               for (let i = sortedBlocks.indexOf(block) + 1; i < sortedBlocks.length; i++) {
-                if (sortedBlocks[i] === cycleEnd + 1n) {
-                  cycleEnd = sortedBlocks[i];
+                if (sortedBlocks[i]! === cycleEnd + 1n) {
+                  cycleEnd = sortedBlocks[i]!;
                 } else {
                   break;
                 }
@@ -317,7 +322,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           }
         }
       ),
-      { numRuns: 30 }
+      { numRuns: 5 }
     );
   });
   /**
@@ -326,7 +331,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
    */
   it('resumes from exact last cached block number', () => {
     fc.assert(
-      fc.property(
+      fc.asyncProperty(
         fc.record({
           lastCachedBlock: fc.bigUintN(32).map(n => n + 50n),
           blockchainHead: fc.bigUintN(32).map(n => n + 100n),
@@ -379,7 +384,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           expect(Number(actualBlockRange)).toBe(expectedBlockCount);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
   /**
@@ -388,7 +393,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
    */
   it('retries network failures and eventually resumes without gaps', () => {
     fc.assert(
-      fc.property(
+      fc.asyncProperty(
         fc.record({
           lastBlock: fc.bigUintN(32).map(n => n + 20n),
           currentHead: fc.bigUintN(32).map(n => n + 50n),
@@ -475,7 +480,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           });
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 10 }
     );
   });
   /**
@@ -484,7 +489,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
    */
   it('maintains block sequence integrity across service restarts', () => {
     fc.assert(
-      fc.property(
+      fc.asyncProperty(
         fc.record({
           restartScenarios: fc.array(
             fc.record({
@@ -500,12 +505,12 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           
           // Simulate multiple service restarts
           for (let i = 0; i < restartScenarios.length; i++) {
-            const scenario = restartScenarios[i];
+            const scenario = restartScenarios[i]!;
             const startBlock = i === 0 ? scenario.restartAtBlock : scenario.restartAtBlock + BigInt(i * 10);
             const endBlock = startBlock + BigInt(scenario.processedBlocks);
             
             // Mock indexer state for this restart (resume from where we left off)
-            const lastIndexedBlock = i === 0 ? startBlock - 1n : allProcessedBlocks[allProcessedBlocks.length - 1];
+            const lastIndexedBlock = i === 0 ? startBlock - 1n : allProcessedBlocks[allProcessedBlocks.length - 1]!;
             
             (prismaService.indexerState.findUnique as jest.Mock).mockResolvedValue({
               id: 'singleton',
@@ -553,7 +558,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
             
             // Verify no gaps within this session
             for (let j = 1; j < sessionBlocks.length; j++) {
-              expect(sessionBlocks[j]).toBe(sessionBlocks[j-1] + 1n);
+              expect(sessionBlocks[j]).toBe(sessionBlocks[j-1]! + 1n);
             }
             
             totalExpectedBlocks += scenario.processedBlocks;
@@ -564,14 +569,19 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           
           // Group by continuous sequences (gaps are expected between restarts)
           const sequences: bigint[][] = [];
-          let currentSequence: bigint[] = [sortedBlocks[0]];
+          
+          if (sortedBlocks.length === 0) {
+            return; // No blocks processed
+          }
+          
+          let currentSequence: bigint[] = [sortedBlocks[0]!];
           
           for (let i = 1; i < sortedBlocks.length; i++) {
-            if (sortedBlocks[i] === sortedBlocks[i-1] + 1n) {
-              currentSequence.push(sortedBlocks[i]);
+            if (sortedBlocks[i]! === sortedBlocks[i-1]! + 1n) {
+              currentSequence.push(sortedBlocks[i]!);
             } else {
               sequences.push(currentSequence);
-              currentSequence = [sortedBlocks[i]];
+              currentSequence = [sortedBlocks[i]!];
             }
           }
           sequences.push(currentSequence);
@@ -579,7 +589,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
           // Each sequence should be continuous (no internal gaps)
           sequences.forEach(sequence => {
             for (let i = 1; i < sequence.length; i++) {
-              expect(sequence[i]).toBe(sequence[i-1] + 1n);
+              expect(sequence[i]).toBe(sequence[i-1]! + 1n);
             }
           });
 

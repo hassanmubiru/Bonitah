@@ -76,7 +76,7 @@ describe('Empty and Boundary Pagination - Unit Tests', () => {
         orderBy: {
           blockNumber: 'desc',
         },
-        take: MAX_TX_PAGE_SIZE,
+        take: MAX_TX_PAGE_SIZE + 1,
         select: {
           contractAddress: true,
           eventName: true,
@@ -117,7 +117,7 @@ describe('Empty and Boundary Pagination - Unit Tests', () => {
         orderBy: {
           blockNumber: 'desc',
         },
-        take: 50,
+        take: 50 + 1,
         select: {
           contractAddress: true,
           eventName: true,
@@ -164,12 +164,22 @@ describe('Empty and Boundary Pagination - Unit Tests', () => {
       // Verify query requested one extra to check for next page
       expect(prismaService.cachedEvent.findMany).toHaveBeenCalledWith({
         where: {
-          walletAddress: testWalletAddress,
+          walletAddress: testWalletAddress.toLowerCase(),
         },
         orderBy: {
           blockNumber: 'desc',
         },
         take: MAX_TX_PAGE_SIZE + 1,
+        select: {
+          contractAddress: true,
+          eventName: true,
+          walletAddress: true,
+          transactionHash: true,
+          blockNumber: true,
+          blockHash: true,
+          logIndex: true,
+          payload: true,
+        },
       });
     });
 
@@ -300,7 +310,7 @@ describe('Empty and Boundary Pagination - Unit Tests', () => {
       // Verify cursor constraint was applied
       expect(prismaService.cachedEvent.findMany).toHaveBeenCalledWith({
         where: {
-          walletAddress: testWalletAddress,
+          walletAddress: testWalletAddress.toLowerCase(),
           blockNumber: {
             lt: BigInt(cursorBlockNumber),
           },
@@ -309,6 +319,16 @@ describe('Empty and Boundary Pagination - Unit Tests', () => {
           blockNumber: 'desc',
         },
         take: 11, // limit + 1
+        select: {
+          contractAddress: true,
+          eventName: true,
+          walletAddress: true,
+          transactionHash: true,
+          blockNumber: true,
+          blockHash: true,
+          logIndex: true,
+          payload: true,
+        },
       });
     });
 
@@ -378,12 +398,22 @@ describe('Empty and Boundary Pagination - Unit Tests', () => {
       // Verify ordering was requested
       expect(prismaService.cachedEvent.findMany).toHaveBeenCalledWith({
         where: {
-          walletAddress: testWalletAddress,
+          walletAddress: testWalletAddress.toLowerCase(),
         },
         orderBy: {
           blockNumber: 'desc',
         },
-        take: 11,
+        take: 11, // limit + 1
+        select: {
+          contractAddress: true,
+          eventName: true,
+          walletAddress: true,
+          transactionHash: true,
+          blockNumber: true,
+          blockHash: true,
+          logIndex: true,
+          payload: true,
+        },
       });
     });
   });
