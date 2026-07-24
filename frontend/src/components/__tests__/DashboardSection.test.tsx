@@ -125,14 +125,9 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
 }
 
 // Mock wagmi's usePublicClient hook
-const mockUsePublicClient = jest.fn();
-jest.mock('wagmi', () => ({
-  usePublicClient: () => mockUsePublicClient(),
-}));
-
-// Mock public client
 const mockPublicClient = {
   readContract: jest.fn(),
+  chainId: 84532,
 };
 
 describe('Component Tests for Loading/Error/Retry States', () => {
@@ -162,7 +157,7 @@ describe('Component Tests for Loading/Error/Retry States', () => {
   describe('Loading State (Req 11.4)', () => {
     it('displays loading state during data fetch without placeholder values', async () => {
       // Mock slow response to capture loading state
-      mockPublicClient.readContract.mockImplementation(
+      mockReadContract.mockImplementation(
         () => new Promise(resolve => setTimeout(() => resolve(1000n), 2000))
       );
 

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { EducationService } from './education.service';
 import { PrismaService } from '../prisma/prisma.service';
