@@ -293,7 +293,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `/education/courses/:id/certificate`: verify completion, store metadata via IPFS, then call `Education.issueCertificate`; on IPFS failure leave prior state unchanged
     - _Requirements: 8.3, 8.4, 8.9_
 
-  - [ ] 16.4 Write integration tests for certificate issuance and failure
+  - [x] 16.4 Write integration tests for certificate issuance and failure
     - Cover success (cid + tx) and IPFS-failure (no cert hash, state unchanged) paths
     - _Requirements: 8.3, 8.4, 8.9, 8.10_
 
