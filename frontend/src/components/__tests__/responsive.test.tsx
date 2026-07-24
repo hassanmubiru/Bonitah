@@ -204,11 +204,17 @@ describe('Responsive Design Tests', () => {
       const testBreakpoints = [320, 768, 1024];
 
       for (const width of testBreakpoints) {
+        // Clean up any previous renders
+        document.body.innerHTML = '';
+        
         setViewportSize(width);
-        const { container } = render(<SiteHeader />);
+        const { container, unmount } = render(<SiteHeader />);
 
         const results = await axe(container);
         expect(results).toHaveNoViolations();
+        
+        // Clean up after each iteration
+        unmount();
       }
     });
   });
