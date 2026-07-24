@@ -11,7 +11,9 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { type Address } from 'viem';
 
 import { useSiweAuth } from '@/hooks/useSiweAuth';
-import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
+
+// Mock the BASE_SEPOLIA_CHAIN_ID constant
+const BASE_SEPOLIA_CHAIN_ID = 84532;
 
 // Mock wagmi hooks
 const mockSignMessageAsync = jest.fn();
