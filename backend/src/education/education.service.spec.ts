@@ -222,6 +222,9 @@ describe('EducationService', () => {
     });
 
     it('should handle IPFS storage failure gracefully and leave prior state unchanged (Req 8.9)', async () => {
+      // Clear previous mock calls
+      jest.clearAllMocks();
+
       const userId = 'user1';
       const walletAddress = '0x1234567890123456789012345678901234567890';
       const courseId = 'course1';
