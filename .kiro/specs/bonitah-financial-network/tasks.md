@@ -272,11 +272,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Accept <=10 docs/request at <=10MB each, validate/exclude PII fields, pin content, return CID on success, and return storage error with no CID on failure
     - _Requirements: 3.5, 3.8, 3.9, 8.4_
 
-  - [ ] 15.2 Write property test for upload boundary and PII exclusion
+  - [-] 15.2 Write property test for upload boundary and PII exclusion
     - **Property 10: IPFS upload boundary validation**
     - **Validates: Requirements 3.5, 3.8**
 
-  - [ ] 15.3 Write unit tests for storage-failure handling
+  - [-] 15.3 Write unit tests for storage-failure handling
     - Assert failure returns an error and no CID
     - _Requirements: 3.9, 8.9_
 
@@ -285,7 +285,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement courses/lessons content, lesson-completion with dedupe, course progress, and consecutive-day learning streak in off-chain data
     - _Requirements: 8.1, 8.2, 8.6, 8.8_
 
-  - [ ] 16.2 Write property test for the learning streak
+  - [-] 16.2 Write property test for the learning streak
     - **Property 21: Learning streak equals consecutive-day count**
     - **Validates: Requirements 8.2**
 
@@ -298,7 +298,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 8.3, 8.4, 8.9, 8.10_
 
 - [ ] 17. Implement the AI Assistant module
-  - [ ] 17.1 Implement the AI assistant service
+  - [-] 17.1 Implement the AI assistant service
     - Validate question length (<=2000), read on-chain figures read-only via ChainRead (unavailable on failure, never fabricated), scope the OpenAI system prompt, enforce a 30s timeout with retained history, and persist conversation history
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.8, 10.9_
 
@@ -326,7 +326,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Light default on first visit, theme switch across pages without reload within 1s, session persistence; keyboard focus with visible ring and accessible labels; responsive breakpoints (320-767, 768-1023, >=1024)
     - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7_
 
-  - [ ] 18.3 Write component tests for theming, responsiveness, and a11y
+  - [-] 18.3 Write component tests for theming, responsiveness, and a11y
     - Test theme apply/persist, no horizontal scroll at breakpoints, keyboard traversal and axe checks
     - _Requirements: 19.1, 19.2, 19.5, 19.6, 19.7_
 
