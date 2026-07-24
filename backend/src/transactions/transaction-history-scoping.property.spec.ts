@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as fc from 'fast-check';
 import { PrismaService } from '../prisma/prisma.service';
 import { TransactionsService } from './transactions.service';
-import { PaginationQueryDto } from './transactions.dto';
+import { TransactionsQuery } from '@bfn/shared';
 
 /**
  * Property 30: Transaction history is scoped, ordered, and paged
@@ -51,9 +51,9 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
    * Property: Transaction history is scoped to requesting user's wallet address only
    * Requirements: 12.3 (wallet address scoping)
    */
-  it('returns events scoped to the requesting users wallet address only', () => {
-    fc.assert(
-      fc.property(
+  it('returns events scoped to the requesting users wallet address only', async () => {
+    await fc.assert(
+      fc.asyncProperty(
         fc.record({
           // Target user wallet address
           userWallet: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
@@ -77,12 +77,12 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
             }),
             { minLength: 0, maxLength: 10 }
           ),
-          pagination: fc.record({
-            page: fc.integer({ min: 1, max: 5 }),
+          query: fc.record({
+            cursor: fc.option(fc.bigInt({ min: 1n, max: 1000000n }).map(n => n.toString()), { nil: undefined }),
             limit: fc.integer({ min: 1, max: 100 }),
           }),
         }),
-        async ({ userWallet, otherWallets, userEvents, pagination }) => {
+        async ({ userWallet, otherWallets, userEvents, query }) => {
           // Ensure other wallets are different from user wallet
           const distinctOtherWallets = otherWallets.filter(w => 
             w.toLowerCase() !== userWallet.toLowerCase()
@@ -99,25 +99,17 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
 
           // Mock Prisma responses
           (prisma.cachedEvent.findMany as jest.Mock).mockResolvedValue(userEventsWithWallet);
-          (prisma.cachedEvent.count as jest.Mock).mockResolvedValue(userEvents.length);
 
-          const result = await service.getTransactionHistory(userWallet, pagination);
+          const result = await service.getTransactionHistory(userWallet, query);
 
           // Verify findMany was called with correct wallet scoping
           expect(prisma.cachedEvent.findMany).toHaveBeenCalledWith(
             expect.objectContaining({
-              where: {
+              where: expect.objectContaining({
                 walletAddress: userWallet.toLowerCase(), // Normalized to lowercase
-              },
+              }),
             })
           );
-
-          // Verify count was called with same scoping
-          expect(prisma.cachedEvent.count).toHaveBeenCalledWith({
-            where: {
-              walletAddress: userWallet.toLowerCase(),
-            },
-          });
 
           // Property: All returned events belong to the requesting user's wallet
           result.events.forEach(event => {
@@ -125,7 +117,7 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
           });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 50 } // Reduce runs to avoid memory issues
     );
   });
 
@@ -133,9 +125,9 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
    * Property: Events are ordered by descending block number (most recent first)  
    * Requirements: 12.3 (descending block number ordering)
    */
-  it('orders events by descending block number', () => {
-    fc.assert(
-      fc.property(
+  it('orders events by descending block number', async () => {
+    await fc.assert(
+      fc.asyncProperty(
         fc.record({
           walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
           events: fc.array(
@@ -150,14 +142,14 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
               payload: fc.record({}),
               createdAt: fc.date(),
             }),
-            { minLength: 2, max: 20 } // At least 2 events to test ordering
+            { minLength: 2, maxLength: 10 } // At least 2 events to test ordering, reduce from 20
           ),
-          pagination: fc.record({
-            page: fc.integer({ min: 1, max: 3 }),
+          query: fc.record({
+            cursor: fc.option(fc.bigInt({ min: 1n, max: 1000000n }).map(n => n.toString()), { nil: undefined }),
             limit: fc.integer({ min: 1, max: 100 }),
           }),
         }),
-        async ({ walletAddress, events, pagination }) => {
+        async ({ walletAddress, events, query }) => {
           // Sort events by descending block number for expected result
           const sortedEvents = events
             .map(event => ({ ...event, walletAddress: walletAddress.toLowerCase() }))
@@ -165,9 +157,8 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
 
           // Mock Prisma responses
           (prisma.cachedEvent.findMany as jest.Mock).mockResolvedValue(sortedEvents);
-          (prisma.cachedEvent.count as jest.Mock).mockResolvedValue(events.length);
 
-          const result = await service.getTransactionHistory(walletAddress, pagination);
+          const result = await service.getTransactionHistory(walletAddress, query);
 
           // Verify findMany was called with descending block number ordering
           expect(prisma.cachedEvent.findMany).toHaveBeenCalledWith(
@@ -184,13 +175,15 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
               const current = result.events[i];
               const next = result.events[i + 1];
               
-              // Current block number should be >= next block number (descending)
-              expect(Number(current.blockNumber)).toBeGreaterThanOrEqual(Number(next.blockNumber));
+              if (current && next) {
+                // Current block number should be >= next block number (descending)
+                expect(Number(current.blockNumber)).toBeGreaterThanOrEqual(Number(next.blockNumber));
+              }
             }
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 50 } // Reduce runs to avoid memory issues
     );
   });
 

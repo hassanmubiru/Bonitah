@@ -29,8 +29,16 @@ export interface ReadResult {
 }
 
 /** Cache key generator for read operations. */
-export function generateCacheKey(contract: ContractName, functionName: string, args: readonly unknown[] = []): string {
-  const argsHash = args.length > 0 ? JSON.stringify(args) : '';
+export function generateCacheKey(contract: ContractName, functionName: string, args?: readonly unknown[]): string {
+  // Handle undefined vs empty array distinction
+  let argsHash: string;
+  if (args === undefined) {
+    argsHash = 'undefined';
+  } else if (args.length === 0) {
+    argsHash = 'empty';
+  } else {
+    argsHash = JSON.stringify(args);
+  }
   return `bfn:read:${contract}:${functionName}:${argsHash}`;
 }
 

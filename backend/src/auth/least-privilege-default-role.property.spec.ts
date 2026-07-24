@@ -94,13 +94,13 @@ describe('Property Test: Least-Privilege Default Role Assignment', () => {
       const { data: _data } = args;
       const record = {
         id: 'test-id',
-        nonce: data.nonce,
-        address: data.address,
+        nonce: _data.nonce,
+        address: _data.address,
         used: false,
-        expiresAt: data.expiresAt,
+        expiresAt: _data.expiresAt,
         createdAt: new Date(),
       };
-      mockNonces.set(data.nonce, record);
+      mockNonces.set(_data.nonce, record);
       return record;
     });
     
@@ -178,10 +178,10 @@ describe('Property Test: Least-Privilege Default Role Assignment', () => {
     
     // Mock user updateMany for role changes
     mockPrisma.user.updateMany.mockImplementation(async (args: any) => {
-      const { where, data: update } = args;
+      const { where } = args;
       const user = Array.from(mockUsers.values()).find(u => u.walletAddress === where.walletAddress);
       if (user) {
-        mockUsers.set(data.walletAddress, { ...user, walletAddress: data.walletAddress });
+        mockUsers.set(user.walletAddress, user);
         return { count: 1 };
       }
       return { count: 0 };
@@ -196,7 +196,7 @@ describe('Property Test: Least-Privilege Default Role Assignment', () => {
     const privateKey = generatePrivateKey();
     const account = privateKeyToAccount(privateKey);
     const signerAddress = privateKeyToAddress(privateKey);
-    const _testAddress = signerAddress; // Use checksum case, not lowercase
+    const testAddress = signerAddress; // Use checksum case, not lowercase
     
     // Step 1: Issue nonce for the wallet
     const nonceResponse = await authService.issueNonce({ address: testAddress });
