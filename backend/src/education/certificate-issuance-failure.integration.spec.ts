@@ -234,3 +234,61 @@ describe('Certificate Issuance and Failure Integration (Task 16.4)', () => {
     });
 
     it('should handle IPFS service unavailable error without side effects', async () => {
+      const courseId = 'unavailable-service-course';
+      const userId = 'test-user-id';
+      const walletAddress = '0x1234567890123456789012345678901234567890';
+      
+      const mockCourse = {
+        id: courseId,
+        onChainId: '0x0000000000000000000000000000000000000000000000000000000000000006',
+        title: 'Service Unavailable Test',
+        lessons: [{ id: 'lesson-1' }, { id: 'lesson-2' }, { id: 'lesson-3' }],
+      };
+
+      (prismaService.course.findUnique as jest.Mock).mockResolvedValue(mockCourse);
+      (prismaService.lessonProgress.count as jest.Mock).mockResolvedValue(3);
+
+      // Mock service unavailable
+      (ipfsService.storeCertificateMetadata as jest.Mock).mockRejectedValue(
+        new Error('Service temporarily unavailable')
+      );
+
+      await expect(educationService.issueCertificate(userId, walletAddress, courseId))
+        .rejects.toThrow(InternalServerErrorException);
+
+      // Verify IPFS was the point of failure
+      expect(ipfsService.storeCertificateMetadata).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Error Handling and Edge Cases', () => {
+    it('should reject certificate for incomplete course (Req 8.10)', async () => {
+      const courseId = 'incomplete-course';
+      const userId = 'test-user-id';
+      const walletAddress = '0x1234567890123456789012345678901234567890';
+      
+      const mockCourse = {
+        id: courseId,
+        onChainId: '0x0000000000000000000000000000000000000000000000000000000000000007',
+        title: 'Incomplete Course Test',
+        lessons: [{ id: 'lesson-1' }, { id: 'lesson-2' }, { id: 'lesson-3' }],
+      };
+
+      (prismaService.course.findUnique as jest.Mock).mockResolvedValue(mockCourse);
+      (prismaService.lessonProgress.count as jest.Mock).mockResolvedValue(2); // Only 2 of 3 lessons completed
+
+      await expect(educationService.issueCertificate(userId, walletAddress, courseId))
+        .rejects.toThrow(BadRequestException);
+
+      try {
+        await educationService.issueCertificate(userId, walletAddress, courseId);
+      } catch (error: any) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.message).toContain('Course not completed');
+      }
+      
+      // Verify IPFS was never called due to early validation failure
+      expect(ipfsService.storeCertificateMetadata).not.toHaveBeenCalled();
+    });
+
+    it('should return 404 for non-existent course', async () => {
