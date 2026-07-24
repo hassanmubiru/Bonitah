@@ -55,6 +55,15 @@ function DashboardSection({
     refetch: () => {},
   };
 
+  // When disabled, don't render any states
+  if (!enabled) {
+    return (
+      <div data-testid={`${title}-section`}>
+        <h2>{title}</h2>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div data-testid={`${title}-section`}>
