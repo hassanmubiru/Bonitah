@@ -131,6 +131,12 @@ describe('Component Tests for Loading/Error/Retry States', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+
+    // Mock usePublicClient to return a mock client
+    mockUsePublicClient.mockReturnValue({
+      readContract: jest.fn(),
+      chainId: 84532,
+    } as any);
   });
 
   afterEach(() => {
