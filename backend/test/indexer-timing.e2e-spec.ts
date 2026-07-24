@@ -1,8 +1,9 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { Logger } from 'nestjs-pino';
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, createWalletClient, http, parseEther, type PublicClient, type WalletClient } from 'viem';
 import { baseSepolia } from 'viem/chains';
+import { privateKeyToAccount } from 'viem/accounts';
 
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -13,6 +14,12 @@ import { IndexerService } from '../src/indexer/indexer.service';
  *
  * Verifies that BFN contract events are read and cached in the backend database 
  * within 60 seconds of the block containing the event being finalized.
+ * 
+ * This test creates or simulates contract events on Base Sepolia and verifies:
+ * 1. Events are indexed within 60 seconds of block finalization (Req 12.1)
+ * 2. Cached events have complete provenance metadata (Req 12.2) 
+ * 3. Indexer maintains gapless operation and handles restarts
+ * 4. Network resilience and error handling
  * 
  * **Validates: Requirements 12.1, 12.2**
  */

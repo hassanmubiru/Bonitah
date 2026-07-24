@@ -70,7 +70,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
    */
   it('resumes indexing from last cached block without skipping blocks', () => {
     fc.assert(
-      fc.property(
+        fc.asyncProperty(
         // Generate test data for resume scenarios
         fc.record({
           lastIndexedBlock: fc.bigUintN(32).map(n => n + 100n), // Start from block 100+
@@ -95,7 +95,6 @@ describe('Property 32: Indexing resumes gaplessly', () => {
             { maxLength: 20 }
           ),
         }).filter(({ lastIndexedBlock, currentHead }) => lastIndexedBlock < currentHead),
-        async ({ lastIndexedBlock, currentHead, networkFailures, eventsPerBlock }) => {
           // Mock initial indexer state
           (prismaService.indexerState.findUnique as jest.Mock).mockResolvedValue({
             id: 'singleton',

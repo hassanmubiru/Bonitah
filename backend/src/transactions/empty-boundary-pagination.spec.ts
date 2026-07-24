@@ -54,7 +54,6 @@ describe('Empty and Boundary Pagination - Unit Tests', () => {
     it('returns empty result set when no cached events exist for user wallet address', async () => {
       // Arrange: Mock empty result from database
       (prismaService.cachedEvent.findMany as jest.Mock).mockResolvedValue([]);
-      (prismaService.cachedEvent.count as jest.Mock).mockResolvedValue(0);
 
       const query: TransactionsQuery = {
         limit: MAX_TX_PAGE_SIZE,
@@ -72,12 +71,22 @@ describe('Empty and Boundary Pagination - Unit Tests', () => {
       // Verify correct database query was made
       expect(prismaService.cachedEvent.findMany).toHaveBeenCalledWith({
         where: {
-          walletAddress: emptyWalletAddress,
+          walletAddress: emptyWalletAddress.toLowerCase(),
         },
         orderBy: {
           blockNumber: 'desc',
         },
-        take: MAX_TX_PAGE_SIZE + 1, // +1 to determine if there's a next page
+        take: MAX_TX_PAGE_SIZE,
+        select: {
+          contractAddress: true,
+          eventName: true,
+          walletAddress: true,
+          transactionHash: true,
+          blockNumber: true,
+          blockHash: true,
+          logIndex: true,
+          payload: true,
+        },
       });
     });
 
