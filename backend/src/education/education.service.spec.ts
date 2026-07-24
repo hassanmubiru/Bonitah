@@ -54,7 +54,7 @@ describe('EducationService', () => {
     // Mock config values
     mockConfigService.getOrThrow.mockImplementation((key: string) => {
       const config: Record<string, string> = {
-        'ISSUER_PRIVATE_KEY': 'test-private-key-placeholder',
+        'ISSUER_PRIVATE_KEY': '0x0123456789012345678901234567890123456789012345678901234567890123',
         'BASE_SEPOLIA_RPC_URL': 'https://sepolia.base.org',
       };
       return config[key];
