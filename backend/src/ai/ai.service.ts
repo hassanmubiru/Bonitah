@@ -248,7 +248,7 @@ export class AiService {
     } catch (error) {
       // On read failure, mark as unavailable (Req 10.9)
       context.push('Total portfolio value: unavailable (unable to read from blockchain)');
-      this.logger.warn(`Failed to read portfolio value for ${walletAddress}`, error);
+      this.logger.warn(`Failed to read portfolio value for ${address}`, error);
     }
 
     try {
