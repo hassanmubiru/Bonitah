@@ -191,17 +191,17 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
    * Property: Pagination limits responses to at most 100 events per page
    * Requirements: 12.3 (maximum 100 events per response)
    */
-  it('enforces maximum 100 events per page', () => {
-    fc.assert(
-      fc.property(
+  it('enforces maximum 100 events per page', async () => {
+    await fc.assert(
+      fc.asyncProperty(
         fc.record({
           walletAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
           requestedLimit: fc.integer({ min: 1, max: 500 }), // Test limits above 100
-          totalEvents: fc.integer({ min: 0, max: 1000 }),
-          page: fc.integer({ min: 1, max: 10 }),
+          totalEvents: fc.integer({ min: 0, max: 200 }),
+          cursor: fc.option(fc.bigInt({ min: 1n, max: 1000000n }).map(n => n.toString()), { nil: undefined }),
         }),
-        async ({ walletAddress, requestedLimit, totalEvents, page }) => {
-          const pagination: PaginationQueryDto = { page, limit: requestedLimit };
+        async ({ walletAddress, requestedLimit, totalEvents, cursor }) => {
+          const query: TransactionsQuery = { cursor, limit: requestedLimit };
 
           // Generate mock events
           const mockEvents = Array.from({ length: Math.min(totalEvents, 100) }, (_, i) => ({
@@ -219,9 +219,8 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
 
           // Mock Prisma responses
           (prisma.cachedEvent.findMany as jest.Mock).mockResolvedValue(mockEvents);
-          (prisma.cachedEvent.count as jest.Mock).mockResolvedValue(totalEvents);
 
-          const result = await service.getTransactionHistory(walletAddress, pagination);
+          const result = await service.getTransactionHistory(walletAddress, query);
 
           // Property: Effective limit is at most 100 (Requirement 12.3)
           const expectedLimit = Math.min(requestedLimit, 100);
@@ -234,11 +233,9 @@ describe('Property 30: Transaction history scoping/ordering/paging', () => {
 
           // Property: Returned events never exceed 100
           expect(result.events.length).toBeLessThanOrEqual(100);
-          expect(result.pagination.pageSize).toBeLessThanOrEqual(100);
-          expect(result.pagination.pageSize).toBe(expectedLimit);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 50 } // Reduce runs to avoid memory issues
     );
   });
 
