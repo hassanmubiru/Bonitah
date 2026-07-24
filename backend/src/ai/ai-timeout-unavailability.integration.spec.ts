@@ -240,6 +240,9 @@ describe('AI Timeout and Unavailability Integration', () => {
 
       const unconfiguredService = moduleWithoutOpenAI.get<AiService>(AiService);
 
+      // Clear any previous calls from setup
+      mockPrismaService.conversation.findFirst.mockClear();
+
       await expect(unconfiguredService.chat(userId, address, question))
         .rejects.toThrow(ServiceUnavailableException);
 
