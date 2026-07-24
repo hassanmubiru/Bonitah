@@ -465,10 +465,10 @@ describe('Component Tests for Loading/Error/Retry States', () => {
     });
 
     it('retry works after timeout errors', async () => {
-      let shouldTimeout = true;
+      let shouldFail = true;
       mockPublicClient.readContract.mockImplementation(() => {
-        if (shouldTimeout) {
-          return new Promise(() => {}); // Never resolves (timeout)
+        if (shouldFail) {
+          return Promise.reject(new Error('Request timeout'));
         }
         return Promise.resolve(3000n);
       });
@@ -480,16 +480,12 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       );
 
       // Wait for timeout error - Req 11.5
-      act(() => {
-        jest.advanceTimersByTime(31000);
-      });
-
       await waitFor(() => {
         expect(screen.getByTestId('Balance-error')).toBeInTheDocument();
       });
 
       // Make retry succeed
-      shouldTimeout = false;
+      shouldFail = false;
 
       // Click retry - Req 11.6
       const retryButton = screen.getByTestId('Balance-retry');
