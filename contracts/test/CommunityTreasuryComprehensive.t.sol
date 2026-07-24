@@ -326,7 +326,7 @@ contract CommunityTreasuryComprehensiveTest is Test {
         
         // Voting on non-existent action
         vm.prank(user1);
-        vm.expectRevert(abi.encodeWithSelector(treasury.UnknownAction.selector, nonExistentActionId));
+        vm.expectRevert(abi.encodeWithSelector(CommunityTreasury.UnknownAction.selector, nonExistentActionId));
         treasury.vote(nonExistentActionId);
     }
     
@@ -339,7 +339,7 @@ contract CommunityTreasuryComprehensiveTest is Test {
         
         // Proposing action with zero address recipient
         vm.prank(user1);
-        vm.expectRevert(treasury.InvalidRecipient.selector);
+        vm.expectRevert(CommunityTreasury.InvalidRecipient.selector);
         treasury.proposeAction(poolId, address(0), 500e18);
     }
     
