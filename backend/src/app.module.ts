@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 
+import { AiModule } from './ai/ai.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AuthModule } from './auth/auth.module';
 import { ChainReadModule } from './chain-read/chain-read.module';
@@ -32,9 +33,9 @@ import { TransactionsModule } from './transactions/transactions.module';
  * - {@link IpfsModule}: profile document and certificate metadata storage (Req 3.5, 8.4).
  * - {@link TransactionsModule}: paginated transaction history from cached events (Req 12.3, 12.4).
  * - {@link AnalyticsModule}: provenanced portfolio analytics and metrics (Req 11.1).
+ * - {@link AiModule}: OpenAI-powered financial assistant with on-chain data integration (Req 10).
  *
- * Additional feature modules (indexer, AI, etc.) are added in later tasks and
- * inherit the global guards registered by {@link AuthModule}.
+ * All feature modules inherit the global guards registered by {@link AuthModule}.
  */
 @Module({
   imports: [

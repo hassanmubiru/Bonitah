@@ -71,4 +71,9 @@ export class EnvService {
   get jwtExpiresIn(): string {
     return this.get('JWT_EXPIRES_IN');
   }
+
+  /** OpenAI API key for the AI assistant service (optional at boot, validated on use). */
+  get openaiApiKey(): string | undefined {
+    return this.get('OPENAI_API_KEY');
+  }
 }
