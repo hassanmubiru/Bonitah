@@ -551,7 +551,7 @@ describe('Task 18.3: Comprehensive Frontend Foundation Tests', () => {
       render(<TestApp />);
 
       // Rapid theme switching
-      const themeButton = screen.getByRole('button');
+      const themeButton = screen.getByRole('button', { name: /switch/i });
       for (let i = 0; i < 5; i++) {
         await user.click(themeButton);
       }
