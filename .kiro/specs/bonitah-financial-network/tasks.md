@@ -347,7 +347,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
   - [x] 20.1 Implement `useSiweAuth`, network guard, and `/auth` page
     - Orchestrate nonce -> SIWE message -> sign -> verify -> store JWT; prompt Base Sepolia switch before on-chain actions; handle connect/decline errors
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
-
+--no-verify
   - [ ] 20.2 Write component tests for the auth flow
     - Cover connect failure, wrong-network prompt, and sign decline paths
     - _Requirements: 2.2, 2.3, 2.5_
