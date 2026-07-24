@@ -826,3 +826,78 @@ describe('Authentication Flow Component Tests', () => {
       expect(screen.getByRole('alert')).toBeInTheDocument();
       expect(screen.getByRole('alert')).toHaveTextContent('User rejected signing');
     });
+    it('allows retry after user declines signing', async () => {
+      const user = userEvent.setup();
+
+      // Start with sign error state
+      mockAuthState.error = 'User rejected signing';
+
+      const { rerender } = render(<AuthPage />);
+
+      // Should show error
+      expect(screen.getByText('User rejected signing')).toBeInTheDocument();
+
+      // Clear error and allow retry
+      mockAuthState.error = null;
+
+      rerender(<AuthPage />);
+
+      // Should be able to try signing again
+      const signInButton = screen.getByRole('button', { name: /sign in with ethereum/i });
+      expect(signInButton).toBeEnabled();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+      await user.click(signInButton);
+      expect(mockSignIn).toHaveBeenCalled();
+    });
+
+    it('handles different types of signing errors appropriately', () => {
+      const errorScenarios = [
+        'User rejected signing',
+        'MetaMask Tx Signature: User denied transaction signature.',
+        'Wallet connection lost',
+        'Invalid signature format',
+      ];
+
+      errorScenarios.forEach((errorMessage) => {
+        mockAuthState.error = errorMessage;
+
+        const { unmount } = render(<AuthPage />);
+
+        // Should display the specific error message
+        expect(screen.getByText(errorMessage)).toBeInTheDocument();
+        expect(screen.getByRole('alert')).toHaveTextContent(errorMessage);
+
+        // Sign in button should still be available for retry
+        const signInButton = screen.getByRole('button', { name: /sign in with ethereum/i });
+        expect(signInButton).toBeInTheDocument();
+        expect(signInButton).toBeEnabled();
+
+        unmount();
+        
+        // Reset state for next iteration
+        mockAuthState.error = null;
+      });
+    });
+
+    it('maintains wallet connection state even when signing fails', () => {
+      mockAuthState.error = 'User rejected signing';
+
+      render(<AuthPage />);
+
+      // Wallet should still appear connected despite signing error
+      expect(screen.getByText('Wallet Connected')).toBeInTheDocument();
+      expect(screen.getByText(`${testAddress.slice(0, 6)}...${testAddress.slice(-4)}`)).toBeInTheDocument();
+
+      // Step 1 should show as completed (wallet connected)
+      const step1Indicator = screen.getByText('Step 1: Connect Your Wallet')
+        .parentElement?.querySelector('.h-2.w-2.rounded-full');
+      expect(step1Indicator).toHaveClass('bg-green-500');
+
+      // Step 2 should still be available despite error
+      expect(screen.getByText('Step 2: Sign Authentication Message')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /sign in with ethereum/i })).toBeInTheDocument();
+
+      // Error should be displayed
+      expect(screen.getByText('User rejected signing')).toBeInTheDocument();
+    });
