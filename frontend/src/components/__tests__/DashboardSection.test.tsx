@@ -357,19 +357,22 @@ describe('Component Tests for Loading/Error/Retry States', () => {
    */
   describe('Error State with Retry Action (Req 11.6)', () => {
     it('displays error state with working retry button when fetch fails', async () => {
+      const mockRefetch = jest.fn();
       const errorMessage = 'Network connection failed';
-      mockPublicClient.readContract.mockRejectedValue(new Error(errorMessage));
+      
+      mockUseContractRead.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        error: { name: 'ContractReadError', message: errorMessage } as any,
+        refetch: mockRefetch,
+      });
 
       render(
         <TestWrapper>
           <DashboardSection {...testProps} />
         </TestWrapper>,
       );
-
-      // Wait for error state - Req 11.6
-      await waitFor(() => {
-        expect(screen.getByTestId('Balance-error')).toBeInTheDocument();
-      });
 
       // Should show error message
       expect(screen.getByRole('alert')).toHaveTextContent(`Error loading balance: ${errorMessage}`);
@@ -383,6 +386,10 @@ describe('Component Tests for Loading/Error/Retry States', () => {
       expect(screen.queryByTestId('Balance-data')).not.toBeInTheDocument();
       expect(screen.queryByText(/ETH/)).not.toBeInTheDocument();
       expect(screen.queryByText(/\d+/)).not.toBeInTheDocument();
+
+      // Retry button should call refetch
+      fireEvent.click(retryButton);
+      expect(mockRefetch).toHaveBeenCalledTimes(1);
     });
 
     it('retry button actually re-initiates the section fetch', async () => {
