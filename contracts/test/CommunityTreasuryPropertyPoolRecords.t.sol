@@ -76,9 +76,10 @@ contract CommunityTreasuryPropertyPoolRecordsTest is Test {
         // Skip if numUsers is 0 (invalid for circle creation)
         vm.assume(numUsers > 0);
         
-        // Create pool and add users
+        // Create pool with maxMembers = max(numUsers, 2) to satisfy minimum requirement
+        uint256 maxMembers = numUsers < 2 ? 2 : numUsers;
         vm.prank(users[0]);
-        uint256 poolId = treasury.createCircle(numUsers, 51);
+        uint256 poolId = treasury.createCircle(maxMembers, 51);
         
         for (uint256 i = 1; i < numUsers; i++) {
             vm.prank(users[i]);
