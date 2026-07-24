@@ -328,14 +328,18 @@ contract CrossContractNonRepeatableOperationsTest is Test {
         // Register users and give them reputation (required for voting power)
         vm.prank(proposer);
         registry.register();
-        vm.prank(voter);
-        registry.register();
+        if (voter != proposer) {
+            vm.prank(voter);
+            registry.register();
+        }
         
         // Give users reputation for voting power
         vm.prank(reputationManager);
         registry.increaseReputation(proposer, 100);
-        vm.prank(reputationManager);
-        registry.increaseReputation(voter, 100);
+        if (voter != proposer) {
+            vm.prank(reputationManager);
+            registry.increaseReputation(voter, 100);
+        }
         
         // Verify voting power
         assertGt(governance.votingPowerOf(proposer), 0, "Proposer should have voting power");
