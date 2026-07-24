@@ -1,7 +1,11 @@
-// In ES modules, we need to use a different approach for mocking
-// This file runs in a Node.js context before tests, so we need to handle imports properly
+const { TextEncoder, TextDecoder } = require('util');
 
-import '@testing-library/jest-dom';
+// Polyfills for Jest environment
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
+// Setup testing-library/jest-dom custom matchers
+require('@testing-library/jest-dom');
 
 // Global test utilities
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
@@ -27,3 +31,15 @@ Object.defineProperty(window, 'CSS', {
     supports: jest.fn().mockReturnValue(false),
   },
 });
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+global.localStorage = localStorageMock;
+
+// Mock fetch
+global.fetch = jest.fn();
