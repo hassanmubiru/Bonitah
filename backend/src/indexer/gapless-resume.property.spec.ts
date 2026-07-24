@@ -51,8 +51,9 @@ describe('Property 32: Indexing resumes gaplessly', () => {
         {
           provide: EnvService,
           useValue: {
-            baseSepolia: { rpcUrl: 'https://test.rpc.url' },
-          } as EnvService,
+            baseSepoliaRpcUrl: 'https://test.rpc.url',
+            baseSepolia: 'https://test.rpc.url',
+          } as Partial<EnvService>,
         },
       ],
     }).compile();
