@@ -165,8 +165,9 @@ describe('Property 29: AI question length boundary', () => {
             fail('Expected BadRequestException to be thrown');
           } catch (error) {
             expect(error).toBeInstanceOf(BadRequestException);
-            expect(error.message).toContain('Question exceeds maximum allowed length of 2000 characters');
-            expect(error.message).toContain(`current: ${excessLength}`);
+            const badRequestError = error as BadRequestException;
+            expect(badRequestError.message).toContain('Question exceeds maximum allowed length of 2000 characters');
+            expect(badRequestError.message).toContain(`current: ${excessLength}`);
           }
         }
       ),
@@ -196,8 +197,8 @@ describe('Property 29: AI question length boundary', () => {
           // Generate different types of content
           let question: string;
           const targetLength = isUnderBoundary ? 
-            fc.sample(fc.integer({ min: 1, max: 2000 }), 1)[0] : 
-            fc.sample(fc.integer({ min: 2001, max: 5000 }), 1)[0];
+            fc.sample(fc.integer({ min: 1, max: 2000 }), 1)[0]! : 
+            fc.sample(fc.integer({ min: 2001, max: 5000 }), 1)[0]!;
 
           switch (contentType) {
             case 'alphabetic':
@@ -271,7 +272,8 @@ describe('Property 29: AI question length boundary', () => {
               // Should still get BadRequestException for length, not ServiceUnavailableException
               // Validation happens before service availability check
               expect(error).toBeInstanceOf(BadRequestException);
-              expect(error.message).toContain('Question exceeds maximum allowed length');
+              const badRequestError = error as BadRequestException;
+              expect(badRequestError.message).toContain('Question exceeds maximum allowed length');
             }
 
             // Restore OpenAI
