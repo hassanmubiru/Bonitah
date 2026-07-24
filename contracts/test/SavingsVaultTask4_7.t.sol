@@ -165,3 +165,59 @@ contract SavingsVaultTask4_7Test is Test {
         assertEq(saved, GOAL_TARGET);
         assertTrue(completed);
     }
+    
+    /// @notice Test FundsLocked event emission with correct args
+    function testFundsLockedEventEmission() public {
+        // Deposit first
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        uint256 expectedExpiry = block.timestamp + LOCK_DURATION;
+        
+        vm.expectEmit(true, true, false, true, address(vault));
+        emit FundsLocked(user1, 0, LOCK_AMOUNT, expectedExpiry);
+        
+        vm.prank(user1);
+        vault.lockFunds(LOCK_AMOUNT, LOCK_DURATION);
+        
+        // Verify lock was created correctly
+        (uint256 amount, uint256 expiry, bool released) = vault.locks(user1, 0);
+        assertEq(amount, LOCK_AMOUNT);
+        assertEq(expiry, expectedExpiry);
+        assertFalse(released);
+    }
+    
+    /// @notice Test LockReleased event emission with correct args
+    function testLockReleasedEventEmission() public {
+        // Deposit and lock funds
+        vm.prank(user1);
+        vault.deposit(DEPOSIT_AMOUNT);
+        
+        vm.prank(user1);
+        vault.lockFunds(LOCK_AMOUNT, LOCK_DURATION);
+        
+        // Move time forward past lock expiry
+        vm.warp(block.timestamp + LOCK_DURATION + 1);
+        
+        vm.expectEmit(true, true, false, true, address(vault));
+        emit LockReleased(user1, 0, LOCK_AMOUNT);
+        
+        vm.prank(user1);
+        vault.withdrawLocked(0);
+        
+        // Verify lock was released
+        (,, bool released) = vault.locks(user1, 0);
+        assertTrue(released);
+        assertEq(vault.lockedTotal(user1), 0);
+    }
+
+    // ================================================================================
+    // REVERT TESTS - ONE TEST PER CUSTOM ERROR (Req 15.2)
+    // ================================================================================
+    
+    /// @notice Test NotRegisteredUser error on deposit
+    function testRevert_NotRegisteredUser_Deposit() public {
+        vm.expectRevert(abi.encodeWithSelector(ISavingsVault.NotRegisteredUser.selector, unregistered));
+        vm.prank(unregistered);
+        vault.deposit(DEPOSIT_AMOUNT);
+    }

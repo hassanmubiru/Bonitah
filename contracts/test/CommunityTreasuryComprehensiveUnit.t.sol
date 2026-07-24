@@ -15,7 +15,9 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /// @dev Implements Task 5.8: unit tests, event tests, revert tests, and reentrancy tests
 contract CommunityTreasuryComprehensiveUnitTest is Test {
     CommunityTreasury public treasury;
+    CommunityTreasury public maliciousTreasury; // Treasury using malicious token for reentrancy tests
     MockERC20 public token;
+    MaliciousERC20 public maliciousToken;
     ReentrancyAttacker public attacker;
     
     address public admin = makeAddr("admin");
