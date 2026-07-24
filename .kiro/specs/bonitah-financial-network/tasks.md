@@ -107,7 +107,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Implement `contributeToPool`, `ownershipShare` (ppm), `yieldDistribution`, and timestamped contribution history
     - _Requirements: 7.1, 7.2, 7.3, 7.6, 13.7_
 
-  - [ ] 5.6 Write property test for pool ownership and yield
+  - [x] 5.6 Write property test for pool ownership and yield
     - **Property 19: Investment pool ownership share and yield are proportional and conserved**
     - **Validates: Requirements 7.1, 7.6**
 
@@ -289,7 +289,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 21: Learning streak equals consecutive-day count**
     - **Validates: Requirements 8.2**
 
-  - [ ] 16.3 Implement the Certificate orchestration module
+  - [x] 16.3 Implement the Certificate orchestration module
     - Implement `/education/courses/:id/certificate`: verify completion, store metadata via IPFS, then call `Education.issueCertificate`; on IPFS failure leave prior state unchanged
     - _Requirements: 8.3, 8.4, 8.9_
 
@@ -339,7 +339,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 3: Read retry policy is bounded and correct**
     - **Validates: Requirements 1.6**
 
-  - [ ] 19.3 Write component tests for loading/error/retry states
+  - [x] 19.3 Write component tests for loading/error/retry states
     - Assert error state offers working retry and never shows substituted values
     - _Requirements: 11.4, 11.5, 11.6_
 
