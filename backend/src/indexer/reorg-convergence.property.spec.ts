@@ -56,6 +56,12 @@ describe('Property 31: Event indexing reorg convergence', () => {
 
     // Replace the public client with our mock
     (indexerService as any).publicClient = mockPublicClient;
+    
+    // Set up some monitored contracts so getLogs will be called
+    (indexerService as any).monitoredContracts = [
+      '0x1234567890123456789012345678901234567890',
+      '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+    ];
   });
 
   /**
@@ -238,7 +244,10 @@ describe('Property 31: Event indexing reorg convergence', () => {
             expect(mockPublicClient.getLogs).toHaveBeenCalledWith({
               fromBlock: reorgStartBlock,
               toBlock: reorgEndBlock,
-              address: [], // Empty since no contracts configured in test
+              address: [
+                '0x1234567890123456789012345678901234567890',
+                '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+              ],
             });
 
             // Verify canonical events were cached with correct provenance
@@ -416,7 +425,7 @@ describe('Property 31: Event indexing reorg convergence', () => {
       fc.asyncProperty(
         fc.record({
           failureType: fc.constantFrom('block_fetch_failure', 'log_fetch_failure', 'partial_failure'),
-          reorgBlock: fc.integer({ min: 1, max: 1000 }).map(n => BigInt(n)),
+          reorgBlock: fc.integer({ min: 2, max: 1000 }).map(n => BigInt(n)), // Start from 2 for log_fetch_failure tests
         }),
         async ({ failureType, reorgBlock }) => {
           // Mock different types of network failures
@@ -425,37 +434,47 @@ describe('Property 31: Event indexing reorg convergence', () => {
               mockPublicClient.getBlock.mockRejectedValue(new Error('Network error: block fetch failed'));
               break;
             case 'log_fetch_failure':
-              // First call (for reorg detection) succeeds, second call (for getLogs) fails
-              let getBlockCallCount = 0;
-              mockPublicClient.getBlock.mockImplementation(() => {
-                getBlockCallCount++;
-                if (getBlockCallCount === 1) {
-                  // First call - reorg detection succeeds with different hash
+              // Need to ensure we get past the common ancestor detection
+              // Mock getBlock calls to simulate reorg detection and find valid common ancestor
+              mockPublicClient.getBlock.mockImplementation(({ blockNumber }: { blockNumber: bigint }) => {
+                if (blockNumber === reorgBlock) {
+                  // Current block has different hash (reorg detected)
                   return Promise.resolve({
-                    number: reorgBlock,
+                    number: blockNumber,
                     hash: `0x${'new'.repeat(21)}1`,
                   });
+                } else if (blockNumber === reorgBlock - 1n && reorgBlock > 1n) {
+                  // Previous block is common ancestor
+                  return Promise.resolve({
+                    number: blockNumber,
+                    hash: `0x${'common'.repeat(16)}`,
+                  });
+                } else if (blockNumber < reorgBlock) {
+                  // Other blocks are also ancestors
+                  return Promise.resolve({
+                    number: blockNumber,
+                    hash: `0x${'ancestor'.repeat(14)}`,
+                  });
                 }
-                // Subsequent calls for ancestor lookup succeed
-                return Promise.resolve({
-                  number: reorgBlock - 1n,
-                  hash: `0x${'common'.repeat(16)}`,
-                });
+                return Promise.reject(new Error('Unexpected block request'));
               });
               
-              // Mock cached event to force reorg path
+              // Mock cached events to establish common ancestor
               (prismaService.cachedEvent.findFirst as jest.Mock).mockImplementation(({ where }: any) => {
                 const blockNum = where.blockNumber;
-                if (blockNum === reorgBlock - 1n) {
+                if (blockNum === reorgBlock - 1n && reorgBlock > 1n) {
                   return Promise.resolve({
                     blockHash: `0x${'common'.repeat(16)}`, // Matches canonical (common ancestor)
                   });
+                } else if (blockNum >= reorgBlock) {
+                  return Promise.resolve({
+                    blockHash: `0x${'old'.repeat(21)}1`, // Non-canonical
+                  });
                 }
-                return Promise.resolve({
-                  blockHash: `0x${'old'.repeat(21)}1`, // Non-canonical
-                });
+                return Promise.resolve(null);
               });
               
+              // Mock getLogs to fail
               mockPublicClient.getLogs.mockRejectedValue(new Error('Network error: log fetch failed'));
               break;
             case 'partial_failure':
@@ -474,10 +493,12 @@ describe('Property 31: Event indexing reorg convergence', () => {
               break;
           }
 
-          // Mock cached event lookup
-          (prismaService.cachedEvent.findFirst as jest.Mock).mockResolvedValue({
-            blockHash: `0x${'old'.repeat(21)}1`,
-          });
+          // Mock cached event lookup for cases that don't match above
+          if (failureType !== 'log_fetch_failure') {
+            (prismaService.cachedEvent.findFirst as jest.Mock).mockResolvedValue({
+              blockHash: `0x${'old'.repeat(21)}1`,
+            });
+          }
 
           // Mock database operations
           (prismaService.cachedEvent.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
@@ -487,9 +508,16 @@ describe('Property 31: Event indexing reorg convergence', () => {
           const handleReorg = (indexerService as any).handlePotentialReorg.bind(indexerService);
 
           if (failureType === 'log_fetch_failure') {
-            // Should throw error from getLogs when trying to re-cache
-            const handleReorgDirect = (indexerService as any).handleReorganization.bind(indexerService);
-            await expect(handleReorgDirect(reorgBlock)).rejects.toThrow();
+            // For log_fetch_failure, we need reorgBlock > 1 to find a valid common ancestor
+            if (reorgBlock > 1n) {
+              // Should throw error from getLogs when trying to re-cache
+              const handleReorgDirect = (indexerService as any).handleReorganization.bind(indexerService);
+              await expect(handleReorgDirect(reorgBlock)).rejects.toThrow();
+            } else {
+              // If reorgBlock is 1n, it falls back to clearing all events (no error thrown)
+              const handleReorgDirect = (indexerService as any).handleReorganization.bind(indexerService);
+              await expect(handleReorgDirect(reorgBlock)).resolves.not.toThrow();
+            }
           } else {
             // Should propagate the error for proper retry handling at higher level
             await expect(handleReorg(reorgBlock, `0x${'old'.repeat(21)}1`)).rejects.toThrow();

@@ -96,7 +96,11 @@ describe('Property 32: Indexing resumes gaplessly', () => {
 
           // Track processed blocks in phase 1
           const phase1ProcessedBlocks: bigint[] = [];
+          let getLogsCalls = 0;
           mockPublicClient.getLogs.mockImplementation(({ fromBlock, toBlock }: { fromBlock: bigint, toBlock: bigint }) => {
+            getLogsCalls++;
+            console.log(`Phase 1: getLogs called with range ${fromBlock}-${toBlock}, call #${getLogsCalls}`);
+            
             const events: any[] = [];
             for (let block = fromBlock; block <= toBlock; block++) {
               phase1ProcessedBlocks.push(block);
@@ -109,6 +113,7 @@ describe('Property 32: Indexing resumes gaplessly', () => {
                 topics: [`0x${'topic'.repeat(12)}00`],
               });
             }
+            console.log(`Phase 1: Processing ${events.length} events for blocks ${fromBlock}-${toBlock}`);
             return Promise.resolve(events);
           });
 
@@ -124,7 +129,9 @@ describe('Property 32: Indexing resumes gaplessly', () => {
 
           // Execute phase 1 indexing
           const indexNewBlocks = (indexerService as any).indexNewBlocks.bind(indexerService);
+          console.log(`Phase 1: About to call indexNewBlocks. initialBlock=${initialBlock}, interruptionPoint=${interruptionPoint}`);
           await indexNewBlocks();
+          console.log(`Phase 1: indexNewBlocks completed. Processed blocks: ${phase1ProcessedBlocks.length}, getLogs calls: ${getLogsCalls}`);
 
           // Verify phase 1 completed successfully
           expect(phase1ProcessedBlocks.length).toBeGreaterThan(0);
