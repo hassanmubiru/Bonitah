@@ -11,29 +11,24 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider } from 'wagmi';
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { createConfig, http } from 'wagmi';
-import { baseSepolia } from 'wagmi/chains';
-import { mock } from 'wagmi/connectors';
-import { type Address } from 'viem';
-
-import AuthPage from '@/app/auth/page';
-import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
 
 // Mock Next.js router
 const mockPush = jest.fn();
-const mockRouter = {
-  push: mockPush,
-  replace: jest.fn(),
-  pathname: '/auth',
-  query: {},
-  asPath: '/auth',
-};
-
 jest.mock('next/navigation', () => ({
-  useRouter: () => mockRouter,
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
+// Mock wagmi hooks with simple implementations
+const mockUseAccount = jest.fn(() => ({
+  isConnected: false,
+  address: undefined,
+  chainId: undefined,
+}));
+
+jest.mock('wagmi', () => ({
+  useAccount: () => mockUseAccount(),
 }));
 
 // Mock the useSiweAuth hook for controlled testing
