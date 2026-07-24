@@ -41,8 +41,17 @@ describe('Property 29: AI question length boundary', () => {
       },
       message: {
         findMany: jest.fn().mockResolvedValue([]),
+        create: jest.fn().mockResolvedValue({
+          id: 'test-message-id',
+          conversationId: mockConversation.id,
+          role: 'user',
+          content: 'test message',
+          createdAt: new Date(),
+        }),
       },
-      $transaction: jest.fn().mockImplementation((queries) => Promise.all(queries)),
+      $transaction: jest.fn().mockImplementation((queries) => 
+        Promise.all(queries.map((query: any) => query))
+      ),
     };
 
     const mockChainReadService = {
