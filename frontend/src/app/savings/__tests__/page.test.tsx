@@ -665,8 +665,9 @@ describe('Savings Page Loading/Error/Retry States', () => {
       expect(screen.getByText('Insufficient balance')).toBeInTheDocument();
 
       // Deposit button should be disabled (the submit button, not the tab button)
-      const depositButton = screen.getByRole('button', { name: 'Deposit' });
-      expect(depositButton).toBeDisabled();
+      const submitButtons = screen.getAllByRole('button', { name: 'Deposit' });
+      const depositSubmitButton = submitButtons.find(button => button.getAttribute('type') === 'submit');
+      expect(depositSubmitButton).toBeDisabled();
     });
   });
 });
