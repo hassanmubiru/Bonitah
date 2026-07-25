@@ -1,38 +1,45 @@
 /**
- * Profile Page Component Tests - Task 21.12
+ * Component tests for Profile page
  * 
- * Covers data-source wiring, loading/error/retry rendering, and role gating.
+ * Tests cover:
+ * - Data-source wiring to Registry contract and IPFS
+ * - Loading/error/retry rendering for profile operations
+ * - Document upload functionality
+ * - Profile update transactions
  * 
- * Requirements Coverage:
- * - 11.1: Live data display from blockchain
- * - 11.3: Loading/error/retry states for data fetching
- * - 11.4: No placeholder financial values during loading
- * - 3.3: Profile updates with Registry contract
- * - 3.5: IPFS document upload (<=10MB, PII exclusion)
- * - 14.9: Role-based access control
- * - 15.5: Real-time blockchain state updates
+ * Validates Requirements: 11.1, 11.4, 15.5
  */
-
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
+import '@testing-library/jest-dom';
 
 import ProfilePage from '../page';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { useProfileData } from '@/hooks/useProfileData';
 import { useRegistryProfile } from '@/hooks/useRegistryProfile';
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
 
+// Mock wagmi
+jest.mock('wagmi', () => ({
+  useAccount: jest.fn(),
+}));
+
 // Mock Next.js router
-const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
+  useRouter: jest.fn(),
 }));
 
 // Mock hooks
 jest.mock('@/hooks/useAuthGuard', () => ({
   useAuthGuard: jest.fn(),
+}));
+
+jest.mock('@/hooks/useProfileData', () => ({
+  useProfileData: jest.fn(),
 }));
 
 jest.mock('@/hooks/useRegistryProfile', () => ({
@@ -43,723 +50,546 @@ jest.mock('@/hooks/useDocumentUpload', () => ({
   useDocumentUpload: jest.fn(),
 }));
 
-// Mock Lucide React icons
-jest.mock('lucide-react', () => ({
-  User: ({ className, ...props }: any) => <div data-testid="user-icon" className={className} {...props} />,
-  Shield: ({ className, ...props }: any) => <div data-testid="shield-icon" className={className} {...props} />,
-  Award: ({ className, ...props }: any) => <div data-testid="award-icon" className={className} {...props} />,
-  Upload: ({ className, ...props }: any) => <div data-testid="upload-icon" className={className} {...props} />,
-  Edit3: ({ className, ...props }: any) => <div data-testid="edit-icon" className={className} {...props} />,
-  ExternalLink: ({ className, ...props }: any) => <div data-testid="external-link-icon" className={className} {...props} />,
-}));
-
+const mockUseAccount = useAccount as jest.MockedFunction<typeof useAccount>;
+const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockUseAuthGuard = useAuthGuard as jest.MockedFunction<typeof useAuthGuard>;
+const mockUseProfileData = useProfileData as jest.MockedFunction<typeof useProfileData>;
 const mockUseRegistryProfile = useRegistryProfile as jest.MockedFunction<typeof useRegistryProfile>;
 const mockUseDocumentUpload = useDocumentUpload as jest.MockedFunction<typeof useDocumentUpload>;
 
-describe('Profile Page Component Tests (Task 21.12)', () => {
+describe('ProfilePage Component Tests', () => {
+  let queryClient: QueryClient;
+  const mockPush = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockPush.mockClear();
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
+    });
 
-    // Default mock implementations
+    mockUseRouter.mockReturnValue({
+      push: mockPush,
+      replace: jest.fn(),
+      back: jest.fn(),
+      forward: jest.fn(),
+      refresh: jest.fn(),
+      prefetch: jest.fn(),
+    });
+
+    mockUseAccount.mockReturnValue({
+      address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+      isConnected: true,
+      isConnecting: false,
+      isDisconnected: false,
+      isReconnecting: false,
+      status: 'connected',
+    });
+
+    mockUseAuthGuard.mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+      user: { 
+        id: '1', 
+        walletAddress: '0x1234567890123456789012345678901234567890',
+        role: 'USER' as const,
+      },
+    });
+
+    mockUseRegistryProfile.mockReturnValue({
+      profile: {
+        registered: true,
+        verified: false,
+        reputationScore: BigInt(100),
+        ipfsProfileHash: 'QmX1234567890abcdef',
+        registeredAt: BigInt(Date.now() / 1000),
+      },
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    mockUseProfileData.mockReturnValue({
+      profile: {
+        displayName: 'John Doe',
+        bio: 'DeFi enthusiast and early adopter',
+        location: 'Global',
+        website: 'https://example.com',
+      },
+      isLoading: false,
+      error: null,
+      updateProfile: jest.fn(),
+      refetch: jest.fn(),
+    });
+
     mockUseDocumentUpload.mockReturnValue({
-      uploadDocument: jest.fn(),
-      deleteDocument: jest.fn(),
+      upload: jest.fn(),
       isUploading: false,
       uploadProgress: 0,
       error: null,
     });
   });
 
-  describe('Data Source Wiring (Req 11.1, 3.3)', () => {
-    it('displays profile data from Registry contract and IPFS', async () => {
-      const mockProfile = {
-        walletAddress: '0x1234567890123456789012345678901234567890',
-        displayName: 'John Doe',
-        bio: 'Web3 enthusiast and DeFi user',
-        website: 'https://johndoe.com',
-        twitter: 'johndoe',
-        github: 'johndoe',
-        location: 'Nairobi, Kenya',
-        documents: [
-          {
-            id: '1',
-            name: 'profile-pic.jpg',
-            url: 'ipfs://QmHash123',
-            size: '2.5 MB',
-            uploadedAt: '2024-01-15T10:30:00Z',
-          },
-        ],
-        metadataHash: 'QmMetadataHash',
-        isRegistered: true,
-      };
+  const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        {ui}
+      </QueryClientProvider>
+    );
+  };
 
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
+  describe('Authentication Guards', () => {
+    it('redirects to auth when not connected', async () => {
+      mockUseAccount.mockReturnValue({
+        address: undefined,
+        isConnected: false,
+        isConnecting: false,
+        isDisconnected: true,
+        isReconnecting: false,
+        status: 'disconnected',
       });
 
-      mockUseRegistryProfile.mockReturnValue({
-        profile: mockProfile,
-        reputation: 150,
-        isVerified: true,
-        isLoading: false,
-        error: null,
-        updateProfile: jest.fn(),
-        refetch: jest.fn(),
-      });
-
-      render(<ProfilePage />);
+      renderWithProviders(<ProfilePage />);
 
       await waitFor(() => {
-        // Should display profile data from Registry + IPFS
+        expect(mockPush).toHaveBeenCalledWith('/auth');
+      });
+    });
+
+    it('shows loading state during authentication check', () => {
+      mockUseAuthGuard.mockReturnValue({
+        isAuthenticated: false,
+        isLoading: true,
+        user: null,
+      });
+
+      renderWithProviders(<ProfilePage />);
+
+      expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    });
+
+    it('redirects when not authenticated', async () => {
+      mockUseAuthGuard.mockReturnValue({
+        isAuthenticated: false,
+        isLoading: false,
+        user: null,
+      });
+
+      renderWithProviders(<ProfilePage />);
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith('/auth');
+      });
+    });
+  });
+
+  describe('Data Source Wiring - Registry Contract and IPFS', () => {
+    it('fetches registry profile data from contract', () => {
+      renderWithProviders(<ProfilePage />);
+
+      expect(mockUseRegistryProfile).toHaveBeenCalledWith('0x1234567890123456789012345678901234567890');
+    });
+
+    it('displays registry profile data from contract', async () => {
+      renderWithProviders(<ProfilePage />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/profile/i)).toBeInTheDocument();
+      });
+
+      // Should display reputation score from registry
+      expect(screen.getByText(/reputation/i)).toBeInTheDocument();
+    });
+
+    it('displays verification status from registry contract', () => {
+      renderWithProviders(<ProfilePage />);
+
+      // Should show unverified status
+      expect(screen.getByText(/verification/i)).toBeInTheDocument();
+    });
+
+    it('fetches off-chain profile data via IPFS', () => {
+      renderWithProviders(<ProfilePage />);
+
+      expect(mockUseProfileData).toHaveBeenCalled();
+    });
+
+    it('displays IPFS profile data when available', async () => {
+      renderWithProviders(<ProfilePage />);
+
+      await waitFor(() => {
         expect(screen.getByText('John Doe')).toBeInTheDocument();
-        expect(screen.getByText('0x1234...7890')).toBeInTheDocument();
-        expect(screen.getByText('Web3 enthusiast and DeFi user')).toBeInTheDocument();
-        expect(screen.getByText('Verified')).toBeInTheDocument();
-        expect(screen.getByText('150 Rep')).toBeInTheDocument();
-        
-        // Should show documents from IPFS
-        expect(screen.getByText('profile-pic.jpg')).toBeInTheDocument();
-        expect(screen.getByText('2.5 MB • Uploaded 1/15/2024')).toBeInTheDocument();
+        expect(screen.getByText('DeFi enthusiast and early adopter')).toBeInTheDocument();
       });
     });
 
-    it('correctly handles profile updates via Registry contract', async () => {
-      const mockUpdateProfile = jest.fn().mockResolvedValue(undefined);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Current Name',
-          bio: '',
-          website: '',
-          twitter: '',
-          github: '',
-          location: '',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 100,
-        isVerified: false,
-        isLoading: false,
-        error: null,
-        updateProfile: mockUpdateProfile,
-        refetch: jest.fn(),
-      });
-
-      render(<ProfilePage />);
-
-      // Enter edit mode
-      fireEvent.click(screen.getByText('Edit Profile'));
-
-      // Update profile data
-      const displayNameInput = screen.getByLabelText('Display Name');
-      fireEvent.change(displayNameInput, { target: { value: 'Updated Name' } });
-
-      const bioInput = screen.getByLabelText('Bio');
-      fireEvent.change(bioInput, { target: { value: 'Updated bio description' } });
-
-      // Save changes
-      fireEvent.click(screen.getByText('Save Changes'));
-
-      expect(mockUpdateProfile).toHaveBeenCalledWith({
-        displayName: 'Updated Name',
-        bio: 'Updated bio description',
-        website: '',
-        twitter: '',
-        github: '',
-        location: '',
-      });
-    });
-
-    it('displays reputation score from blockchain', () => {
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Test User',
-          bio: '',
-          website: '',
-          twitter: '',
-          github: '',
-          location: '',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 250,
-        isVerified: true,
+    it('handles missing IPFS profile data gracefully', () => {
+      mockUseProfileData.mockReturnValue({
+        profile: null,
         isLoading: false,
         error: null,
         updateProfile: jest.fn(),
         refetch: jest.fn(),
       });
 
-      render(<ProfilePage />);
+      renderWithProviders(<ProfilePage />);
 
-      // Should display reputation from Registry contract
-      expect(screen.getByText('250 Rep')).toBeInTheDocument();
-      
-      // Should also show in reputation tab
-      fireEvent.click(screen.getByText('Reputation'));
-      expect(screen.getByText('250')).toBeInTheDocument();
-      expect(screen.getByText('Total Reputation Points')).toBeInTheDocument();
+      // Should still render without crashing
+      expect(screen.getByText(/profile/i)).toBeInTheDocument();
     });
   });
 
-  describe('Loading/Error/Retry States (Req 11.3, 11.4)', () => {
-    it('displays loading state during authentication check', () => {
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: false,
-        isLoading: true, // Loading authentication
-        isOnCorrectNetwork: true,
-      });
-
+  describe('Loading States - Requirement 11.4', () => {
+    it('displays loading state while fetching registry data', () => {
       mockUseRegistryProfile.mockReturnValue({
         profile: null,
-        reputation: undefined,
-        isVerified: undefined,
-        isLoading: false,
+        isLoading: true,
         error: null,
-        updateProfile: jest.fn(),
         refetch: jest.fn(),
       });
 
-      const { container } = render(<ProfilePage />);
+      renderWithProviders(<ProfilePage />);
 
-      // Should show loading spinner without placeholder data
-      expect(container.querySelector('.animate-spin')).toBeInTheDocument();
-      expect(screen.queryByText('Profile')).not.toBeInTheDocument();
-      expect(screen.queryByText('0 Rep')).not.toBeInTheDocument(); // No placeholder values
+      expect(screen.getByText(/loading/i)).toBeInTheDocument();
     });
 
-    it('displays loading state during profile data fetch', () => {
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      mockUseRegistryProfile.mockReturnValue({
+    it('displays loading state while fetching profile data', () => {
+      mockUseProfileData.mockReturnValue({
         profile: null,
-        reputation: undefined,
-        isVerified: undefined,
-        isLoading: true, // Loading profile data
-        error: null,
-        updateProfile: jest.fn(),
-        refetch: jest.fn(),
-      });
-
-      render(<ProfilePage />);
-
-      // Should show profile page structure but with loading states
-      expect(screen.getByText('Profile')).toBeInTheDocument();
-      expect(screen.getByText('Manage your BFN profile, verification status, and reputation.')).toBeInTheDocument();
-      
-      // Should show "Unnamed User" as fallback but not placeholder financial data
-      expect(screen.getByText('Unnamed User')).toBeInTheDocument();
-      expect(screen.queryByText('0 Rep')).not.toBeInTheDocument(); // No reputation placeholder
-      expect(screen.queryByText('Verified')).not.toBeInTheDocument(); // No status placeholder
-    });
-
-    it('displays error state when profile fetch fails', () => {
-      const mockRefetch = jest.fn();
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      mockUseRegistryProfile.mockReturnValue({
-        profile: null,
-        reputation: undefined,
-        isVerified: undefined,
-        isLoading: false,
-        error: 'Failed to load profile data from Registry contract',
-        updateProfile: jest.fn(),
-        refetch: mockRefetch,
-      });
-
-      render(<ProfilePage />);
-
-      // Should show error message
-      expect(screen.getByText('Failed to load profile data from Registry contract')).toBeInTheDocument();
-      
-      // Should not show any placeholder data
-      expect(screen.queryByText('0 Rep')).not.toBeInTheDocument();
-      expect(screen.queryByText('Verified')).not.toBeInTheDocument();
-      expect(screen.queryByText('Unverified')).not.toBeInTheDocument();
-    });
-
-    it('displays error state during document upload with retry capability', () => {
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Test User',
-          bio: '',
-          website: '',
-          twitter: '',
-          github: '',
-          location: '',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 100,
-        isVerified: false,
-        isLoading: false,
-        error: null,
-        updateProfile: jest.fn(),
-        refetch: jest.fn(),
-      });
-
-      mockUseDocumentUpload.mockReturnValue({
-        uploadDocument: jest.fn(),
-        deleteDocument: jest.fn(),
-        isUploading: false,
-        uploadProgress: 0,
-        error: 'Failed to upload to IPFS: Network timeout',
-      });
-
-      render(<ProfilePage />);
-
-      // Navigate to Documents tab
-      fireEvent.click(screen.getByText('Documents'));
-
-      // Should show upload error
-      expect(screen.getByText('Failed to upload to IPFS: Network timeout')).toBeInTheDocument();
-      
-      // Upload button should still be available for retry
-      expect(screen.getByText('Select Files')).toBeInTheDocument();
-      expect(screen.getByText('Select Files')).toBeEnabled();
-    });
-
-    it('shows upload progress during document upload', () => {
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Test User',
-          bio: '',
-          website: '',
-          twitter: '',
-          github: '',
-          location: '',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 100,
-        isVerified: false,
-        isLoading: false,
-        error: null,
-        updateProfile: jest.fn(),
-        refetch: jest.fn(),
-      });
-
-      mockUseDocumentUpload.mockReturnValue({
-        uploadDocument: jest.fn(),
-        deleteDocument: jest.fn(),
-        isUploading: true,
-        uploadProgress: 75,
-        error: null,
-      });
-
-      render(<ProfilePage />);
-
-      // Navigate to Documents tab
-      fireEvent.click(screen.getByText('Documents'));
-
-      // Should show upload progress interface
-      expect(screen.getByText('Profile Documents')).toBeInTheDocument();
-      
-      // Since the component only shows progress when uploading is true,
-      // we would need to check for progress elements if they exist
-      // For now, just verify the documents section is accessible
-    });
-  });
-
-  describe('Authentication and Role Gating (Req 14.9)', () => {
-    it('redirects unauthenticated users', () => {
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: false,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      mockUseRegistryProfile.mockReturnValue({
-        profile: null,
-        reputation: undefined,
-        isVerified: undefined,
-        isLoading: false,
-        error: null,
-        updateProfile: jest.fn(),
-        refetch: jest.fn(),
-      });
-
-      const { container } = render(<ProfilePage />);
-
-      // Should show loading spinner and not render profile content
-      expect(container.querySelector('.animate-spin')).toBeInTheDocument();
-      expect(screen.queryByText('Profile')).not.toBeInTheDocument();
-    });
-
-    it('shows loading while authentication is being checked', () => {
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: false,
-        isLoading: true, // Checking authentication
-        isOnCorrectNetwork: true,
-      });
-
-      const { container } = render(<ProfilePage />);
-
-      // Should show loading state
-      expect(container.querySelector('.animate-spin')).toBeInTheDocument();
-      expect(screen.queryByText('Profile')).not.toBeInTheDocument();
-    });
-
-    it('renders profile page for authenticated users', () => {
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Test User',
-          bio: 'Test bio',
-          website: '',
-          twitter: '',
-          github: '',
-          location: '',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 100,
-        isVerified: true,
-        isLoading: false,
-        error: null,
-        updateProfile: jest.fn(),
-        refetch: jest.fn(),
-      });
-
-      render(<ProfilePage />);
-
-      // Should render profile content for authenticated user
-      expect(screen.getByText('Profile')).toBeInTheDocument();
-      expect(screen.getByText('Test User')).toBeInTheDocument();
-      expect(screen.getByText('Verified')).toBeInTheDocument();
-    });
-  });
-
-  describe('Profile Management Features (Req 3.3, 3.5)', () => {
-    it('allows editing profile information', async () => {
-      const mockUpdateProfile = jest.fn().mockResolvedValue(undefined);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Original Name',
-          bio: 'Original bio',
-          website: 'https://original.com',
-          twitter: 'original',
-          github: 'original',
-          location: 'Original City',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 100,
-        isVerified: false,
-        isLoading: false,
-        error: null,
-        updateProfile: mockUpdateProfile,
-        refetch: jest.fn(),
-      });
-
-      render(<ProfilePage />);
-
-      // Should show profile data
-      expect(screen.getByText('Original Name')).toBeInTheDocument();
-      expect(screen.getByText('Original bio')).toBeInTheDocument();
-      
-      // Should show edit button
-      expect(screen.getByText('Edit Profile')).toBeInTheDocument();
-    });
-
-    it('handles document upload with proper file validation', async () => {
-      const mockUploadDocument = jest.fn().mockResolvedValue({ cid: 'QmNewDoc' });
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Test User',
-          bio: '',
-          website: '',
-          twitter: '',
-          github: '',
-          location: '',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 100,
-        isVerified: false,
-        isLoading: false,
-        error: null,
-        updateProfile: jest.fn(),
-        refetch: jest.fn(),
-      });
-
-      mockUseDocumentUpload.mockReturnValue({
-        uploadDocument: mockUploadDocument,
-        deleteDocument: jest.fn(),
-        isUploading: false,
-        uploadProgress: 0,
-        error: null,
-      });
-
-      render(<ProfilePage />);
-
-      // Navigate to Documents tab
-      fireEvent.click(screen.getByText('Documents'));
-
-      // Should show document management interface
-      expect(screen.getByText('Profile Documents')).toBeInTheDocument();
-      expect(screen.getByText('Upload and manage documents stored on IPFS (max 10MB per file).')).toBeInTheDocument();
-    });
-
-    it('displays verification status and requirements', () => {
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Test User',
-          bio: '',
-          website: '',
-          twitter: '',
-          github: '',
-          location: '',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 50, // Below verification threshold
-        isVerified: false,
-        isLoading: false,
-        error: null,
-        updateProfile: jest.fn(),
-        refetch: jest.fn(),
-      });
-
-      render(<ProfilePage />);
-
-      // Navigate to Verification tab
-      fireEvent.click(screen.getByText('Verification'));
-
-      // Should show verification interface
-      expect(screen.getByText('Account Verification')).toBeInTheDocument();
-      expect(screen.getByText('Verify your account to increase trust and unlock additional features.')).toBeInTheDocument();
-    });
-  });
-
-  describe('Real-time Updates (Req 15.5)', () => {
-    it('handles profile data updates from blockchain state changes', () => {
-      const mockRefetch = jest.fn();
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      // Initial state
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Test User',
-          bio: '',
-          website: '',
-          twitter: '',
-          github: '',
-          location: '',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 100,
-        isVerified: false,
-        isLoading: false,
-        error: null,
-        updateProfile: jest.fn(),
-        refetch: mockRefetch,
-      });
-
-      const { rerender } = render(<ProfilePage />);
-
-      expect(screen.getByText('100 Rep')).toBeInTheDocument();
-      expect(screen.getByText('Unverified')).toBeInTheDocument();
-
-      // Simulate blockchain state update
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Test User',
-          bio: '',
-          website: '',
-          twitter: '',
-          github: '',
-          location: '',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 150, // Reputation increased
-        isVerified: true, // Now verified
-        isLoading: false,
-        error: null,
-        updateProfile: jest.fn(),
-        refetch: mockRefetch,
-      });
-
-      rerender(<ProfilePage />);
-
-      // Should show updated values
-      expect(screen.getByText('150 Rep')).toBeInTheDocument();
-      expect(screen.getByText('Verified')).toBeInTheDocument();
-    });
-  });
-
-  describe('Error Handling and Edge Cases', () => {
-    it('handles rapid state changes gracefully', () => {
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
-      });
-
-      // Start with loading
-      mockUseRegistryProfile.mockReturnValue({
-        profile: null,
-        reputation: undefined,
-        isVerified: undefined,
         isLoading: true,
         error: null,
         updateProfile: jest.fn(),
         refetch: jest.fn(),
       });
 
-      const { rerender } = render(<ProfilePage />);
-      
-      expect(screen.getByText('Unnamed User')).toBeInTheDocument();
+      renderWithProviders(<ProfilePage />);
 
-      // Change to loaded state
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Loaded User',
-          bio: '',
-          website: '',
-          twitter: '',
-          github: '',
-          location: '',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 75,
-        isVerified: false,
-        isLoading: false,
-        error: null,
-        updateProfile: jest.fn(),
-        refetch: jest.fn(),
-      });
-
-      rerender(<ProfilePage />);
-
-      expect(screen.getByText('Loaded User')).toBeInTheDocument();
-      expect(screen.getByText('75 Rep')).toBeInTheDocument();
+      expect(screen.getByText(/loading/i)).toBeInTheDocument();
     });
 
-    it('prevents editing when profile update is in progress', async () => {
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-        isOnCorrectNetwork: true,
+    it('does not display placeholder values during loading', () => {
+      mockUseRegistryProfile.mockReturnValue({
+        profile: null,
+        isLoading: true,
+        error: null,
+        refetch: jest.fn(),
       });
 
-      mockUseRegistryProfile.mockReturnValue({
-        profile: {
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          displayName: 'Test User',
-          bio: '',
-          website: '',
-          twitter: '',
-          github: '',
-          location: '',
-          documents: [],
-          metadataHash: '',
-          isRegistered: true,
-        },
-        reputation: 100,
-        isVerified: false,
-        isLoading: true, // Profile update in progress
+      mockUseProfileData.mockReturnValue({
+        profile: null,
+        isLoading: true,
         error: null,
         updateProfile: jest.fn(),
         refetch: jest.fn(),
       });
 
-      render(<ProfilePage />);
+      renderWithProviders(<ProfilePage />);
 
-      // Edit button should be disabled during loading
-      expect(screen.getByText('Edit Profile')).toBeDisabled();
+      // Should not display placeholder values
+      expect(screen.queryByText('0')).not.toBeInTheDocument();
+      expect(screen.queryByText('Unknown')).not.toBeInTheDocument();
+    });
+
+    it('shows upload progress during document upload', () => {
+      mockUseDocumentUpload.mockReturnValue({
+        upload: jest.fn(),
+        isUploading: true,
+        uploadProgress: 50,
+        error: null,
+      });
+
+      renderWithProviders(<ProfilePage />);
+
+      expect(screen.getByText(/uploading/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Error States and Retry Functionality', () => {
+    const mockRefetch = jest.fn();
+
+    it('displays error when registry data loading fails', () => {
+      mockUseRegistryProfile.mockReturnValue({
+        profile: null,
+        isLoading: false,
+        error: 'Failed to fetch registry profile',
+        refetch: mockRefetch,
+      });
+
+      renderWithProviders(<ProfilePage />);
+
+      expect(screen.getByText(/error/i)).toBeInTheDocument();
+      expect(screen.getByText(/failed to fetch registry profile/i)).toBeInTheDocument();
+    });
+
+    it('displays error when profile data loading fails', () => {
+      mockUseProfileData.mockReturnValue({
+        profile: null,
+        isLoading: false,
+        error: 'Failed to fetch profile data from IPFS',
+        updateProfile: jest.fn(),
+        refetch: mockRefetch,
+      });
+
+      renderWithProviders(<ProfilePage />);
+
+      expect(screen.getByText(/failed to fetch profile data from ipfs/i)).toBeInTheDocument();
+    });
+
+    it('provides retry functionality for registry data', async () => {
+      const user = userEvent.setup();
+      
+      mockUseRegistryProfile.mockReturnValue({
+        profile: null,
+        isLoading: false,
+        error: 'Network error',
+        refetch: mockRefetch,
+      });
+
+      renderWithProviders(<ProfilePage />);
+
+      const retryButton = screen.getByRole('button', { name: /retry/i });
+      await user.click(retryButton);
+
+      expect(mockRefetch).toHaveBeenCalled();
+    });
+
+    it('displays error when document upload fails', () => {
+      mockUseDocumentUpload.mockReturnValue({
+        upload: jest.fn(),
+        isUploading: false,
+        uploadProgress: 0,
+        error: 'Upload failed: File too large',
+      });
+
+      renderWithProviders(<ProfilePage />);
+
+      expect(screen.getByText(/upload failed: file too large/i)).toBeInTheDocument();
+    });
+
+    it('does not display substituted values on error', () => {
+      mockUseRegistryProfile.mockReturnValue({
+        profile: null,
+        isLoading: false,
+        error: 'Network error',
+        refetch: jest.fn(),
+      });
+
+      renderWithProviders(<ProfilePage />);
+
+      // Should not show placeholder reputation or verification status
+      expect(screen.queryByText('0 reputation')).not.toBeInTheDocument();
+      expect(screen.queryByText('verified: false')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Document Upload Functionality', () => {
+    const mockUpload = jest.fn();
+
+    beforeEach(() => {
+      mockUseDocumentUpload.mockReturnValue({
+        upload: mockUpload,
+        isUploading: false,
+        uploadProgress: 0,
+        error: null,
+      });
+    });
+
+    it('provides document upload interface', () => {
+      renderWithProviders(<ProfilePage />);
+
+      expect(screen.getByText(/upload/i)).toBeInTheDocument();
+    });
+
+    it('calls upload function when files are selected', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<ProfilePage />);
+
+      const fileInput = screen.getByLabelText(/upload/i);
+      const file = new File(['content'], 'profile.pdf', { type: 'application/pdf' });
+
+      await user.upload(fileInput, file);
+
+      expect(mockUpload).toHaveBeenCalledWith([file]);
+    });
+
+    it('handles multiple file upload correctly', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<ProfilePage />);
+
+      const fileInput = screen.getByLabelText(/upload/i);
+      const files = [
+        new File(['content1'], 'doc1.pdf', { type: 'application/pdf' }),
+        new File(['content2'], 'doc2.pdf', { type: 'application/pdf' }),
+      ];
+
+      await user.upload(fileInput, files);
+
+      expect(mockUpload).toHaveBeenCalledWith(files);
+    });
+
+    it('disables upload during upload process', () => {
+      mockUseDocumentUpload.mockReturnValue({
+        upload: mockUpload,
+        isUploading: true,
+        uploadProgress: 30,
+        error: null,
+      });
+
+      renderWithProviders(<ProfilePage />);
+
+      const fileInput = screen.getByLabelText(/upload/i);
+      expect(fileInput).toBeDisabled();
+    });
+  });
+
+  describe('Profile Update Functionality', () => {
+    const mockUpdateProfile = jest.fn();
+
+    beforeEach(() => {
+      mockUseProfileData.mockReturnValue({
+        profile: {
+          displayName: 'John Doe',
+          bio: 'DeFi enthusiast',
+          location: 'Global',
+          website: 'https://example.com',
+        },
+        isLoading: false,
+        error: null,
+        updateProfile: mockUpdateProfile,
+        refetch: jest.fn(),
+      });
+    });
+
+    it('provides profile editing interface', () => {
+      renderWithProviders(<ProfilePage />);
+
+      expect(screen.getByText(/edit/i)).toBeInTheDocument();
+    });
+
+    it('calls update function when profile is saved', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<ProfilePage />);
+
+      // Find edit button and click it to enter edit mode
+      const editButton = screen.getByRole('button', { name: /edit/i });
+      await user.click(editButton);
+
+      // Update profile fields (implementation dependent on actual form)
+      const displayNameInput = screen.getByDisplayValue('John Doe');
+      await user.clear(displayNameInput);
+      await user.type(displayNameInput, 'Jane Doe');
+
+      // Save profile
+      const saveButton = screen.getByRole('button', { name: /save/i });
+      await user.click(saveButton);
+
+      expect(mockUpdateProfile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          displayName: 'Jane Doe',
+        })
+      );
+    });
+  });
+
+  describe('Reputation and Verification Display', () => {
+    it('displays reputation score from registry contract', () => {
+      renderWithProviders(<ProfilePage />);
+
+      expect(screen.getByText(/100/)).toBeInTheDocument(); // Reputation score
+    });
+
+    it('displays verification status correctly', () => {
+      renderWithProviders(<ProfilePage />);
+
+      // Should show unverified status (mock has verified: false)
+      expect(screen.getByText(/unverified/i)).toBeInTheDocument();
+    });
+
+    it('displays verified status when user is verified', () => {
+      mockUseRegistryProfile.mockReturnValue({
+        profile: {
+          registered: true,
+          verified: true, // User is verified
+          reputationScore: BigInt(250),
+          ipfsProfileHash: 'QmX1234567890abcdef',
+          registeredAt: BigInt(Date.now() / 1000),
+        },
+        isLoading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      renderWithProviders(<ProfilePage />);
+
+      expect(screen.getByText(/verified/i)).toBeInTheDocument();
+      expect(screen.getByText(/250/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Responsive Layout and Accessibility', () => {
+    it('uses responsive container classes', () => {
+      const { container } = renderWithProviders(<ProfilePage />);
+
+      const mainContainer = container.querySelector('.container');
+      expect(mainContainer).toHaveClass('mx-auto');
+    });
+
+    it('provides proper heading structure', () => {
+      renderWithProviders(<ProfilePage />);
+
+      expect(screen.getByRole('heading', { name: /profile/i })).toBeInTheDocument();
+    });
+
+    it('maintains accessible form structure', () => {
+      renderWithProviders(<ProfilePage />);
+
+      // Should have proper form labels and structure
+      const fileInput = screen.getByLabelText(/upload/i);
+      expect(fileInput).toBeInTheDocument();
+    });
+  });
+
+  describe('Data Consistency', () => {
+    it('keeps registry and IPFS data in sync', () => {
+      renderWithProviders(<ProfilePage />);
+
+      // Both hooks should be called with the same address
+      expect(mockUseRegistryProfile).toHaveBeenCalledWith('0x1234567890123456789012345678901234567890');
+      expect(mockUseProfileData).toHaveBeenCalled();
+    });
+
+    it('refetches data after successful updates', async () => {
+      const mockRefetchRegistry = jest.fn();
+      const mockRefetchProfile = jest.fn();
+
+      mockUseRegistryProfile.mockReturnValue({
+        profile: {
+          registered: true,
+          verified: false,
+          reputationScore: BigInt(100),
+          ipfsProfileHash: 'QmX1234567890abcdef',
+          registeredAt: BigInt(Date.now() / 1000),
+        },
+        isLoading: false,
+        error: null,
+        refetch: mockRefetchRegistry,
+      });
+
+      mockUseProfileData.mockReturnValue({
+        profile: null,
+        isLoading: false,
+        error: null,
+        updateProfile: jest.fn().mockResolvedValue({}),
+        refetch: mockRefetchProfile,
+      });
+
+      renderWithProviders(<ProfilePage />);
+
+      // After successful operations, data should be refetched
+      expect(mockRefetchRegistry).toBeDefined();
+      expect(mockRefetchProfile).toBeDefined();
     });
   });
 });

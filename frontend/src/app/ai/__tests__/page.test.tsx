@@ -1,464 +1,531 @@
+/**
+ * Component tests for AI Assistant page
+ * 
+ * Tests cover:
+ * - Data-source wiring to chat API
+ * - Loading/error/retry rendering for AI responses
+ * - Chat functionality and conversation management
+ * - Action button integration requiring wallet signing
+ * 
+ * Validates Requirements: 11.1, 11.4, 15.5
+ */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@testing-library/jest-dom';
 
 import AiAssistantPage from '../page';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { useChatApi } from '@/hooks/useChatApi';
 
-// Mock the hooks
+// Mock auth guard
 jest.mock('@/hooks/useAuthGuard', () => ({
   useAuthGuard: jest.fn(),
 }));
 
+// Mock chat API hook
 jest.mock('@/hooks/useChatApi', () => ({
   useChatApi: jest.fn(),
 }));
 
-// Mock the components
+// Mock action button component
 jest.mock('@/components/ai/ActionButton', () => ({
-  ActionButtons: ({ actions }: { actions: unknown[] }) => (
+  ActionButtons: ({ actions, onExecuteAction }: any) => (
     <div data-testid="action-buttons">
-      {actions.length} actions
+      {actions.map((action: any, index: number) => (
+        <button
+          key={index}
+          onClick={() => onExecuteAction(action)}
+          data-testid={`action-${action.type}`}
+        >
+          {action.label}
+        </button>
+      ))}
     </div>
   ),
 }));
 
-const mockUseAuthGuard = jest.requireActual('@/hooks/useAuthGuard').useAuthGuard as jest.MockedFunction<typeof import('@/hooks/useAuthGuard').useAuthGuard>;
-const mockUseChatApi = jest.requireActual('@/hooks/useChatApi').useChatApi as jest.MockedFunction<typeof import('@/hooks/useChatApi').useChatApi>;
+const mockUseAuthGuard = useAuthGuard as jest.MockedFunction<typeof useAuthGuard>;
+const mockUseChatApi = useChatApi as jest.MockedFunction<typeof useChatApi>;
 
-describe('AI Assistant Page', () => {
+// Mock window.location for navigation tests
+delete (window as any).location;
+window.location = { href: '' } as any;
+
+describe('AiAssistantPage Component Tests', () => {
+  let queryClient: QueryClient;
+
   beforeEach(() => {
-    // Default mocks
+    jest.clearAllMocks();
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
+    });
+
     mockUseAuthGuard.mockReturnValue({
       isAuthenticated: true,
       isLoading: false,
+      user: { 
+        id: '1', 
+        walletAddress: '0x1234567890123456789012345678901234567890',
+        role: 'USER' as const,
+      },
     });
 
     mockUseChatApi.mockReturnValue({
       messages: [],
-      conversations: [],
-      currentConversationId: null,
       isLoading: false,
       error: null,
       sendMessage: jest.fn(),
-      loadConversation: jest.fn(),
+      conversations: [],
+      currentConversationId: 'conv-1',
       createNewConversation: jest.fn(),
+      loadConversation: jest.fn(),
       clearError: jest.fn(),
     });
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        {ui}
+      </QueryClientProvider>
+    );
+  };
 
-  describe('Authentication States', () => {
-    it('shows loading state when auth is loading', () => {
+  describe('Authentication Guards', () => {
+    it('shows loading state during authentication check', () => {
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: false,
         isLoading: true,
+        user: null,
       });
 
-      render(<AiAssistantPage />);
+      renderWithProviders(<AiAssistantPage />);
 
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
+      expect(screen.getByText(/loading/i)).toBeInTheDocument();
+      expect(screen.queryByText(/ai financial assistant/i)).not.toBeInTheDocument();
     });
 
-    it('renders main interface when authenticated', () => {
-      render(<AiAssistantPage />);
-
-      expect(screen.getByText('AI Financial Assistant')).toBeInTheDocument();
-      expect(screen.getByText('Get personalized financial guidance and smart recommendations for your BFN portfolio')).toBeInTheDocument();
-    });
-
-    it('returns null when not authenticated (handled by auth guard)', () => {
+    it('returns null when not authenticated (auth guard redirects)', () => {
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: false,
         isLoading: false,
+        user: null,
       });
 
-      const { container } = render(<AiAssistantPage />);
+      const { container } = renderWithProviders(<AiAssistantPage />);
+
       expect(container.firstChild).toBeNull();
     });
-  });
 
-  describe('Chat Interface', () => {
-    it('displays welcome message when no messages', () => {
-      render(<AiAssistantPage />);
+    it('renders chat interface when authenticated', () => {
+      renderWithProviders(<AiAssistantPage />);
 
-      expect(screen.getByText('Welcome to your AI Financial Assistant')).toBeInTheDocument();
-      expect(screen.getByText(/Ask questions about your portfolio/)).toBeInTheDocument();
-    });
-
-    it('shows conversation sidebar with new chat button', () => {
-      render(<AiAssistantPage />);
-
-      expect(screen.getByText('Conversations')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /new chat/i })).toBeInTheDocument();
-    });
-
-    it('displays existing conversations', () => {
-      mockUseChatApi.mockReturnValue({
-        messages: [],
-        conversations: [
-          {
-            id: 'conv-1',
-            createdAt: new Date('2023-01-01'),
-            messageCount: 5,
-            lastMessage: 'What is my portfolio performance?',
-            lastMessageAt: new Date('2023-01-01'),
-          },
-        ],
-        currentConversationId: null,
-        isLoading: false,
-        error: null,
-        sendMessage: jest.fn(),
-        loadConversation: jest.fn(),
-        createNewConversation: jest.fn(),
-        clearError: jest.fn(),
-      });
-
-      render(<AiAssistantPage />);
-
-      expect(screen.getByText('What is my portfolio performance?')).toBeInTheDocument();
-      expect(screen.getByText('5 messages')).toBeInTheDocument();
-    });
-
-    it('handles conversation selection', async () => {
-      const mockLoadConversation = jest.fn();
-      mockUseChatApi.mockReturnValue({
-        messages: [],
-        conversations: [
-          {
-            id: 'conv-1',
-            createdAt: new Date('2023-01-01'),
-            messageCount: 5,
-            lastMessage: 'Test conversation',
-            lastMessageAt: new Date('2023-01-01'),
-          },
-        ],
-        currentConversationId: null,
-        isLoading: false,
-        error: null,
-        sendMessage: jest.fn(),
-        loadConversation: mockLoadConversation,
-        createNewConversation: jest.fn(),
-        clearError: jest.fn(),
-      });
-
-      render(<AiAssistantPage />);
-
-      const conversationButton = screen.getByText('Test conversation');
-      fireEvent.click(conversationButton);
-
-      expect(mockLoadConversation).toHaveBeenCalledWith('conv-1');
+      expect(screen.getByText(/ai financial assistant/i)).toBeInTheDocument();
+      expect(screen.getByRole('main')).toBeInTheDocument();
     });
   });
 
-  describe('Message Input and Sending', () => {
-    it('renders message input with character count', () => {
-      render(<AiAssistantPage />);
+  describe('Data Source Wiring - Chat API', () => {
+    it('uses chat API hook to manage conversation state', () => {
+      renderWithProviders(<AiAssistantPage />);
 
-      const input = screen.getByPlaceholderText('Ask me anything about your finances...');
-      expect(input).toBeInTheDocument();
-      expect(screen.getByText('0/2000 characters')).toBeInTheDocument();
+      expect(mockUseChatApi).toHaveBeenCalled();
     });
 
-    it('updates character count as user types', async () => {
-      render(<AiAssistantPage />);
-
-      const input = screen.getByPlaceholderText('Ask me anything about your finances...');
-      fireEvent.change(input, { target: { value: 'Hello' } });
-
-      await waitFor(() => {
-        expect(screen.getByText('5/2000 characters')).toBeInTheDocument();
-      });
-    });
-
-    it('sends message when form is submitted', async () => {
-      const mockSendMessage = jest.fn();
-      mockUseChatApi.mockReturnValue({
-        messages: [],
-        conversations: [],
-        currentConversationId: null,
-        isLoading: false,
-        error: null,
-        sendMessage: mockSendMessage,
-        loadConversation: jest.fn(),
-        createNewConversation: jest.fn(),
-        clearError: jest.fn(),
-      });
-
-      render(<AiAssistantPage />);
-
-      const input = screen.getByPlaceholderText('Ask me anything about your finances...');
-      const sendButton = screen.getByRole('button', { name: /send message/i });
-
-      fireEvent.change(input, { target: { value: 'Test question' } });
-      fireEvent.click(sendButton);
-
-      expect(mockSendMessage).toHaveBeenCalledWith('Test question');
-    });
-
-    it('sends message when Enter is pressed', async () => {
-      const mockSendMessage = jest.fn();
-      mockUseChatApi.mockReturnValue({
-        messages: [],
-        conversations: [],
-        currentConversationId: null,
-        isLoading: false,
-        error: null,
-        sendMessage: mockSendMessage,
-        loadConversation: jest.fn(),
-        createNewConversation: jest.fn(),
-        clearError: jest.fn(),
-      });
-
-      render(<AiAssistantPage />);
-
-      const input = screen.getByPlaceholderText('Ask me anything about your finances...');
-      fireEvent.change(input, { target: { value: 'Test question' } });
-      fireEvent.keyDown(input, { key: 'Enter', shiftKey: false });
-
-      expect(mockSendMessage).toHaveBeenCalledWith('Test question');
-    });
-
-    it('does not send message when Shift+Enter is pressed', () => {
-      const mockSendMessage = jest.fn();
-      mockUseChatApi.mockReturnValue({
-        messages: [],
-        conversations: [],
-        currentConversationId: null,
-        isLoading: false,
-        error: null,
-        sendMessage: mockSendMessage,
-        loadConversation: jest.fn(),
-        createNewConversation: jest.fn(),
-        clearError: jest.fn(),
-      });
-
-      render(<AiAssistantPage />);
-
-      const input = screen.getByPlaceholderText('Ask me anything about your finances...');
-      fireEvent.change(input, { target: { value: 'Test question' } });
-      fireEvent.keyDown(input, { key: 'Enter', shiftKey: true });
-
-      expect(mockSendMessage).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Message Display', () => {
-    it('displays messages with proper styling and timestamps', () => {
-      const testMessages = [
+    it('displays conversation history from chat API', () => {
+      const mockConversations = [
         {
-          role: 'user' as const,
-          content: 'Hello, AI!',
-          createdAt: new Date('2023-01-01T10:00:00'),
+          id: 'conv-1',
+          lastMessage: 'What is my portfolio balance?',
+          lastMessageAt: '2024-01-01T12:00:00Z',
+          messageCount: 5,
         },
         {
-          role: 'assistant' as const,
-          content: 'Hello! How can I help you?',
-          createdAt: new Date('2023-01-01T10:00:30'),
-          actions: [],
+          id: 'conv-2', 
+          lastMessage: 'How should I invest?',
+          lastMessageAt: '2024-01-02T12:00:00Z',
+          messageCount: 3,
         },
       ];
 
       mockUseChatApi.mockReturnValue({
-        messages: testMessages,
-        conversations: [],
-        currentConversationId: 'conv-1',
-        isLoading: false,
-        error: null,
-        sendMessage: jest.fn(),
-        loadConversation: jest.fn(),
-        createNewConversation: jest.fn(),
-        clearError: jest.fn(),
+        ...mockUseChatApi(),
+        conversations: mockConversations,
       });
 
-      render(<AiAssistantPage />);
+      renderWithProviders(<AiAssistantPage />);
 
-      expect(screen.getByText('Hello, AI!')).toBeInTheDocument();
-      expect(screen.getByText('Hello! How can I help you?')).toBeInTheDocument();
+      expect(screen.getByText('What is my portfolio balance?')).toBeInTheDocument();
+      expect(screen.getByText('How should I invest?')).toBeInTheDocument();
+      expect(screen.getByText('5 messages')).toBeInTheDocument();
+      expect(screen.getByText('3 messages')).toBeInTheDocument();
     });
 
-    it('shows action buttons for assistant messages with actions', () => {
-      const testMessages = [
+    it('displays chat messages from API data', () => {
+      const mockMessages = [
         {
+          id: '1',
+          role: 'user' as const,
+          content: 'What is my current balance?',
+          createdAt: '2024-01-01T12:00:00Z',
+        },
+        {
+          id: '2',
           role: 'assistant' as const,
-          content: 'You should consider depositing to your savings.',
-          createdAt: new Date('2023-01-01T10:00:30'),
+          content: 'Your current balance is 1.5 ETH in savings.',
+          createdAt: '2024-01-01T12:01:00Z',
           actions: [
-            {
-              type: 'deposit_savings' as const,
-              title: 'Deposit to Savings',
-              description: 'Add funds to savings',
-              requiresSignature: true,
-            },
+            { type: 'view_portfolio', label: 'View Portfolio' },
           ],
         },
       ];
 
       mockUseChatApi.mockReturnValue({
-        messages: testMessages,
-        conversations: [],
-        currentConversationId: 'conv-1',
-        isLoading: false,
-        error: null,
-        sendMessage: jest.fn(),
-        loadConversation: jest.fn(),
-        createNewConversation: jest.fn(),
-        clearError: jest.fn(),
+        ...mockUseChatApi(),
+        messages: mockMessages,
       });
 
-      render(<AiAssistantPage />);
+      renderWithProviders(<AiAssistantPage />);
 
-      expect(screen.getByTestId('action-buttons')).toBeInTheDocument();
-      expect(screen.getByText('1 actions')).toBeInTheDocument();
+      expect(screen.getByText('What is my current balance?')).toBeInTheDocument();
+      expect(screen.getByText('Your current balance is 1.5 ETH in savings.')).toBeInTheDocument();
+    });
+
+    it('displays empty conversation state when no messages', () => {
+      renderWithProviders(<AiAssistantPage />);
+
+      expect(screen.getByText(/welcome to your ai financial assistant/i)).toBeInTheDocument();
+      expect(screen.getByText(/ask questions about your portfolio/i)).toBeInTheDocument();
     });
   });
 
-  describe('Loading and Error States', () => {
-    it('shows typing indicator when loading', () => {
+  describe('Loading States - Requirement 11.4', () => {
+    it('displays typing indicator when AI is responding', () => {
       mockUseChatApi.mockReturnValue({
-        messages: [],
-        conversations: [],
-        currentConversationId: null,
+        ...mockUseChatApi(),
         isLoading: true,
-        error: null,
-        sendMessage: jest.fn(),
-        loadConversation: jest.fn(),
-        createNewConversation: jest.fn(),
-        clearError: jest.fn(),
       });
 
-      render(<AiAssistantPage />);
+      renderWithProviders(<AiAssistantPage />);
 
-      expect(screen.getByText('AI is thinking...')).toBeInTheDocument();
+      expect(screen.getByText(/ai is thinking/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /send message/i })).toBeDisabled();
     });
 
-    it('displays error message when there is an error', () => {
+    it('disables input during loading', () => {
       mockUseChatApi.mockReturnValue({
-        messages: [],
-        conversations: [],
-        currentConversationId: null,
-        isLoading: false,
-        error: 'Connection failed',
-        sendMessage: jest.fn(),
-        loadConversation: jest.fn(),
-        createNewConversation: jest.fn(),
-        clearError: jest.fn(),
+        ...mockUseChatApi(),
+        isLoading: true,
       });
 
-      render(<AiAssistantPage />);
+      renderWithProviders(<AiAssistantPage />);
 
-      expect(screen.getByText('Connection failed')).toBeInTheDocument();
+      const chatInput = screen.getByRole('textbox', { name: /chat input/i });
+      expect(chatInput).toBeDisabled();
     });
 
-    it('clears error when retry button is clicked', () => {
-      const mockClearError = jest.fn();
+    it('shows loading spinner in send button during message sending', () => {
       mockUseChatApi.mockReturnValue({
-        messages: [],
-        conversations: [],
-        currentConversationId: null,
-        isLoading: false,
-        error: 'Connection failed',
-        sendMessage: jest.fn(),
-        loadConversation: jest.fn(),
-        createNewConversation: jest.fn(),
+        ...mockUseChatApi(),
+        isLoading: true,
+      });
+
+      renderWithProviders(<AiAssistantPage />);
+
+      // Send button should show loading spinner
+      const sendButton = screen.getByRole('button', { name: /send message/i });
+      expect(sendButton).toBeInTheDocument();
+      expect(sendButton).toBeDisabled();
+    });
+  });
+
+  describe('Error States and Retry Functionality', () => {
+    const mockClearError = jest.fn();
+
+    beforeEach(() => {
+      mockUseChatApi.mockReturnValue({
+        ...mockUseChatApi(),
+        error: 'Failed to send message to AI assistant',
         clearError: mockClearError,
       });
+    });
 
-      render(<AiAssistantPage />);
+    it('displays error alert when chat API fails', () => {
+      renderWithProviders(<AiAssistantPage />);
 
-      const retryButton = screen.getByRole('button', { name: 'Clear error and retry' });
-      fireEvent.click(retryButton);
+      expect(screen.getByText(/failed to send message to ai assistant/i)).toBeInTheDocument();
+    });
+
+    it('provides retry functionality through clear error button', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<AiAssistantPage />);
+
+      const retryButton = screen.getByRole('button', { name: /clear error and retry/i });
+      expect(retryButton).toBeInTheDocument();
+
+      await user.click(retryButton);
 
       expect(mockClearError).toHaveBeenCalled();
     });
+
+    it('hides error alert after clearing error', () => {
+      const { rerender } = renderWithProviders(<AiAssistantPage />);
+
+      expect(screen.getByText(/failed to send message/i)).toBeInTheDocument();
+
+      // Clear error
+      mockUseChatApi.mockReturnValue({
+        ...mockUseChatApi(),
+        error: null,
+      });
+
+      rerender(
+        <QueryClientProvider client={queryClient}>
+          <AiAssistantPage />
+        </QueryClientProvider>
+      );
+
+      expect(screen.queryByText(/failed to send message/i)).not.toBeInTheDocument();
+    });
   });
 
-  describe('Quick Action Buttons', () => {
-    it('shows quick action buttons in welcome state', () => {
-      render(<AiAssistantPage />);
+  describe('Message Sending Functionality', () => {
+    const mockSendMessage = jest.fn();
 
-      expect(screen.getByText('Portfolio Summary')).toBeInTheDocument();
-      expect(screen.getByText('Savings Tips')).toBeInTheDocument();
-      expect(screen.getByText('Investment Ideas')).toBeInTheDocument();
+    beforeEach(() => {
+      mockUseChatApi.mockReturnValue({
+        ...mockUseChatApi(),
+        sendMessage: mockSendMessage,
+      });
     });
 
-    it('fills input when quick action button is clicked', () => {
-      render(<AiAssistantPage />);
+    it('calls sendMessage when form is submitted', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<AiAssistantPage />);
 
-      const portfolioButton = screen.getByText('Portfolio Summary');
-      fireEvent.click(portfolioButton);
+      const chatInput = screen.getByRole('textbox', { name: /chat input/i });
+      const sendButton = screen.getByRole('button', { name: /send message/i });
 
-      const input = screen.getByPlaceholderText('Ask me anything about your finances...');
-      expect(input).toHaveValue("What's my current portfolio performance?");
+      await user.type(chatInput, 'What is my portfolio balance?');
+      await user.click(sendButton);
+
+      expect(mockSendMessage).toHaveBeenCalledWith('What is my portfolio balance?');
+    });
+
+    it('sends message on Enter key press', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<AiAssistantPage />);
+
+      const chatInput = screen.getByRole('textbox', { name: /chat input/i });
+
+      await user.type(chatInput, 'How can I save more?');
+      await user.keyboard('{Enter}');
+
+      expect(mockSendMessage).toHaveBeenCalledWith('How can I save more?');
+    });
+
+    it('does not send empty messages', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<AiAssistantPage />);
+
+      const sendButton = screen.getByRole('button', { name: /send message/i });
+
+      await user.click(sendButton);
+
+      expect(mockSendMessage).not.toHaveBeenCalled();
+    });
+
+    it('enforces 2000 character limit', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<AiAssistantPage />);
+
+      const chatInput = screen.getByRole('textbox', { name: /chat input/i });
+      expect(chatInput).toHaveAttribute('maxLength', '2000');
+
+      // Character counter should be shown
+      expect(screen.getByText('0/2000 characters')).toBeInTheDocument();
+
+      await user.type(chatInput, 'Test message');
+      expect(screen.getByText('12/2000 characters')).toBeInTheDocument();
     });
   });
 
-  describe('Accessibility', () => {
-    it('has proper ARIA labels and roles', () => {
-      render(<AiAssistantPage />);
+  describe('Action Button Integration - Wallet Signing', () => {
+    const mockMessages = [
+      {
+        id: '2',
+        role: 'assistant' as const,
+        content: 'You should consider depositing more into savings.',
+        createdAt: '2024-01-01T12:01:00Z',
+        actions: [
+          { type: 'view_portfolio', label: 'View Portfolio' },
+          { type: 'deposit_savings', label: 'Deposit Savings' },
+          { type: 'create_goal', label: 'Create Goal' },
+        ],
+      },
+    ];
 
-      expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
-      expect(screen.getByLabelText('Chat input')).toBeInTheDocument();
-      expect(screen.getByLabelText('Send message')).toBeInTheDocument();
+    beforeEach(() => {
+      mockUseChatApi.mockReturnValue({
+        ...mockUseChatApi(),
+        messages: mockMessages,
+      });
     });
 
-    it('maintains proper heading hierarchy', () => {
-      render(<AiAssistantPage />);
+    it('displays action buttons for AI messages with actions', () => {
+      renderWithProviders(<AiAssistantPage />);
 
-      const mainHeading = screen.getByRole('heading', { level: 1 });
-      expect(mainHeading).toHaveTextContent('AI Financial Assistant');
+      expect(screen.getByTestId('action-buttons')).toBeInTheDocument();
+      expect(screen.getByTestId('action-view_portfolio')).toBeInTheDocument();
+      expect(screen.getByTestId('action-deposit_savings')).toBeInTheDocument();
+      expect(screen.getByTestId('action-create_goal')).toBeInTheDocument();
+    });
+
+    it('navigates to correct pages when actions are executed', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<AiAssistantPage />);
+
+      // Test view portfolio action
+      await user.click(screen.getByTestId('action-view_portfolio'));
+      expect(window.location.href).toBe('/dashboard');
+
+      // Test deposit savings action  
+      await user.click(screen.getByTestId('action-deposit_savings'));
+      expect(window.location.href).toBe('/savings');
+
+      // Test create goal action
+      await user.click(screen.getByTestId('action-create_goal'));
+      expect(window.location.href).toBe('/savings#goals');
+    });
+
+    it('handles unknown action types gracefully', async () => {
+      const user = userEvent.setup();
+      
+      const mockMessagesWithUnknownAction = [
+        {
+          id: '2',
+          role: 'assistant' as const,
+          content: 'Test message',
+          createdAt: '2024-01-01T12:01:00Z',
+          actions: [
+            { type: 'unknown_action', label: 'Unknown Action' },
+          ],
+        },
+      ];
+
+      mockUseChatApi.mockReturnValue({
+        ...mockUseChatApi(),
+        messages: mockMessagesWithUnknownAction,
+      });
+
+      // Mock console.warn to test error handling
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      renderWithProviders(<AiAssistantPage />);
+
+      await user.click(screen.getByTestId('action-unknown_action'));
+
+      expect(consoleSpy).toHaveBeenCalledWith('Unknown action type:', 'unknown_action');
+      
+      consoleSpy.mockRestore();
     });
   });
 
   describe('Conversation Management', () => {
-    it('creates new conversation when button is clicked', () => {
-      const mockCreateNewConversation = jest.fn();
+    const mockCreateNewConversation = jest.fn();
+    const mockLoadConversation = jest.fn();
+
+    beforeEach(() => {
       mockUseChatApi.mockReturnValue({
-        messages: [
+        ...mockUseChatApi(),
+        createNewConversation: mockCreateNewConversation,
+        loadConversation: mockLoadConversation,
+        conversations: [
           {
-            role: 'user' as const,
-            content: 'Existing message',
-            createdAt: new Date(),
+            id: 'conv-1',
+            lastMessage: 'Previous conversation',
+            lastMessageAt: '2024-01-01T12:00:00Z',
+            messageCount: 3,
           },
         ],
-        conversations: [],
-        currentConversationId: 'conv-1',
-        isLoading: false,
-        error: null,
-        sendMessage: jest.fn(),
-        loadConversation: jest.fn(),
-        createNewConversation: mockCreateNewConversation,
-        clearError: jest.fn(),
       });
+    });
 
-      render(<AiAssistantPage />);
+    it('creates new conversation when new chat button is clicked', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<AiAssistantPage />);
 
       const newChatButton = screen.getByRole('button', { name: /new chat/i });
-      fireEvent.click(newChatButton);
+      await user.click(newChatButton);
 
       expect(mockCreateNewConversation).toHaveBeenCalled();
     });
 
-    it('shows current conversation ID when available', () => {
+    it('loads conversation when conversation item is clicked', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<AiAssistantPage />);
+
+      const conversationButton = screen.getByText('Previous conversation');
+      await user.click(conversationButton);
+
+      expect(mockLoadConversation).toHaveBeenCalledWith('conv-1');
+    });
+
+    it('shows empty state when no conversations exist', () => {
       mockUseChatApi.mockReturnValue({
-        messages: [],
+        ...mockUseChatApi(),
         conversations: [],
-        currentConversationId: 'conv-123456789',
-        isLoading: false,
-        error: null,
-        sendMessage: jest.fn(),
-        loadConversation: jest.fn(),
-        createNewConversation: jest.fn(),
-        clearError: jest.fn(),
       });
 
-      render(<AiAssistantPage />);
+      renderWithProviders(<AiAssistantPage />);
 
-      expect(screen.getByText((content, element) => {
-        return element?.textContent === 'ID: 23456789';
-      })).toBeInTheDocument();
+      expect(screen.getByText(/no conversations yet/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Accessibility and UX', () => {
+    it('provides proper ARIA labels and roles', () => {
+      renderWithProviders(<AiAssistantPage />);
+
+      expect(screen.getByRole('main')).toBeInTheDocument();
+      expect(screen.getByLabelText(/chat input/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/send message/i)).toBeInTheDocument();
+    });
+
+    it('supports keyboard navigation', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<AiAssistantPage />);
+
+      const chatInput = screen.getByRole('textbox', { name: /chat input/i });
+      
+      await user.tab();
+      expect(chatInput).toHaveFocus();
+    });
+
+    it('displays message timestamps', () => {
+      const mockMessages = [
+        {
+          id: '1',
+          role: 'user' as const,
+          content: 'Test message',
+          createdAt: '2024-01-01T12:00:00Z',
+        },
+      ];
+
+      mockUseChatApi.makeReturnValue({
+        ...mockUseChatApi(),
+        messages: mockMessages,
+      });
+
+      renderWithProviders(<AiAssistantPage />);
+
+      // Should display localized timestamp
+      expect(screen.getByText(/12:00/)).toBeInTheDocument();
     });
   });
 });

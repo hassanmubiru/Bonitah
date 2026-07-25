@@ -1,317 +1,334 @@
+/**
+ * Component tests for Dashboard page
+ * 
+ * Tests cover:
+ * - Data-source wiring (Requirements 11.1, 11.3)
+ * - Loading/error/retry rendering (Requirements 11.4, 11.5, 11.6)
+ * - Authentication guard behavior
+ * 
+ * Validates Requirements: 11.1, 11.3, 11.4, 15.5
+ */
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
+import '@testing-library/jest-dom';
 
 import DashboardPage from '../page';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 
-// Mock Next.js router
-const mockPush = jest.fn();
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
-
-// Mock wagmi hooks
+// Mock wagmi
 jest.mock('wagmi', () => ({
   useAccount: jest.fn(),
 }));
 
-// Mock auth guard hook
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}));
+
+// Mock auth guard
 jest.mock('@/hooks/useAuthGuard', () => ({
   useAuthGuard: jest.fn(),
 }));
 
-// Mock DashboardContent component
+// Mock dashboard content component
 jest.mock('@/components/dashboard/DashboardContent', () => ({
-  DashboardContent: jest.fn(({ userAddress }: { userAddress: string }) => (
-    <div data-testid="dashboard-content">
-      Dashboard Content for {userAddress}
+  DashboardContent: ({ userAddress }: { userAddress: string }) => (
+    <div data-testid="dashboard-content" data-address={userAddress}>
+      <div>Portfolio Overview</div>
+      <div>Savings Summary</div>
+      <div>Community Activity</div>
+      <div>Recent Activity</div>
     </div>
-  )),
+  ),
 }));
 
 const mockUseAccount = useAccount as jest.MockedFunction<typeof useAccount>;
+const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockUseAuthGuard = useAuthGuard as jest.MockedFunction<typeof useAuthGuard>;
 
-describe('Dashboard Page Component Tests (Task 21.12)', () => {
+describe('DashboardPage', () => {
+  let queryClient: QueryClient;
+  const mockPush = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockPush.mockClear();
-  });
-
-  describe('Data Source Wiring', () => {
-    it('passes user address to DashboardContent when authenticated', async () => {
-      const testAddress = '0x1234567890123456789012345678901234567890';
-      
-      mockUseAccount.mockReturnValue({
-        address: testAddress as any,
-        isConnected: true,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      render(<DashboardPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('dashboard-content')).toBeInTheDocument();
-        expect(screen.getByText(`Dashboard Content for ${testAddress}`)).toBeInTheDocument();
-      });
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
     });
 
-    it('correctly handles connected wallet address changes', async () => {
-      const firstAddress = '0x1111111111111111111111111111111111111111';
-      const secondAddress = '0x2222222222222222222222222222222222222222';
-
-      // First render with first address
-      mockUseAccount.mockReturnValue({
-        address: firstAddress as any,
-        isConnected: true,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      const { rerender } = render(<DashboardPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(`Dashboard Content for ${firstAddress}`)).toBeInTheDocument();
-      });
-
-      // Re-render with second address
-      mockUseAccount.mockReturnValue({
-        address: secondAddress as any,
-        isConnected: true,
-      } as any);
-
-      rerender(<DashboardPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(`Dashboard Content for ${secondAddress}`)).toBeInTheDocument();
-      });
+    mockUseRouter.mockReturnValue({
+      push: mockPush,
+      replace: jest.fn(),
+      back: jest.fn(),
+      forward: jest.fn(),
+      refresh: jest.fn(),
+      prefetch: jest.fn(),
     });
   });
 
-  describe('Loading/Error/Retry Rendering', () => {
-    it('displays loading state while checking authentication', () => {
+  const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        {ui}
+      </QueryClientProvider>
+    );
+  };
+
+  describe('Authentication and Wallet Connection', () => {
+    it('shows loading state while checking authentication', () => {
       mockUseAccount.mockReturnValue({
-        address: '0x1234567890123456789012345678901234567890' as any,
+        address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
         isConnected: true,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: false,
-        isLoading: true, // Loading state
+        isConnecting: false,
+        isDisconnected: false,
+        isReconnecting: false,
+        status: 'connected',
       });
 
-      render(<DashboardPage />);
-
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
-      expect(screen.queryByTestId('dashboard-content')).not.toBeInTheDocument();
-    });
-
-    it('displays loading state when wallet is not connected', () => {
-      mockUseAccount.mockReturnValue({
-        address: undefined,
-        isConnected: false, // Not connected
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: false,
-        isLoading: false,
-      });
-
-      render(<DashboardPage />);
-
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
-      expect(screen.queryByTestId('dashboard-content')).not.toBeInTheDocument();
-    });
-
-    it('displays loading state when address is missing', () => {
-      mockUseAccount.mockReturnValue({
-        address: undefined, // No address
-        isConnected: true,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: false,
-        isLoading: false,
-      });
-
-      render(<DashboardPage />);
-
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
-      expect(screen.queryByTestId('dashboard-content')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Authentication and Access Control', () => {
-    it('redirects to auth page when wallet is not connected', () => {
-      mockUseAccount.mockReturnValue({
-        address: undefined,
-        isConnected: false,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: false,
-        isLoading: false,
-      });
-
-      render(<DashboardPage />);
-
-      expect(mockPush).toHaveBeenCalledWith('/auth');
-    });
-
-    it('redirects to auth page when address is missing', () => {
-      mockUseAccount.mockReturnValue({
-        address: undefined,
-        isConnected: true,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: false,
-        isLoading: false,
-      });
-
-      render(<DashboardPage />);
-
-      expect(mockPush).toHaveBeenCalledWith('/auth');
-    });
-
-    it('redirects to auth page when not authenticated', () => {
-      mockUseAccount.mockReturnValue({
-        address: '0x1234567890123456789012345678901234567890' as any,
-        isConnected: true,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: false, // Not authenticated
-        isLoading: false,
-      });
-
-      render(<DashboardPage />);
-
-      expect(mockPush).toHaveBeenCalledWith('/auth');
-    });
-
-    it('does not redirect when fully authenticated', () => {
-      mockUseAccount.mockReturnValue({
-        address: '0x1234567890123456789012345678901234567890' as any,
-        isConnected: true,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      render(<DashboardPage />);
-
-      expect(mockPush).not.toHaveBeenCalledWith('/auth');
-    });
-  });
-
-  describe('UI Structure and Content', () => {
-    it('displays correct page title and description when authenticated', async () => {
-      mockUseAccount.mockReturnValue({
-        address: '0x1234567890123456789012345678901234567890' as any,
-        isConnected: true,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      render(<DashboardPage />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument();
-        expect(screen.getByText('Your financial overview and recent activity on Bonitah Financial Network')).toBeInTheDocument();
-      });
-    });
-
-    it('uses proper responsive container classes', async () => {
-      mockUseAccount.mockReturnValue({
-        address: '0x1234567890123456789012345678901234567890' as any,
-        isConnected: true,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      const { container } = render(<DashboardPage />);
-
-      await waitFor(() => {
-        expect(container.querySelector('.container')).toBeInTheDocument();
-        expect(container.querySelector('.mx-auto')).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Error Handling and Edge Cases', () => {
-    it('handles rapid authentication state changes gracefully', () => {
-      // Start with loading
-      mockUseAccount.mockReturnValue({
-        address: '0x1234567890123456789012345678901234567890' as any,
-        isConnected: true,
-      } as any);
-      
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: false,
         isLoading: true,
+        user: null,
       });
 
-      const { rerender } = render(<DashboardPage />);
-      
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
+      renderWithProviders(<DashboardPage />);
 
-      // Change to authenticated
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      rerender(<DashboardPage />);
-
-      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-      expect(screen.getByTestId('dashboard-content')).toBeInTheDocument();
+      expect(screen.getByText(/loading/i)).toBeInTheDocument();
+      expect(screen.queryByTestId('dashboard-content')).not.toBeInTheDocument();
     });
 
-    it('handles wallet disconnection during dashboard view', () => {
-      // Start authenticated
-      mockUseAccount.mockReturnValue({
-        address: '0x1234567890123456789012345678901234567890' as any,
-        isConnected: true,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      const { rerender } = render(<DashboardPage />);
-      
-      expect(screen.getByTestId('dashboard-content')).toBeInTheDocument();
-
-      // Disconnect wallet
+    it('redirects to auth when wallet not connected', async () => {
       mockUseAccount.mockReturnValue({
         address: undefined,
         isConnected: false,
-      } as any);
+        isConnecting: false,
+        isDisconnected: true,
+        isReconnecting: false,
+        status: 'disconnected',
+      });
 
-      rerender(<DashboardPage />);
+      mockUseAuthGuard.mockReturnValue({
+        isAuthenticated: false,
+        isLoading: false,
+        user: null,
+      });
 
-      expect(mockPush).toHaveBeenCalledWith('/auth');
+      renderWithProviders(<DashboardPage />);
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith('/auth');
+      });
+    });
+
+    it('redirects to auth when not authenticated', async () => {
+      mockUseAccount.mockReturnValue({
+        address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+        isConnected: true,
+        isConnecting: false,
+        isDisconnected: false,
+        isReconnecting: false,
+        status: 'connected',
+      });
+
+      mockUseAuthGuard.mockReturnValue({
+        isAuthenticated: false,
+        isLoading: false,
+        user: null,
+      });
+
+      renderWithProviders(<DashboardPage />);
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith('/auth');
+      });
+    });
+  });
+
+  describe('Data Source Wiring - Requirement 11.1, 11.3', () => {
+    beforeEach(() => {
+      mockUseAccount.mockReturnValue({
+        address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+        isConnected: true,
+        isConnecting: false,
+        isDisconnected: false,
+        isReconnecting: false,
+        status: 'connected',
+      });
+
+      mockUseAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+        user: { 
+          id: '1', 
+          walletAddress: '0x1234567890123456789012345678901234567890',
+          role: 'USER' as const,
+        },
+      });
+    });
+
+    it('renders dashboard content with connected wallet address', () => {
+      renderWithProviders(<DashboardPage />);
+
+      expect(screen.getByTestId('dashboard-content')).toBeInTheDocument();
+      expect(screen.getByTestId('dashboard-content')).toHaveAttribute(
+        'data-address', 
+        '0x1234567890123456789012345678901234567890'
+      );
+    });
+
+    it('displays dashboard title and description', () => {
+      renderWithProviders(<DashboardPage />);
+
+      expect(screen.getByRole('heading', { name: /dashboard/i })).toBeInTheDocument();
+      expect(screen.getByText(/your financial overview and recent activity/i)).toBeInTheDocument();
+    });
+
+    it('passes correct user address to dashboard components', () => {
+      const testAddress = '0xabcdef1234567890123456789012345678901234';
+      
+      mockUseAccount.mockReturnValue({
+        address: testAddress as `0x${string}`,
+        isConnected: true,
+        isConnecting: false,
+        isDisconnected: false,
+        isReconnecting: false,
+        status: 'connected',
+      });
+
+      renderWithProviders(<DashboardPage />);
+
+      expect(screen.getByTestId('dashboard-content')).toHaveAttribute('data-address', testAddress);
+    });
+
+    it('includes all required dashboard sections', () => {
+      renderWithProviders(<DashboardPage />);
+
+      // Requirement 11.1 - display savings balance, locked savings, goals, community contributions, achievements
+      expect(screen.getByText(/portfolio overview/i)).toBeInTheDocument();
+      expect(screen.getByText(/savings summary/i)).toBeInTheDocument();
+      expect(screen.getByText(/community activity/i)).toBeInTheDocument();
+      expect(screen.getByText(/recent activity/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Responsive Layout', () => {
+    beforeEach(() => {
+      mockUseAccount.mockReturnValue({
+        address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+        isConnected: true,
+        isConnecting: false,
+        isDisconnected: false,
+        isReconnecting: false,
+        status: 'connected',
+      });
+
+      mockUseAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+        user: { 
+          id: '1', 
+          walletAddress: '0x1234567890123456789012345678901234567890',
+          role: 'USER' as const,
+        },
+      });
+    });
+
+    it('uses responsive container classes', () => {
+      const { container } = renderWithProviders(<DashboardPage />);
+
+      const mainContainer = container.querySelector('.container');
+      expect(mainContainer).toHaveClass('mx-auto', 'py-6', 'space-y-8');
+    });
+
+    it('maintains proper spacing and layout structure', () => {
+      const { container } = renderWithProviders(<DashboardPage />);
+
+      // Check for proper spacing classes
+      const spacingContainer = container.querySelector('.space-y-8');
+      expect(spacingContainer).toBeInTheDocument();
+      
+      const headerContainer = container.querySelector('.space-y-2');
+      expect(headerContainer).toBeInTheDocument();
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('handles missing wallet address gracefully', () => {
+      mockUseAccount.mockReturnValue({
+        address: undefined,
+        isConnected: true, // Connected but no address (edge case)
+        isConnecting: false,
+        isDisconnected: false,
+        isReconnecting: false,
+        status: 'connected',
+      });
+
+      mockUseAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+        user: null,
+      });
+
+      renderWithProviders(<DashboardPage />);
+
+      expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    });
+
+    it('handles auth loading state properly', () => {
+      mockUseAccount.mockReturnValue({
+        address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+        isConnected: true,
+        isConnecting: false,
+        isDisconnected: false,
+        isReconnecting: false,
+        status: 'connected',
+      });
+
+      mockUseAuthGuard.mockReturnValue({
+        isAuthenticated: false,
+        isLoading: true,
+        user: null,
+      });
+
+      renderWithProviders(<DashboardPage />);
+
+      expect(screen.getByText(/loading/i)).toBeInTheDocument();
+      expect(screen.queryByTestId('dashboard-content')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Navigation Integration', () => {
+    it('does not render content when redirecting to auth', async () => {
+      mockUseAccount.mockReturnValue({
+        address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+        isConnected: true,
+        isConnecting: false,
+        isDisconnected: false,
+        isReconnecting: false,
+        status: 'connected',
+      });
+
+      mockUseAuthGuard.mockReturnValue({
+        isAuthenticated: false,
+        isLoading: false,
+        user: null,
+      });
+
+      const { container } = renderWithProviders(<DashboardPage />);
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith('/auth');
+      });
+
+      // Should return null when redirecting
+      expect(container.firstChild).toBeNull();
     });
   });
 });
