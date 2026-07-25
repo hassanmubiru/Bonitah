@@ -103,8 +103,62 @@ export function useChatApi() {
   }, []);
 
   /**
-   * Load conversation history from backend
+   * Parse AI response for recommended actions
    */
+  const parseActionsFromResponse = useCallback((response: string): AIAction[] => {
+    const actions: AIAction[] = [];
+    
+    // Simple parsing - in real implementation, AI would return structured data
+    // For now, detect common financial action patterns in text
+    const lowerResponse = response.toLowerCase();
+    
+    if (lowerResponse.includes('deposit') && lowerResponse.includes('savings')) {
+      actions.push({
+        type: 'deposit_savings',
+        title: 'Deposit to Savings',
+        description: 'Add funds to your savings vault',
+        requiresSignature: true,
+      });
+    }
+    
+    if (lowerResponse.includes('create') && (lowerResponse.includes('goal') || lowerResponse.includes('target'))) {
+      actions.push({
+        type: 'create_goal',
+        title: 'Create Savings Goal',
+        description: 'Set up a new financial goal',
+        requiresSignature: true,
+      });
+    }
+    
+    if (lowerResponse.includes('join') && (lowerResponse.includes('circle') || lowerResponse.includes('community'))) {
+      actions.push({
+        type: 'join_circle',
+        title: 'Join Savings Circle',
+        description: 'Participate in community savings',
+        requiresSignature: true,
+      });
+    }
+    
+    if (lowerResponse.includes('invest') && lowerResponse.includes('pool')) {
+      actions.push({
+        type: 'invest_pool',
+        title: 'Invest in Pool',
+        description: 'Add funds to investment pool',
+        requiresSignature: true,
+      });
+    }
+    
+    if (lowerResponse.includes('portfolio') || lowerResponse.includes('dashboard')) {
+      actions.push({
+        type: 'view_portfolio',
+        title: 'View Portfolio',
+        description: 'Check your current portfolio status',
+        requiresSignature: false,
+      });
+    }
+    
+    return actions;
+  }, []);
   const loadConversations = useCallback(async () => {
     if (!isAuthenticated) return;
 
@@ -217,6 +271,7 @@ export function useChatApi() {
         role: 'assistant',
         content: data.answer,
         createdAt: new Date(),
+        actions: parseActionsFromResponse(data.answer),
       };
 
       setState((prev) => ({
