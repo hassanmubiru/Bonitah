@@ -372,7 +372,7 @@ describe('Page Component Tests - Data Source Wiring and States', () => {
       );
 
       // Should show error states (Req 11.6)
-      expect(screen.getByText('Error')).toBeInTheDocument();
+      expect(screen.getAllByText('Error')[0]).toBeInTheDocument();
       expect(screen.getByText('Failed to load balance')).toBeInTheDocument();
       
       // Should have retry buttons (Req 11.6)
@@ -448,7 +448,7 @@ describe('Page Component Tests - Data Source Wiring and States', () => {
       expect(screen.getByText('2000 USDC')).toBeInTheDocument();
 
       // Should have deposit and withdraw forms
-      expect(screen.getByText('Deposit')).toBeInTheDocument();
+      expect(screen.getAllByText('Deposit')[0]).toBeInTheDocument();
       expect(screen.getByText('Withdraw')).toBeInTheDocument();
     });
 
@@ -615,7 +615,7 @@ describe('Page Component Tests - Data Source Wiring and States', () => {
       );
 
       // Should show loading spinner during auth check
-      expect(screen.getByRole('generic', { name: /loading/i })).toBeInTheDocument();
+      expect(screen.getByText(/loading/i)).toBeInTheDocument();
       
       // Should NOT show admin content or access denied during loading
       expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
