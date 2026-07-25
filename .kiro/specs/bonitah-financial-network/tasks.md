@@ -326,7 +326,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Light default on first visit, theme switch across pages without reload within 1s, session persistence; keyboard focus with visible ring and accessible labels; responsive breakpoints (320-767, 768-1023, >=1024)
     - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7_
 
-  - [ ] 18.3 Write component tests for theming, responsiveness, and a11y
+  - [x] 18.3 Write component tests for theming, responsiveness, and a11y
     - Test theme apply/persist, no horizontal scroll at breakpoints, keyboard traversal and axe checks
     - _Requirements: 19.1, 19.2, 19.5, 19.6, 19.7_
 

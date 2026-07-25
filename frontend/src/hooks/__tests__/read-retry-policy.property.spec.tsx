@@ -80,12 +80,6 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockReadContractAttempts = 0;
-    
-    // Set up the viem readContract mock to use our response handler
-    mockReadContract.mockImplementation(async () => {
-      mockReadContractAttempts++;
-      return mockReadContractResponse();
-    });
   });
 
   /**
