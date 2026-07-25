@@ -288,3 +288,319 @@ test.describe('Community Participation', () => {
       await expect(page.locator('text=Pool Contribution Successful')).toBeVisible({ timeout: TIMEOUTS.TRANSACTION_CONFIRMATION });
       await expect(page.locator('text=Your new share: 5.2%')).toBeVisible();
     });
+    test('should withdraw from investment pool', async ({ 
+      page, 
+      mockWallet, 
+      authPage 
+    }) => {
+      await setupAuthenticatedUser(page, mockWallet, authPage);
+      
+      // Mock user having pool investment
+      await page.route('**/api/community/pools/1', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: 1,
+            name: 'Stablecoin Yield Pool',
+            userInvestment: '1000',
+            userShare: '2.5',
+            accruedReturns: '42.50',
+            withdrawable: true
+          })
+        });
+      });
+
+      await page.goto('/community/pools/1');
+
+      // Should show user investment details
+      await expect(page.locator('text=Your investment: $1,000')).toBeVisible();
+      await expect(page.locator('text=Accrued returns: $42.50')).toBeVisible();
+      
+      // Click withdraw
+      await page.click('button:has-text("Withdraw")');
+      
+      // Should show withdrawal options
+      await expect(page.locator('text=Withdraw from Pool')).toBeVisible();
+      await expect(page.locator('text=Principal + Returns: $1,042.50')).toBeVisible();
+      
+      // Choose partial withdrawal
+      await page.fill('input[name="withdrawAmount"]', '500');
+      
+      // Confirm withdrawal
+      await page.click('button:has-text("Withdraw Funds")');
+      
+      await expect(page.locator('text=Transaction Pending')).toBeVisible({ timeout: TIMEOUTS.TRANSACTION_CONFIRMATION });
+
+      // Mock successful withdrawal
+      await page.evaluate(() => {
+        window.dispatchEvent(new CustomEvent('transactionComplete', {
+          detail: { success: true, txHash: '0xwithdraw123' }
+        }));
+      });
+
+      await expect(page.locator('text=Withdrawal Successful')).toBeVisible({ timeout: TIMEOUTS.TRANSACTION_CONFIRMATION });
+    });
+  });
+
+  test.describe('Community Governance', () => {
+    test('should display community proposals', async ({ 
+      page, 
+      mockWallet, 
+      authPage 
+    }) => {
+      await setupAuthenticatedUser(page, mockWallet, authPage);
+      
+      // Mock governance proposals
+      await page.route('**/api/governance/proposals', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            proposals: [
+              {
+                id: 1,
+                title: 'Increase Pool APY Cap',
+                description: 'Proposal to increase maximum APY for investment pools',
+                status: 'active',
+                votesFor: 150,
+                votesAgainst: 75,
+                endDate: '2024-02-01T00:00:00Z',
+                userVoted: false
+              }
+            ]
+          })
+        });
+      });
+
+      await page.goto('/community/governance');
+
+      // Should show proposals
+      await expect(page.locator('text=Community Governance')).toBeVisible();
+      await expect(page.locator('text=Increase Pool APY Cap')).toBeVisible();
+      await expect(page.locator('text=150 For')).toBeVisible();
+      await expect(page.locator('text=75 Against')).toBeVisible();
+      await expect(page.locator('text=Ends: Feb 1, 2024')).toBeVisible();
+    });
+
+    test('should vote on community proposal', async ({ 
+      page, 
+      mockWallet, 
+      authPage 
+    }) => {
+      await setupAuthenticatedUser(page, mockWallet, authPage);
+      
+      // Mock voting endpoint
+      await page.route('**/api/governance/proposals/1/vote', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            txHash: '0xvote123',
+            votingPower: 10
+          })
+        });
+      });
+
+      await page.goto('/community/governance');
+
+      // Click vote on proposal
+      await page.click('button:has-text("Vote")');
+      
+      // Should show voting modal
+      await expect(page.locator('text=Vote on Proposal')).toBeVisible();
+      await expect(page.locator('text=Your voting power: 10')).toBeVisible();
+      
+      // Select vote option
+      await page.click('input[value="for"]');
+      await expect(page.locator('text=Voting FOR the proposal')).toBeVisible();
+      
+      // Submit vote
+      await page.click('button:has-text("Cast Vote")');
+      
+      await expect(page.locator('text=Transaction Pending')).toBeVisible({ timeout: TIMEOUTS.TRANSACTION_CONFIRMATION });
+
+      // Mock successful vote
+      await page.evaluate(() => {
+        window.dispatchEvent(new CustomEvent('transactionComplete', {
+          detail: { success: true, txHash: '0xvote123' }
+        }));
+      });
+
+      await expect(page.locator('text=Vote Cast Successfully')).toBeVisible({ timeout: TIMEOUTS.TRANSACTION_CONFIRMATION });
+      await expect(page.locator('text=You voted FOR this proposal')).toBeVisible();
+    });
+
+    test('should create governance proposal', async ({ 
+      page, 
+      mockWallet, 
+      authPage 
+    }) => {
+      await setupAuthenticatedUser(page, mockWallet, authPage);
+      
+      // Mock proposal creation endpoint
+      await page.route('**/api/governance/proposals', async (route) => {
+        if (route.request().method() === 'POST') {
+          await route.fulfill({
+            status: 201,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              id: 2,
+              title: 'New Pool Type',
+              description: 'Add cryptocurrency index pool',
+              status: 'pending',
+              proposalFee: '1.0'
+            })
+          });
+        }
+      });
+
+      await page.goto('/community/governance');
+
+      // Check if user can create proposals (based on reputation/stake)
+      if (await page.isVisible('button:has-text("Create Proposal")')) {
+        await page.click('button:has-text("Create Proposal")');
+        
+        // Should show creation form
+        await expect(page.locator('text=Create New Proposal')).toBeVisible();
+        await expect(page.locator('text=Proposal fee: 1.0 ETH')).toBeVisible();
+        
+        // Fill proposal details
+        await page.fill('input[name="title"]', 'Add Cryptocurrency Index Pool');
+        await page.fill('textarea[name="description"]', 'Proposal to add a new investment pool focused on major cryptocurrencies');
+        
+        // Submit proposal
+        await page.click('button:has-text("Submit Proposal")');
+        
+        await expect(page.locator('text=Transaction Pending')).toBeVisible({ timeout: TIMEOUTS.TRANSACTION_CONFIRMATION });
+
+        // Mock successful proposal creation
+        await page.evaluate(() => {
+          window.dispatchEvent(new CustomEvent('transactionComplete', {
+            detail: { success: true, txHash: '0xproposal123' }
+          }));
+        });
+
+        await expect(page.locator('text=Proposal Created Successfully')).toBeVisible({ timeout: TIMEOUTS.TRANSACTION_CONFIRMATION });
+      }
+    });
+  });
+
+  test.describe('Community Events and Achievements', () => {
+    test('should display community events', async ({ 
+      page, 
+      mockWallet, 
+      authPage 
+    }) => {
+      await setupAuthenticatedUser(page, mockWallet, authPage);
+      
+      // Mock community events
+      await page.route('**/api/community/events', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            events: [
+              {
+                id: 1,
+                title: 'DeFi Learning Workshop',
+                description: 'Learn about yield farming strategies',
+                date: '2024-01-25T18:00:00Z',
+                participants: 25,
+                maxParticipants: 50,
+                registered: false
+              }
+            ]
+          })
+        });
+      });
+
+      await page.goto('/community/events');
+
+      // Should show events
+      await expect(page.locator('text=Community Events')).toBeVisible();
+      await expect(page.locator('text=DeFi Learning Workshop')).toBeVisible();
+      await expect(page.locator('text=Jan 25, 2024')).toBeVisible();
+      await expect(page.locator('text=25/50 participants')).toBeVisible();
+    });
+
+    test('should register for community event', async ({ 
+      page, 
+      mockWallet, 
+      authPage 
+    }) => {
+      await setupAuthenticatedUser(page, mockWallet, authPage);
+      
+      // Mock event registration
+      await page.route('**/api/community/events/1/register', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            registrationId: 'reg123'
+          })
+        });
+      });
+
+      await page.goto('/community/events');
+
+      // Register for event
+      await page.click('button:has-text("Register")');
+      
+      // Should show registration confirmation
+      await expect(page.locator('text=Event Registration')).toBeVisible();
+      await page.click('button:has-text("Confirm Registration")');
+      
+      await expect(page.locator('text=Successfully registered for event')).toBeVisible({ timeout: TIMEOUTS.API_RESPONSE });
+      await expect(page.locator('text=Registered')).toBeVisible();
+    });
+
+    test('should display community achievements', async ({ 
+      page, 
+      mockWallet, 
+      authPage 
+    }) => {
+      await setupAuthenticatedUser(page, mockWallet, authPage);
+      
+      // Mock achievements
+      await page.route('**/api/community/achievements', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            achievements: [
+              {
+                id: 1,
+                name: 'First Contribution',
+                description: 'Made your first pool contribution',
+                earned: true,
+                earnedDate: '2024-01-15T00:00:00Z'
+              },
+              {
+                id: 2,
+                name: 'Active Voter',
+                description: 'Participated in 5 governance votes',
+                earned: false,
+                progress: 3,
+                target: 5
+              }
+            ]
+          })
+        });
+      });
+
+      await page.goto('/community/achievements');
+
+      // Should show achievements
+      await expect(page.locator('text=Community Achievements')).toBeVisible();
+      await expect(page.locator('text=First Contribution')).toBeVisible();
+      await expect(page.locator('text=Earned on Jan 15')).toBeVisible();
+      
+      // Should show progress on incomplete achievements
+      await expect(page.locator('text=Active Voter')).toBeVisible();
+      await expect(page.locator('text=3/5 complete')).toBeVisible();
+    });
+  });
+});
