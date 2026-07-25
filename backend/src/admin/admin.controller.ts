@@ -44,12 +44,20 @@ export class AdminController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ): Promise<AdminUsersResponse> {
-    return this.adminService.getUsers(req.user, {
-      search: search || undefined,
-      role: (role as 'USER' | 'VERIFIER' | 'ADMIN') || undefined,
+    const filters = {
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 20,
-    });
+    };
+
+    if (search) {
+      (filters as any).search = search;
+    }
+
+    if (role && ['USER', 'VERIFIER', 'ADMIN'].includes(role)) {
+      (filters as any).role = role as 'USER' | 'VERIFIER' | 'ADMIN';
+    }
+
+    return this.adminService.getUsers(req.user, filters);
   }
 
   /**
@@ -75,11 +83,16 @@ export class AdminController {
     @Query('limit') limit?: string,
     @Query('status') status?: string,
   ): Promise<AdminTransactionsResponse> {
-    return this.adminService.getTransactions(req.user, {
+    const filters = {
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 20,
-      status: status || undefined,
-    });
+    };
+
+    if (status) {
+      (filters as any).status = status;
+    }
+
+    return this.adminService.getTransactions(req.user, filters);
   }
 
   /**

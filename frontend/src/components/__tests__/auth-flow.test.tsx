@@ -1065,5 +1065,3 @@ describe('Authentication Flow Component Tests', () => {
     });
   });
 });
-});
-});
