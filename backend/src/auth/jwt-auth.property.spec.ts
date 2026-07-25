@@ -60,8 +60,11 @@ describe('Property 5: Session JWT acceptance', () => {
           expiresInSeconds: fc.integer({ min: 1, max: 24 * 60 * 60 }), // 1 second to 24 hours (Req 2.7)
         }),
         ({ address, role, expiresInSeconds }) => {
+          // Generate a mock userId for the test
+          const userId = 'test_' + Math.random().toString(36).substring(2, 15);
+          
           // Sign a valid JWT
-          const token = tokenService.sign({ sub: address, role }, expiresInSeconds);
+          const token = tokenService.sign({ sub: address, address, userId, role }, expiresInSeconds);
           
           // Create mock execution context for protected endpoint
           const context = createMockContext(`Bearer ${token}`, false);
@@ -76,6 +79,7 @@ describe('Property 5: Session JWT acceptance', () => {
           expect(request.user).toBeDefined();
           expect(request.user!.address).toBe(address.toLowerCase());
           expect(request.user!.role).toBe(role);
+          expect(request.user!.userId).toBe(userId);
         }
       ),
       { numRuns: 100 }
