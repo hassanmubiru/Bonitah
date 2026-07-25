@@ -36,14 +36,14 @@ const nextConfig = {
   turbopack: {
     root: process.cwd(),
     resolveAlias: {
-      '@x402/evm/upto/client': '',
-      '@x402/evm/exact/client': '',
-      '@x402/core/client': '',
-      '@x402/svm/exact/client': '',
-      '@x402/evm': '',
-      '@x402/svm': '',
-      '@x402/core': '',
-      '@react-native-async-storage/async-storage': '',
+      '@x402/evm/upto/client': './public/x402-fallback.js',
+      '@x402/evm/exact/client': './public/x402-fallback.js',
+      '@x402/core/client': './public/x402-fallback.js',
+      '@x402/svm/exact/client': './public/x402-fallback.js',
+      '@x402/evm': './public/x402-fallback.js',
+      '@x402/svm': './public/x402-fallback.js',
+      '@x402/core': './public/x402-fallback.js',
+      '@react-native-async-storage/async-storage': './public/x402-fallback.js',
     },
   },
   
