@@ -89,9 +89,9 @@ export class AdminController {
       return await this.adminService.getUsers({
         page: pageNum,
         limit: limitNum,
-        search,
-        role,
-        status,
+        ...(search !== undefined && { search }),
+        ...(role !== undefined && { role }),
+        ...(status !== undefined && { status }),
       });
     } catch (error) {
       if (error instanceof HttpException) {
@@ -120,12 +120,12 @@ export class AdminController {
           id: user.id,
           walletAddress: user.walletAddress,
           role: user.role,
-          isActive: user.isActive,
-          updatedAt: user.updatedAt,
+          displayName: user.displayName,
+          createdAt: user.createdAt,
         }
       };
     } catch (error) {
-      if (error.message === 'User not found') {
+      if (error instanceof Error && error.message === 'User not found') {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
       throw new HttpException(
@@ -141,10 +141,10 @@ export class AdminController {
   @Put('users/:id/deactivate')
   async deactivateUser(@Param('id') userId: string) {
     try {
-      await this.adminService.updateUser(userId, { isActive: false });
+      await this.adminService.updateUser(userId, { role: 'USER' }); // Demote to USER role
       return { message: 'User deactivated successfully' };
     } catch (error) {
-      if (error.message === 'User not found') {
+      if (error instanceof Error && error.message === 'User not found') {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
       throw new HttpException(
@@ -160,10 +160,10 @@ export class AdminController {
   @Put('users/:id/activate')
   async activateUser(@Param('id') userId: string) {
     try {
-      await this.adminService.updateUser(userId, { isActive: true });
+      await this.adminService.updateUser(userId, { role: 'USER' }); // Ensure USER role
       return { message: 'User activated successfully' };
     } catch (error) {
-      if (error.message === 'User not found') {
+      if (error instanceof Error && error.message === 'User not found') {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
       throw new HttpException(
