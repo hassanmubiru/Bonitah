@@ -65,3 +65,121 @@ const mockPublicClient = {
     return mockReadContractResponse();
   }),
 } as any;
+const mockUsePublicClient = jest.fn().mockReturnValue(mockPublicClient);
+
+jest.mock('wagmi', () => ({
+  usePublicClient: () => mockUsePublicClient(),
+}));
+
+describe('Property 3: Read retry policy is bounded and correct', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockReadContractAttempts = 0;
+  });
+
+  /**
+   * Property: Retry attempts are bounded to maximum 3 retries
+   * Requirements: 1.6 (max 3 retries before treating read as failed)
+   */
+  it('retry attempts are bounded to maximum 3 retries', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          contractAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          errorType: fc.constantFrom('network', 'timeout', 'connection'),
+        }),
+        async ({ contractAddress, userAddress, errorType }) => {
+          // Reset attempt counter
+          mockReadContractAttempts = 0;
+          
+          // Set up to always fail with retryable error
+          mockReadContractResponse = async () => {
+            throw new Error(`${errorType} error`);
+          };
+
+          const { result } = renderHook(
+            () => useContractRead({
+              address: contractAddress,
+              abi: mockAbi,
+              functionName: 'balanceOf',
+              args: [userAddress],
+            }),
+            { wrapper: TestWrapper }
+          );
+
+          // Wait for initial loading state
+          expect(result.current.isLoading).toBe(true);
+          expect(result.current.data).toBeUndefined(); // No placeholder values
+
+          // Wait for all retries to complete and final error state
+          await waitFor(() => {
+            expect(result.current.isError).toBe(true);
+            expect(result.current.isLoading).toBe(false);
+          }, { timeout: 15000 }); // Allow enough time for retries
+
+          // Verify exactly 4 attempts were made (initial + 3 retries) - Req 1.6
+          expect(mockReadContractAttempts).toBe(4);
+          expect(result.current.data).toBeUndefined(); // No placeholder values - Req 1.7
+          expect(result.current.error).toBeDefined();
+          expect(result.current.error?.message).toContain(errorType);
+        }
+      ),
+      { numRuns: 10 } // Reduced for faster testing
+    );
+  }, 30000); // Increase timeout for property test
+  /**
+   * Property: Only retry on network/timeout errors, not contract-specific errors
+   * Requirements: 1.6 (smart retry logic based on error type)
+   */
+  it('only retries on network/timeout errors, not contract-specific errors', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          contractAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          errorType: fc.constantFrom(
+            'network error',    // Should retry
+            'timeout',          // Should retry  
+            'rpc error',        // Should retry
+            'function not found' // Should NOT retry
+          ),
+        }),
+        async ({ contractAddress, userAddress, errorType }) => {
+          mockReadContractAttempts = 0;
+          const shouldRetry = ['network error', 'timeout', 'rpc error'].includes(errorType);
+          
+          mockReadContractResponse = async () => {
+            throw new Error(errorType);
+          };
+
+          const { result } = renderHook(
+            () => useContractRead({
+              address: contractAddress,
+              abi: mockAbi,
+              functionName: 'balanceOf',
+              args: [userAddress],
+            }),
+            { wrapper: TestWrapper }
+          );
+
+          await waitFor(() => {
+            expect(result.current.isError).toBe(true);
+          }, { timeout: 15000 });
+
+          if (shouldRetry) {
+            // Network/timeout/RPC errors should retry up to 4 attempts total - Req 1.6
+            expect(mockReadContractAttempts).toBe(4);
+          } else {
+            // Contract errors should NOT retry - immediate failure
+            expect(mockReadContractAttempts).toBe(1);
+          }
+
+          // Always should end in error state with no data - Req 1.7
+          expect(result.current.data).toBeUndefined();
+          expect(result.current.error).toBeDefined();
+        }
+      ),
+      { numRuns: 10 }
+    );
+  }, 30000);
