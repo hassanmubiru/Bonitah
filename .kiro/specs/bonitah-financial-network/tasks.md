@@ -381,19 +381,19 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Courses/progress from backend and certificates from the Education contract
     - _Requirements: 8.1, 8.3, 11.7_
 
-  - [ ] 21.8 Implement the AI Assistant page
+  - [x] 21.8 Implement the AI Assistant page
     - Chat UI calling `/ai/chat`; recommended actions require wallet signing in the frontend
     - _Requirements: 10.1, 10.5, 11.7_
 
-  - [ ] 21.9 Implement the Profile page
+  - [x] 21.9 Implement the Profile page
     - Profile, verification, and reputation from Registry + IPFS; profile-doc upload
     - _Requirements: 3.3, 3.5, 3.7, 11.7_
 
-  - [ ] 21.10 Implement the Settings page
+  - [x] 21.10 Implement the Settings page
     - Theme and preference controls persisted for the session
     - _Requirements: 19.1, 19.3, 11.7_
 
-  - [ ] 21.11 Implement the Admin page (role-gated)
+  - [x] 21.11 Implement the Admin page (role-gated)
     - Admin-only operations gated by role with unauthorized access blocked
     - _Requirements: 14.9, 11.7_
 
