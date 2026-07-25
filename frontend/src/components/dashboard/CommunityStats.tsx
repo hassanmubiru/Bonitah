@@ -156,7 +156,7 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
               </div>
               {circleMemberships && Array.isArray(circleMemberships) && circleMemberships.length > 0 ? (
                 <div className="space-y-2">
-                  {(circleMemberships as any[]).slice(0, 2).map((circle: any, index: number) => (
+                  {(circleMemberships as Circle[]).slice(0, 2).map((circle: Circle, index: number) => (
                     <div key={index} className="flex justify-between text-sm">
                       <span>Circle #{Number(circle.id)}</span>
                       <span className="text-muted-foreground">
@@ -164,9 +164,9 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
                       </span>
                     </div>
                   ))}
-                  {(circleMemberships as any[]).length > 2 && (
+                  {(circleMemberships as Circle[]).length > 2 && (
                     <p className="text-xs text-muted-foreground">
-                      +{(circleMemberships as any[]).length - 2} more circles
+                      +{(circleMemberships as Circle[]).length - 2} more circles
                     </p>
                   )}
                 </div>
