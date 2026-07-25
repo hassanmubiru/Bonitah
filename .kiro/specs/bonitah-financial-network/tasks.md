@@ -397,7 +397,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Admin-only operations gated by role with unauthorized access blocked
     - _Requirements: 14.9, 11.7_
 
-  - [-] 21.12 Write component tests for pages
+  - [ ] 21.12 Write component tests for pages
     - Cover data-source wiring, loading/error/retry rendering, and role gating across pages
     - _Requirements: 11.1, 11.3, 11.4, 14.9, 15.5_
 
@@ -443,7 +443,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Prerequisites and ordered steps for Base Sepolia contract deployment and service deployment
     - _Requirements: 18.5_
 
-- [-] 25. Final checkpoint
+- [ ] 25. Final checkpoint
   - Ensure all suites pass across contracts, backend, and frontend and CI is green; ask the user if questions arise.
 
 ## Notes
