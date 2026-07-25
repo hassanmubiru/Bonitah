@@ -47,6 +47,12 @@ export function SiteHeader() {
             {isConnected && (
               <nav className="hidden sm:flex items-center gap-4" role="navigation" aria-label="Main navigation">
                 <Link
+                  href="/dashboard"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
+                >
+                  Dashboard
+                </Link>
+                <Link
                   href="/savings"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
                 >
