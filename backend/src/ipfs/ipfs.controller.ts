@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Body,
   UploadedFiles,
   UseInterceptors,
   UseGuards,
@@ -48,5 +49,20 @@ export class IpfsController {
   async uploadProfileDocuments(@UploadedFiles() files: MulterFile[]) {
     const cids = await this.ipfsService.uploadProfileDocuments(files);
     return { cids };
+  }
+
+  /**
+   * Upload profile metadata to IPFS.
+   *
+   * POST /ipfs/profile-metadata
+   * Accepts JSON profile data. Returns IPFS content hash.
+   *
+   * @param profileData Profile metadata object
+   * @returns IPFS content hash (CID)
+   */
+  @Post('profile-metadata')
+  async uploadProfileMetadata(@Body() profileData: Record<string, unknown>) {
+    const cid = await this.ipfsService.storeCertificateMetadata(profileData);
+    return { cid };
   }
 }
