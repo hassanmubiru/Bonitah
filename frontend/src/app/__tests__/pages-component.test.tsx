@@ -50,16 +50,49 @@ jest.mock('@/hooks/useContractRead', () => ({
 }));
 
 jest.mock('@/hooks/useSavingsVault', () => ({
-  useSavingsVaultBalances: jest.fn(),
-  useSavingsVaultDeposit: jest.fn(),
-  useSavingsVaultWithdraw: jest.fn(),
-  useTokenBalance: jest.fn(),
+  useSavingsVaultBalances: jest.fn(() => ({
+    availableBalance: { data: undefined, isLoading: false, isError: false, refetch: jest.fn() },
+    portfolioValue: { data: undefined, isLoading: false, isError: false, refetch: jest.fn() },
+  })),
+  useSavingsVaultDeposit: jest.fn(() => ({
+    deposit: jest.fn(),
+    isLoading: false,
+    isSuccess: false,
+    error: null,
+    hash: null,
+  })),
+  useSavingsVaultWithdraw: jest.fn(() => ({
+    withdraw: jest.fn(),
+    isLoading: false,
+    isSuccess: false,
+    error: null,
+    hash: null,
+  })),
+  useTokenBalance: jest.fn(() => ({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+    formatted: '',
+    symbol: 'ETH',
+    refetch: jest.fn(),
+  })),
   formatTokenAmount: jest.fn((val) => val?.toString() || '0'),
-  validateAmount: jest.fn(),
+  validateAmount: jest.fn(() => ({ isValid: true, error: null })),
 }));
 
 jest.mock('@/hooks/useAdminData', () => ({
-  useAdminData: jest.fn(),
+  useAdminData: jest.fn(() => ({
+    systemHealth: null,
+    analytics: null,
+    users: null,
+    auditLog: null,
+    isLoading: false,
+    error: null,
+    updateUser: jest.fn(),
+    deleteUser: jest.fn(),
+    toggleMaintenanceMode: jest.fn(),
+    refreshData: jest.fn(),
+  })),
 }));
 
 jest.mock('@/components/dashboard/DashboardContent', () => ({
@@ -429,7 +462,8 @@ describe('Pages Component Tests (Task 21.12)', () => {
         const depositInput = screen.getByLabelText('Amount to Deposit');
         fireEvent.change(depositInput, { target: { value: '1.0' } });
 
-        const depositButton = screen.getByRole('button', { name: 'Deposit' });
+        // Get the submit button specifically (not the tab button)
+        const depositButton = screen.getByRole('button', { name: /^Deposit$/ });
         fireEvent.click(depositButton);
 
         expect(mockDeposit).toHaveBeenCalledWith('1.0');
