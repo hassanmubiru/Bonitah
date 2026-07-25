@@ -153,12 +153,12 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Assert `ProposalCreated`/`VoteCast`/`ProposalFinalized` args and one revert test per custom error
     - _Requirements: 13.8, 15.1, 15.2, 15.3_
 
-- [ ] 8. Cross-contract property tests and coverage
-  - [ ] 8.1 Write property test for non-repeatable on-chain operations
+- [x] 8. Cross-contract property tests and coverage
+  - [x] 8.1 Write property test for non-repeatable on-chain operations
     - **Property 18: Repeated operations are rejected while prior state is retained**
     - **Validates: Requirements 3.2, 6.10, 8.10, 9.9**
 
-  - [ ] 8.2 Write property test for unauthorized privileged operations
+  - [x] 8.2 Write property test for unauthorized privileged operations
     - **Property 26: Unauthorized privileged operations revert without state change**
     - **Validates: Requirements 3.10, 6.5, 9.7, 9.10, 14.5, 14.7, 14.9**
 
