@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
@@ -10,7 +11,7 @@ jest.mock('@rainbow-me/rainbowkit', () => ({
 
 // Mock Next.js Link component
 jest.mock('next/link', () => {
-  return function MockLink({ children, href, className }: any) {
+  return function MockLink({ children, href, className }: { children: React.ReactNode; href: string; className?: string }) {
     return (
       <a href={href} className={className}>
         {children}
