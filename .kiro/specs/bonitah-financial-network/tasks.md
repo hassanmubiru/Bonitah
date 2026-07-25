@@ -373,7 +373,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Create/join circles, contribute, and vote flows wired to CommunityTreasury
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 11.7_
 
-  - [ ] 21.6 Implement the Investments page
+  - [x] 21.6 Implement the Investments page
     - Pool contribution, ownership share, and yield display from on-chain state with error-on-failure
     - _Requirements: 7.1, 7.4, 7.5, 11.7_
 
