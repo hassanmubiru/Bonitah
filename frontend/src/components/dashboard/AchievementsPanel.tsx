@@ -9,6 +9,21 @@ import { useContractRead, useReputationScore } from '@/hooks/useContractRead';
 import { getContractAddress, getContractAbi } from '@bfn/shared';
 import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
 
+// Define types for contract return values
+interface Certificate {
+  id: bigint;
+  courseId: string;
+  issuedAt: bigint;
+  ipfsMetadataHash: string;
+}
+
+interface Achievement {
+  id: bigint;
+  title: string;
+  description: string;
+  unlockedAt: bigint;
+}
+
 interface AchievementsPanelProps {
   userAddress: Address;
 }
