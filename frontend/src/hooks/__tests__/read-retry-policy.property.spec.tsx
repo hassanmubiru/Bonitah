@@ -55,17 +55,17 @@ function TestWrapper({ children }: { children: ReactNode }) {
   );
 }
 
-// Mock wagmi's usePublicClient 
-const mockPublicClient = {
-  readContract: jest.fn(),
-} as any;
-
 // Mock viem's readContract function directly
 const mockReadContract = jest.fn();
 
 // Track attempts for testing
 let mockReadContractAttempts = 0;
 let mockReadContractResponse: () => Promise<unknown>;
+
+// Mock wagmi's usePublicClient 
+const mockPublicClient = {
+  readContract: jest.fn(),
+} as any;
 
 jest.mock('wagmi', () => ({
   usePublicClient: () => mockPublicClient,
