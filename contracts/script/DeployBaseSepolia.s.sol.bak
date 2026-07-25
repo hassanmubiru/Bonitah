@@ -110,12 +110,11 @@ contract DeployBaseSepolia is Script {
     function _deployToken() private {
         console.log("Phase 1: Deploying test token...");
         
-        try {
-            token = new MockERC20("Bonitah Test USD", "bUSD", 6);
-            console.log("  MockERC20:    %s", address(token));
-        } catch {
-            _failDeployment("MockERC20");
-        }
+        token = new MockERC20("Bonitah Test USD", "bUSD", 6);
+        console.log("  MockERC20:    %s", address(token));
+        
+        // Validate deployment
+        require(address(token) != address(0), "MockERC20 deployment failed");
     }
     
     /**
