@@ -254,11 +254,12 @@ describe('Pages Component Tests - Fixed (Task 21.12)', () => {
     });
 
     it('denies access for undefined/null roles', () => {
-      render(<MockAdmin userRole={undefined as any} />);
-      expect(screen.getByText('Access Denied: Admin privileges required to access this page.')).toBeInTheDocument();
+      const { unmount } = render(<MockAdmin userRole={undefined as any} />);
+      expect(screen.getAllByText('Access Denied: Admin privileges required to access this page.')).toHaveLength(1);
+      unmount();
 
       render(<MockAdmin userRole="" />);
-      expect(screen.getByText('Access Denied: Admin privileges required to access this page.')).toBeInTheDocument();
+      expect(screen.getAllByText('Access Denied: Admin privileges required to access this page.')).toHaveLength(1);
     });
 
     it('handles case-sensitive role checking', () => {
@@ -297,14 +298,15 @@ describe('Pages Component Tests - Fixed (Task 21.12)', () => {
 
   describe('Cross-Page Consistency', () => {
     it('maintains consistent loading indicators across components', () => {
-      render(<MockDashboard />);
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
+      const { unmount } = render(<MockDashboard />);
+      expect(screen.getAllByText('Loading...')).toHaveLength(1);
+      unmount();
 
       render(<MockSavings />);
       // Trigger loading state  
       const refreshButton = screen.getByLabelText(/refresh/i);
       fireEvent.click(refreshButton);
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
+      expect(screen.getAllByText('Loading...')).toHaveLength(1);
     });
 
     it('maintains consistent error patterns across components', () => {
