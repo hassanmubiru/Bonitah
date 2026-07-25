@@ -99,12 +99,15 @@ describe('Property 5: Session JWT acceptance', () => {
           pastSeconds: fc.integer({ min: 1, max: 3600 }), // 1 second to 1 hour in the past
         }),
         ({ address, role, pastSeconds }) => {
+          // Generate a mock userId for the test
+          const userId = 'test_' + Math.random().toString(36).substring(2, 15);
+          
           // Create an expired JWT by manipulating time
           const originalDateNow = Date.now;
           
           // Sign token in the past
           Date.now = () => originalDateNow() - (pastSeconds + 1) * 1000;
-          const token = tokenService.sign({ sub: address, role }, pastSeconds);
+          const token = tokenService.sign({ sub: address, address, userId, role }, pastSeconds);
           
           // Restore current time
           Date.now = originalDateNow;
@@ -165,8 +168,11 @@ describe('Property 5: Session JWT acceptance', () => {
           tamperChar: fc.char(),
         }),
         ({ address, role, tamperIndex, tamperChar }) => {
+          // Generate a mock userId for the test
+          const userId = 'test_' + Math.random().toString(36).substring(2, 15);
+          
           // Create a valid JWT
-          const validToken = tokenService.sign({ sub: address, role }, 3600);
+          const validToken = tokenService.sign({ sub: address, address, userId, role }, 3600);
           
           // Tamper with the token
           const tampered = validToken.split('');
@@ -207,7 +213,10 @@ describe('Property 5: Session JWT acceptance', () => {
           fc.record({
             address: fc.hexaString({ minLength: 40, maxLength: 40 }).map(s => `0x${s}`),
             role: fc.constantFrom<Role>('USER', 'VERIFIER', 'ADMIN'),
-          }).map(({ address, role }) => `Bearer ${tokenService.sign({ sub: address, role }, 3600)}`),
+          }).map(({ address, role }) => {
+            const userId = 'test_' + Math.random().toString(36).substring(2, 15);
+            return `Bearer ${tokenService.sign({ sub: address, address, userId, role }, 3600)}`;
+          }),
         ),
         (authHeader) => {
           // Create mock execution context for PUBLIC endpoint
