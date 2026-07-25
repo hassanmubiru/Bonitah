@@ -67,7 +67,7 @@ export class AdminService {
   /**
    * Get admin analytics
    */
-  async getAnalytics(period?: string, metric?: string): Promise<AdminAnalyticsDto> {
+  async getAnalytics(period?: string, _metric?: string): Promise<AdminAnalyticsDto> {
     const endDate = new Date();
     const startDate = new Date();
     
@@ -119,7 +119,7 @@ export class AdminService {
     role?: string;
     status?: string;
   }): Promise<AdminUserListDto> {
-    const { page, limit, search, role, status } = params;
+    const { page, limit, search, role } = params;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -280,7 +280,7 @@ export class AdminService {
 
     // Group by day and return growth data
     return users.map(entry => ({
-      date: entry.createdAt.toISOString().split('T')[0],
+      date: entry.createdAt.toISOString().split('T')[0]!,
       count: entry._count.id,
     }));
   }
@@ -300,12 +300,12 @@ export class AdminService {
     });
 
     return transactions.map(entry => ({
-      date: entry.createdAt.toISOString().split('T')[0],
+      date: entry.createdAt.toISOString().split('T')[0]!,
       volume: entry._count.id,
     }));
   }
 
-  private async getRevenueAnalytics(startDate: Date, endDate: Date) {
+  private async getRevenueAnalytics(_startDate: Date, _endDate: Date) {
     // Mock revenue data - in real implementation, this would calculate from transaction fees
     const mockRevenue = [
       { date: '2024-01-20', amount: 1250.50 },

@@ -253,11 +253,30 @@ describe('AuthService', () => {
               });
 
               // Verify JWT can be decoded and is valid
-              const decoded = tokenService.verify(successResponse.jwt);
-              expect(decoded.sub).toBe(account.address.toLowerCase());
-              expect(decoded.address).toBe(account.address.toLowerCase());
-              expect(decoded.role).toBe('USER');
-              expect(decoded.exp).toBeGreaterThan(Math.floor(Date.now() / 1000));
+              expect(successResponse.jwt).toEqual(expect.any(String));
+              expect(successResponse.jwt.split('.')).toHaveLength(3); // Valid JWT format
+              
+              // Try to decode the JWT - this will throw if the JWT is malformed
+              try {
+                const decoded = tokenService.verify(successResponse.jwt);
+                expect(decoded.sub).toBe(account.address.toLowerCase());
+                expect(decoded.address).toBe(account.address.toLowerCase());
+                expect(decoded.role).toBe('USER');
+                expect(decoded.exp).toBeGreaterThan(Math.floor(Date.now() / 1000));
+              } catch (error) {
+                // Log the JWT and error for debugging
+                console.error('JWT verification failed:', {
+                  jwt: successResponse.jwt,
+                  error: error.message,
+                  userMock: {
+                    id: 'user-id',
+                    walletAddress: account.address.toLowerCase(),
+                    role: 'USER',
+                    createdAt: now,
+                  }
+                });
+                throw error;
+              }
             }
           }
         ),
