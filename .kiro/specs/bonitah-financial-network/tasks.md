@@ -352,7 +352,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Cover connect failure, wrong-network prompt, and sign decline paths
     - _Requirements: 2.2, 2.3, 2.5_
 
-- [ ] 21. Implement the frontend pages
+- [x] 21. Implement the frontend pages
   - [x] 21.1 Implement Landing and 404 pages
     - Static theme-aware landing hero and not-found route
     - _Requirements: 11.7_
@@ -397,7 +397,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Admin-only operations gated by role with unauthorized access blocked
     - _Requirements: 14.9, 11.7_
 
-  - [-] 21.12 Write component tests for pages
+  - [x] 21.12 Write component tests for pages
     - Cover data-source wiring, loading/error/retry rendering, and role gating across pages
     - _Requirements: 11.1, 11.3, 11.4, 14.9, 15.5_
 
