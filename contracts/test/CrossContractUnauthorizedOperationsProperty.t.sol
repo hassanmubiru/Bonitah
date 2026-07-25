@@ -130,6 +130,7 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
         vm.assume(!registry.hasRole(BFNRoles.TREASURY_ROLE, unauthorizedCaller));
         vm.assume(!registry.hasRole(BFNRoles.ISSUER_ROLE, unauthorizedCaller));
         vm.assume(!registry.hasRole(BFNRoles.UPGRADER_ROLE, unauthorizedCaller));
+        vm.assume(!registry.hasRole(BFNRoles.PAUSER_ROLE, unauthorizedCaller));
         vm.assume(!registry.hasRole(registry.DEFAULT_ADMIN_ROLE(), unauthorizedCaller));
         
         // Test Registry unauthorized operations (Req 3.10, 14.5)
