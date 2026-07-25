@@ -79,8 +79,8 @@ validate_deployment() {
     fi
     
     # Check error handling
-    if grep -q "_failDeployment" script/DeployBaseSepolia.s.sol && \
-       grep -q "try.*catch" script/DeployBaseSepolia.s.sol; then
+    if grep -q "DEPLOYMENT_FAILED" script/DeployBaseSepolia.s.sol && \
+       grep -q "require.*address.*!= address(0)" script/DeployBaseSepolia.s.sol; then
         log_success "Error handling implemented"
     else
         log_error "Missing error handling"

@@ -5,13 +5,11 @@ import {
   useAccount,
   useWriteContract,
   useWaitForTransactionReceipt,
-  useReadContract,
   useBalance,
 } from 'wagmi';
-import { parseUnits, formatUnits, type Address } from 'viem';
+import { parseUnits, formatUnits } from 'viem';
 import {
   getContractAddress,
-  getContractAbi,
   BASE_SEPOLIA_CHAIN_ID,
 } from '@bfn/shared';
 
