@@ -151,7 +151,7 @@ contract EventEmissionDisciplinePropertyTest is Test {
         bytes32 _badgeId
     ) public {
         // Bound inputs to valid ranges
-        uint256 operation = bound(_operation, 0, 19); // 20 different operations to test
+        uint256 operation = bound(_operation, 0, 21); // 22 different operations to test
         uint256 amount = bound(_amount, MIN_AMOUNT, MAX_AMOUNT);
         uint8 threshold = uint8(bound(_threshold, 1, 100));
         uint8 maxMembers = uint8(bound(_maxMembers, 2, 20)); // Reasonable test range
