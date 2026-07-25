@@ -182,7 +182,7 @@ export class AdminController {
       await this.adminService.deleteUser(userId);
       return { message: 'User deleted successfully' };
     } catch (error) {
-      if (error.message === 'User not found') {
+      if (error instanceof Error && error.message === 'User not found') {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
       throw new HttpException(
