@@ -20,20 +20,12 @@ import { useAuthGuard } from '@/hooks/useAuthGuard';
  * - Responsive design with proper loading/error/retry states
  */
 export default function DashboardPage() {
-  const router = useRouter();
   const { address, isConnected } = useAccount();
   
-  // Redirect to auth if not connected
-  useEffect(() => {
-    if (!isConnected || !address) {
-      router.push('/auth');
-    }
-  }, [isConnected, address, router]);
-
-  // Use auth guard to ensure JWT auth
+  // Use auth guard - it handles all redirects automatically
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard();
 
-  // Show loading while checking auth
+  // Show loading while checking auth or wallet connection
   if (authLoading || !isConnected || !address) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -44,10 +36,15 @@ export default function DashboardPage() {
     );
   }
 
-  // Redirect to auth if not authenticated
+  // Show loading if not authenticated (useAuthGuard handles redirect)
   if (!isAuthenticated) {
-    router.push('/auth');
-    return null;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse text-muted-foreground">Redirecting...</div>
+        </div>
+      </div>
+    );
   }
 
   return (

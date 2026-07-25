@@ -49,6 +49,21 @@ const nextConfig = {
         },
       };
     }
+
+    // Provide fallbacks for missing @x402 dependencies that are required by @coinbase/cdp-sdk
+    // and React Native dependencies that MetaMask SDK tries to import
+    config.resolve = config.resolve || {};
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      '@x402/evm/upto/client': false,
+      '@x402/evm/exact/client': false,
+      '@x402/core/client': false,
+      '@x402/svm/exact/client': false,
+      '@x402/evm': false,
+      '@x402/svm': false,
+      '@x402/core': false,
+      '@react-native-async-storage/async-storage': false,
+    };
     
     return config;
   },

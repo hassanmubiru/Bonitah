@@ -43,8 +43,8 @@ export function useSiweAuth() {
     error: null,
   });
 
-  // Backend API base URL
-  const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001';
+  // Backend API base URL - updated to port 3002
+  const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
 
   /**
    * Check if current JWT is valid and get user info

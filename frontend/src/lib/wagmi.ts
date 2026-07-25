@@ -1,11 +1,6 @@
-import { createConfig } from 'wagmi';
+import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { http } from 'wagmi';
 import { baseSepolia } from 'wagmi/chains';
-// Import connectors individually to avoid pulling in the problematic baseAccount connector
-import { injected } from '@wagmi/core';
-import { walletConnect } from '@wagmi/connectors/walletConnect';
-import { coinbaseWallet } from '@wagmi/connectors/coinbaseWallet';  
-import { metaMask } from '@wagmi/connectors/metaMask';
 
 import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
 
@@ -18,9 +13,9 @@ import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
  * `baseSepolia` chain carries the canonical 84532 id; we assert it here to fail
  * fast if an upstream definition ever drifts.
  * 
- * We use createConfig instead of getDefaultConfig to have explicit control over
- * which connectors are included, avoiding the problematic Base Account connector
- * that depends on @coinbase/cdp-sdk and missing @x402/evm dependencies.
+ * We use getDefaultConfig from RainbowKit to ensure all wallets are properly
+ * configured and displayed in the connection modal. The missing @x402/evm 
+ * dependencies are handled via webpack fallbacks in next.config.js.
  */
 if (baseSepolia.id !== BASE_SEPOLIA_CHAIN_ID) {
   throw new Error(
@@ -39,20 +34,10 @@ const walletConnectProjectId =
 /** Optional custom RPC endpoint for Base Sepolia; falls back to the public RPC. */
 const baseSepoliaRpcUrl = process.env['NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL'];
 
-export const wagmiConfig = createConfig({
+export const wagmiConfig = getDefaultConfig({
+  appName: 'Bonitah Financial Network',
+  projectId: walletConnectProjectId,
   chains: [baseSepolia],
-  connectors: [
-    injected({ target: 'metaMask' }),
-    metaMask(),
-    coinbaseWallet({
-      appName: 'Bonitah Financial Network',
-      preference: 'smartWalletOnly', // Use Coinbase Smart Wallet instead of EOA
-    }),
-    walletConnect({
-      projectId: walletConnectProjectId,
-      showQrModal: true,
-    }),
-  ],
   transports: {
     [baseSepolia.id]: http(baseSepoliaRpcUrl),
   },
