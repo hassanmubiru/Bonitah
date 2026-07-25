@@ -183,3 +183,60 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
       { numRuns: 10 }
     );
   }, 30000);
+  /**
+   * Property: State management during retries
+   * Requirements: 1.6, 11.4, 11.5 (loading state during retries, proper state machine)
+   */
+  it('manages state correctly during retry process', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          contractAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          successOnAttempt: fc.integer({ min: 1, max: 4 }), // Which attempt should succeed
+        }),
+        async ({ contractAddress, userAddress, successOnAttempt }) => {
+          mockReadContractAttempts = 0;
+          
+          mockReadContractResponse = async () => {
+            if (mockReadContractAttempts < successOnAttempt) {
+              throw new Error('Network request failed'); // Retryable error
+            }
+            return 1000n; // Success
+          };
+
+          const { result } = renderHook(
+            () => useContractRead({
+              address: contractAddress,
+              abi: mockAbi,
+              functionName: 'balanceOf',
+              args: [userAddress],
+            }),
+            { wrapper: TestWrapper }
+          );
+
+          // Initially should be loading - Req 11.4
+          expect(result.current.isLoading).toBe(true);
+          expect(result.current.isError).toBe(false);
+          expect(result.current.data).toBeUndefined(); // No placeholder - Req 11.4
+
+          if (successOnAttempt <= 4) {
+            // Wait for success
+            await waitFor(() => {
+              expect(result.current.isLoading).toBe(false);
+              expect(result.current.isError).toBe(false);
+              expect(result.current.data).toBe(1000n);
+            }, { timeout: 15000 });
+          } else {
+            // Should fail after all retries
+            await waitFor(() => {
+              expect(result.current.isLoading).toBe(false);
+              expect(result.current.isError).toBe(true);
+              expect(result.current.data).toBeUndefined(); // No placeholder on failure - Req 1.7
+            }, { timeout: 15000 });
+          }
+        }
+      ),
+      { numRuns: 10 }
+    );
+  }, 30000);
