@@ -178,13 +178,13 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
                 <h4 className="font-medium">Certificates</h4>
                 <span className="text-sm text-muted-foreground">
                   {certificates && Array.isArray(certificates) 
-                    ? (certificates as any[]).length 
+                    ? (certificates as Certificate[]).length 
                     : 0} earned
                 </span>
               </div>
               {certificates && Array.isArray(certificates) && certificates.length > 0 ? (
                 <div className="space-y-2">
-                  {(certificates as any[]).slice(0, 3).map((cert: any, index: number) => (
+                  {(certificates as Certificate[]).slice(0, 3).map((cert: Certificate, index: number) => (
                     <div key={index} className="flex justify-between text-sm">
                       <span>Certificate #{Number(cert.id)}</span>
                       <span className="text-xs text-muted-foreground">
