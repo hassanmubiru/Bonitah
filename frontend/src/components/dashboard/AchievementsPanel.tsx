@@ -43,35 +43,29 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
   let registryAbi;
   let educationAddress: Address;
   let educationAbi;
+  let contractsDeployed = true;
   
   try {
     registryAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Registry');
     registryAbi = getContractAbi('Registry');
     educationAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Education');
     educationAbi = getContractAbi('Education');
-  } catch (error) {
-    return (
-      <Card className="p-6 h-full">
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Achievements</h3>
-          <Alert>
-            <p className="text-sm">
-              Contracts are not yet deployed. Please wait for deployment to complete.
-            </p>
-          </Alert>
-        </div>
-      </Card>
-    );
+  } catch {
+    contractsDeployed = false;
+    registryAddress = '0x0000000000000000000000000000000000000000' as Address;
+    registryAbi = [];
+    educationAddress = '0x0000000000000000000000000000000000000000' as Address;
+    educationAbi = [];
   }
 
-  // Fetch reputation score from Registry
+  // Fetch reputation score from Registry - always call hooks
   const {
     data: reputationScore,
     isLoading: reputationLoading,
     isError: reputationError,
     error: reputationErrorMessage,
     refetch: refetchReputation,
-  } = useReputationScore(registryAddress, registryAbi, userAddress);
+  } = useReputationScore(registryAddress, registryAbi, userAddress, contractsDeployed);
 
   // Fetch user's certificates from Education contract
   const {
@@ -85,6 +79,7 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
     abi: educationAbi,
     functionName: 'getUserCertificates',
     args: [userAddress],
+    enabled: contractsDeployed,
   });
 
   // Fetch user's badges/achievements
@@ -99,7 +94,24 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
     abi: educationAbi,
     functionName: 'getUserAchievements',
     args: [userAddress],
+    enabled: contractsDeployed,
   });
+
+  // Handle case where contracts aren't deployed yet
+  if (!contractsDeployed) {
+    return (
+      <Card className="p-6 h-full">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Achievements</h3>
+          <Alert>
+            <p className="text-sm">
+              Contracts are not yet deployed. Please wait for deployment to complete.
+            </p>
+          </Alert>
+        </div>
+      </Card>
+    );
+  }
 
   const isLoading = reputationLoading || certificatesLoading || achievementsLoading;
   const hasError = reputationError || certificatesError || achievementsError;
