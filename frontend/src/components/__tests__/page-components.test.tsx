@@ -18,10 +18,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
 
-// Import page components
-import DashboardPage from '@/app/dashboard/page';
-import SavingsPage from '@/app/savings/page';
-import AdminPage from '@/app/admin/page';
+// Import page components - use dynamic imports to avoid issues
+const DashboardPage = React.lazy(() => import('@/app/dashboard/page'));
+const SavingsPage = React.lazy(() => import('@/app/savings/page'));
+const AdminPage = React.lazy(() => import('@/app/admin/page'));
 
 // Mock dependencies
 jest.mock('next/navigation', () => ({
