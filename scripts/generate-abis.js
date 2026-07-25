@@ -384,7 +384,6 @@ export { CONTRACT_NAMES } from './contracts.js';
  * Create directories if they don't exist
  */
 function ensureDirectories() {
-  const { mkdirSync } = await import('fs');
   const dirs = [
     join(projectRoot, 'shared/src/contracts'),
     join(projectRoot, 'shared/src/contracts/abis'),
