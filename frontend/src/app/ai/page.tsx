@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useChatApi } from '@/hooks/useChatApi';
+import { ActionButtons, type AIAction } from '@/components/ai/ActionButton';
 
 /**
  * AI Assistant page - Interactive financial guidance chat interface.
@@ -80,12 +81,39 @@ export default function AiAssistantPage() {
     }
   };
 
+  // Handle AI action execution
+  const handleActionExecution = async (action: AIAction) => {
+    console.log('Executing AI action:', action);
+    
+    // Handle different action types
+    switch (action.type) {
+      case 'view_portfolio':
+        window.location.href = '/dashboard';
+        break;
+      case 'deposit_savings':
+        window.location.href = '/savings';
+        break;
+      case 'create_goal':
+        // For now, redirect to savings page which handles goals
+        window.location.href = '/savings';
+        break;
+      case 'join_circle':
+        // TODO: Redirect to community page when implemented
+        alert('Community features coming soon!');
+        break;
+      case 'invest_pool':
+        // TODO: Redirect to investments page when implemented  
+        alert('Investment features coming soon!');
+        break;
+      default:
+        console.warn('Unknown action type:', action.type);
+    }
+  };
+
   // Handle starting new conversation
   const handleNewConversation = () => {
     createNewConversation();
   };
-
-  // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
