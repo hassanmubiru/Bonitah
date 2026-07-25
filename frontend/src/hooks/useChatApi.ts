@@ -106,6 +106,8 @@ export function useChatApi() {
    * Parse AI response for recommended actions
    */
   const parseActionsFromResponse = useCallback((response: string): AIAction[] => {
+    if (!response || typeof response !== 'string') return [];
+    
     const actions: AIAction[] = [];
     
     // Simple parsing - in real implementation, AI would return structured data
@@ -174,7 +176,7 @@ export function useChatApi() {
       const data = await response.json();
       setState((prev) => ({
         ...prev,
-        conversations: data.conversations.map((conv: any) => ({
+        conversations: (data.conversations || []).map((conv: any) => ({
           ...conv,
           createdAt: new Date(conv.createdAt),
           lastMessageAt: new Date(conv.lastMessageAt),
