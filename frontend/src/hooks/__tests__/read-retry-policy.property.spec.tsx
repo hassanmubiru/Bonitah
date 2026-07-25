@@ -424,7 +424,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
 
           if (successOnAttempt <= 4) {
             // Fast-forward through retries until success
-            jest.advanceTimersByTime((successOnAttempt - 1) * 2000);
+            act(() => {
+              jest.advanceTimersByTime((successOnAttempt - 1) * 2000);
+            });
 
             // Wait for success
             await waitFor(() => {
@@ -434,7 +436,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
             }, { timeout: 2000 });
           } else {
             // Should fail after all retries
-            jest.advanceTimersByTime(8000);
+            act(() => {
+              jest.advanceTimersByTime(8000);
+            });
 
             await waitFor(() => {
               expect(result.current.isLoading).toBe(false);

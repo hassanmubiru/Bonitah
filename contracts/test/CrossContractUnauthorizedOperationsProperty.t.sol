@@ -189,6 +189,61 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
         assertEq(profileAfterReputationAttempt.reputationScore, initialProfile.reputationScore, "Reputation should be unchanged");
     }
     
+    /// @notice Test CommunityTreasury unauthorized operations
+    /// @dev Tests pause/unpause operations (PAUSER_ROLE)
+    function _testCommunityTreasuryUnauthorizedOperations(address unauthorizedCaller) internal {
+        // Test unauthorized pause call (Req 6.5)
+        vm.prank(unauthorizedCaller);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IAccessControl.AccessControlUnauthorizedAccount.selector,
+                unauthorizedCaller,
+                BFNRoles.PAUSER_ROLE
+            )
+        );
+        communityTreasury.pause();
+        
+        // Verify contract is still not paused (assuming it starts unpaused)
+        // We can test this by ensuring normal operations still work
+        
+        // Test unauthorized unpause call (Req 6.5)
+        vm.prank(unauthorizedCaller);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IAccessControl.AccessControlUnauthorizedAccount.selector,
+                unauthorizedCaller,
+                BFNRoles.PAUSER_ROLE
+            )
+        );
+        communityTreasury.unpause();
+    }
+    
+    /// @notice Test SavingsVault unauthorized operations
+    /// @dev Tests pause/unpause operations (PAUSER_ROLE)
+    function _testSavingsVaultUnauthorizedOperations(address unauthorizedCaller) internal {
+        // Test unauthorized pause call
+        vm.prank(unauthorizedCaller);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IAccessControl.AccessControlUnauthorizedAccount.selector,
+                unauthorizedCaller,
+                BFNRoles.PAUSER_ROLE
+            )
+        );
+        savingsVault.pause();
+        
+        // Test unauthorized unpause call
+        vm.prank(unauthorizedCaller);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IAccessControl.AccessControlUnauthorizedAccount.selector,
+                unauthorizedCaller,
+                BFNRoles.PAUSER_ROLE
+            )
+        );
+        savingsVault.unpause();
+    }
+    
     /// @notice Test Governance unauthorized operations
     /// @dev Tests executeTreasury (TREASURY_ROLE)
     function _testGovernanceUnauthorizedOperations(address unauthorizedCaller, uint256 seed) internal {
