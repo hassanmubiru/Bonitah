@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 /**
  * 404 Not Found page (Task 21.1).
- * 
+ *
  * Features:
  * - User-friendly error message with clear explanation
  * - Navigation options to return to main site sections
@@ -27,12 +27,10 @@ export default function NotFound() {
           {/* 404 Header */}
           <div className="space-y-4">
             <div className="text-6xl font-bold text-primary sm:text-8xl">404</div>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Page not found
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Page not found</h1>
             <p className="text-lg text-muted-foreground">
-              Sorry, we couldn't find the page you're looking for. It might have been moved, 
-              deleted, or you may have entered the wrong URL.
+              Sorry, we couldn&apos;t find the page you&apos;re looking for. It might have been
+              moved, deleted, or you may have entered the wrong URL.
             </p>
           </div>
 
@@ -43,9 +41,7 @@ export default function NotFound() {
                 <Search className="h-5 w-5" />
                 What would you like to do?
               </CardTitle>
-              <CardDescription>
-                Here are some ways to get back on track
-              </CardDescription>
+              <CardDescription>Here are some ways to get back on track</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Button asChild className="w-full" size="lg">
@@ -54,7 +50,7 @@ export default function NotFound() {
                   Go to Homepage
                 </Link>
               </Button>
-              
+
               <Button asChild variant="outline" className="w-full" size="lg">
                 <Link href="/auth" className="group">
                   <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -65,8 +61,8 @@ export default function NotFound() {
               <div className="pt-4 border-t">
                 <p className="text-sm text-muted-foreground">
                   If you believe this is an error, please{' '}
-                  <Link 
-                    href="mailto:support@bonitah.finance" 
+                  <Link
+                    href="mailto:support@bonitah.finance"
                     className="text-primary underline-offset-4 hover:underline"
                   >
                     contact support
