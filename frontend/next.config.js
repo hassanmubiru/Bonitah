@@ -29,7 +29,15 @@ const nextConfig = {
   
   // Webpack configuration for better tree-shaking
   webpack: (config, { isServer }) => {
-    if (!isServer) {
+    if (!isServer && config.optimization?.splitChunks) {
+      // Ensure splitChunks is properly configured
+      if (typeof config.optimization.splitChunks === 'boolean') {
+        config.optimization.splitChunks = {
+          chunks: 'all',
+          cacheGroups: {},
+        };
+      }
+      
       // Optimize client bundle
       config.optimization.splitChunks.cacheGroups = {
         ...config.optimization.splitChunks.cacheGroups,
