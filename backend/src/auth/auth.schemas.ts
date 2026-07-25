@@ -53,3 +53,11 @@ export type VerifyResponse = z.infer<typeof verifyResponseSchema>;
 export interface LogoutResponse {
   readonly success: true;
 }
+
+/** GET /auth/me response (Req 14.9). */
+export const meResponseSchema = z.object({
+  userId: z.string().cuid(),
+  address: addressSchema,
+  role: z.enum(ROLES),
+});
+export type MeResponse = z.infer<typeof meResponseSchema>;

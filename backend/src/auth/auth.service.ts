@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { DEFAULT_ROLE, type Role } from './auth.types';
 import type {
   LogoutResponse,
+  MeResponse,
   NonceRequest,
   NonceResponse,
   VerifyRequest,
