@@ -206,10 +206,10 @@ export function useChatApi() {
         throw new Error('Failed to load conversation');
       }
 
-      const data = await response.json();
+      const data: { conversation: { messages: ChatMessage[] } } = await response.json();
       setState((prev) => ({
         ...prev,
-        messages: data.conversation.messages.map((msg: any) => ({
+        messages: data.conversation.messages.map((msg) => ({
           ...msg,
           createdAt: new Date(msg.createdAt),
         })),
@@ -291,7 +291,7 @@ export function useChatApi() {
         isLoading: false,
       }));
     }
-  }, [isAuthenticated, apiUrl, getAuthHeaders, loadConversations]);
+  }, [isAuthenticated, apiUrl, getAuthHeaders, loadConversations, parseActionsFromResponse]);
 
   /**
    * Create a new conversation (clear current chat)
