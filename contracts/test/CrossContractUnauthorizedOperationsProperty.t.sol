@@ -89,6 +89,8 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
         registry.grantRole(BFNRoles.REPUTATION_ROLE, authorizedUser);
         governance.grantRole(BFNRoles.TREASURY_ROLE, authorizedUser);
         education.grantRole(BFNRoles.ISSUER_ROLE, authorizedUser);
+        communityTreasury.grantRole(BFNRoles.PAUSER_ROLE, authorizedUser);
+        savingsVault.grantRole(BFNRoles.PAUSER_ROLE, authorizedUser);
         // Grant REPUTATION_ROLE to Education contract so it can increase reputation
         registry.grantRole(BFNRoles.REPUTATION_ROLE, address(education));
         vm.stopPrank();
@@ -419,6 +421,24 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
         governance.executeTreasury(abi.encode("authorized_action"));
         // No revert means success
         
+        // Test authorized CommunityTreasury pause/unpause operations
+        vm.prank(authorizedUser);
+        communityTreasury.pause();
+        // Contract should now be paused
+        
+        vm.prank(authorizedUser);  
+        communityTreasury.unpause();
+        // Contract should now be unpaused
+        
+        // Test authorized SavingsVault pause/unpause operations
+        vm.prank(authorizedUser);
+        savingsVault.pause();
+        // Contract should now be paused
+        
+        vm.prank(authorizedUser);
+        savingsVault.unpause();
+        // Contract should now be unpaused
+        
         // Test authorized upgrade operations  
         Registry newImpl = new Registry();
         vm.prank(admin); // Admin has UPGRADER_ROLE
@@ -431,6 +451,7 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
         // Zero address should not have any roles and operations should revert
         assertFalse(registry.hasRole(BFNRoles.VERIFIER_ROLE, address(0)), "Zero address should not have VERIFIER_ROLE");
         assertFalse(registry.hasRole(BFNRoles.REPUTATION_ROLE, address(0)), "Zero address should not have REPUTATION_ROLE");
+        assertFalse(registry.hasRole(BFNRoles.PAUSER_ROLE, address(0)), "Zero address should not have PAUSER_ROLE");
         
         vm.prank(address(0));
         vm.expectRevert(

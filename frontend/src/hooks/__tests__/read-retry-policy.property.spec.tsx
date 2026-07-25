@@ -505,7 +505,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           );
 
           // Fast-forward through potential retries
-          jest.advanceTimersByTime(8000);
+          act(() => {
+            jest.advanceTimersByTime(8000);
+          });
 
           await waitFor(() => {
             expect(result.current.isError).toBe(true);
@@ -614,7 +616,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           );
 
           // Wait for initial failure
-          jest.advanceTimersByTime(8000);
+          act(() => {
+            jest.advanceTimersByTime(8000);
+          });
           await waitFor(() => {
             expect(result.current.isError).toBe(true);
           }, { timeout: 2000 });
@@ -624,7 +628,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           const initialAttempts = attemptCount;
 
           // Trigger manual refetch - Req 11.6
-          result.current.refetch();
+          act(() => {
+            result.current.refetch();
+          });
 
           await waitFor(() => {
             expect(result.current.data).toBe(expectedValue);
