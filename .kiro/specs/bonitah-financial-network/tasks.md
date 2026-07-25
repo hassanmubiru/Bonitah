@@ -335,7 +335,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Wrap viem reads with 10s per-attempt timeout and up to 3 retries; expose `{ data, isLoading, isError, refetch }`; render loading/error/retry states with no placeholder financial values
     - _Requirements: 1.2, 1.6, 1.7, 7.4, 7.5, 11.4, 11.5, 11.6_
 
-  - [ ] 19.2 Write property test for the read retry policy
+  - [x] 19.2 Write property test for the read retry policy
     - **Property 3: Read retry policy is bounded and correct**
     - **Validates: Requirements 1.6**
 
@@ -348,7 +348,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Orchestrate nonce -> SIWE message -> sign -> verify -> store JWT; prompt Base Sepolia switch before on-chain actions; handle connect/decline errors
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 --no-verify
-  - [ ] 20.2 Write component tests for the auth flow
+  - [x] 20.2 Write component tests for the auth flow
     - Cover connect failure, wrong-network prompt, and sign decline paths
     - _Requirements: 2.2, 2.3, 2.5_
 
