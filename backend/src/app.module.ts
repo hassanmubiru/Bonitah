@@ -53,6 +53,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     TransactionsModule,
     AnalyticsModule,
     AiModule,
+    AdminModule,
   ],
   providers: [
     {
