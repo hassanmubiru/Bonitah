@@ -68,6 +68,12 @@ export function SiteHeader() {
                 >
                   AI Assistant
                 </Link>
+                <Link
+                  href="/profile"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
+                >
+                  Profile
+                </Link>
               </nav>
             )}
           </div>
