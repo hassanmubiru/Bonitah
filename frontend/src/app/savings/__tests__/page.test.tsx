@@ -260,7 +260,7 @@ describe('Savings Page Loading/Error/Retry States', () => {
       );
 
       // Should show error states - Req 11.5
-      expect(screen.getByText('Error')).toBeInTheDocument();
+      expect(screen.getAllByText('Error')).toHaveLength(2); // Available balance and portfolio show error
       expect(screen.getByText('Failed to load balance')).toBeInTheDocument();
       expect(screen.getByText('Failed to load portfolio value')).toBeInTheDocument();
       expect(screen.getByText('Failed to load wallet balance')).toBeInTheDocument();
