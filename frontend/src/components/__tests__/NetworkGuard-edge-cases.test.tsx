@@ -390,9 +390,11 @@ describe('NetworkGuard Component - Edge Cases', () => {
         </NetworkGuard>
       );
 
-      // Should show chain ID and currency
-      expect(screen.getByText(`Chain ID: ${BASE_SEPOLIA_CHAIN_ID}`)).toBeInTheDocument();
-      expect(screen.getByText('Currency: ETH')).toBeInTheDocument();
+      // Should show chain ID and currency (text may be split across elements)
+      expect(screen.getByText(/Chain ID:/)).toBeInTheDocument();
+      expect(screen.getByText(/84532/)).toBeInTheDocument();
+      expect(screen.getByText(/Currency:/)).toBeInTheDocument();
+      expect(screen.getByText(/ETH/)).toBeInTheDocument();
     });
 
     test('has accessible alert for network mismatch', () => {
@@ -594,8 +596,8 @@ describe('NetworkGuard Component - Edge Cases', () => {
       await user.click(switchButton);
       await user.click(switchButton);
 
-      // Should have been called multiple times
-      expect(mockSwitchChain.switchChain).toHaveBeenCalledTimes(3);
+      // Should have been called multiple times (+ auto-switch on connect)
+      expect(mockSwitchChain.switchChain).toHaveBeenCalledTimes(4); // 3 manual + 1 auto-switch
       expect(mockSwitchChain.switchChain).toHaveBeenCalledWith({ 
         chainId: BASE_SEPOLIA_CHAIN_ID 
       });
