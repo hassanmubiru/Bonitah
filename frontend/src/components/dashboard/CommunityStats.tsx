@@ -181,7 +181,7 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
                 <h4 className="font-medium">Pool Contributions</h4>
                 <span className="text-sm text-muted-foreground">
                   {poolContributions && Array.isArray(poolContributions)
-                    ? (poolContributions as any[]).reduce((total: number, pool: any) => 
+                    ? (poolContributions as PoolContribution[]).reduce((total: number, pool: PoolContribution) => 
                         total + parseFloat(formatValue(pool.amount)), 0).toLocaleString('en-US', {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
@@ -191,7 +191,7 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
               </div>
               {poolContributions && Array.isArray(poolContributions) && poolContributions.length > 0 ? (
                 <div className="space-y-2">
-                  {(poolContributions as any[]).slice(0, 2).map((pool: any, index: number) => (
+                  {(poolContributions as PoolContribution[]).slice(0, 2).map((pool: PoolContribution, index: number) => (
                     <div key={index} className="flex justify-between text-sm">
                       <span>Pool #{Number(pool.poolId)}</span>
                       <span>${formatValue(pool.amount)}</span>
