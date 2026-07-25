@@ -410,11 +410,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Ensure all frontend tests pass and coverage meets >=80% line; ask the user if questions arise.
 
 - [ ] 23. Implement DevOps tooling
-  - [ ] 23.1 Create multi-stage Dockerfiles for frontend and backend
+  - [x] 23.1 Create multi-stage Dockerfiles for frontend and backend
     - Produce runnable images for both services
     - _Requirements: 16.1_
 
-  - [ ] 23.2 Create the Docker Compose configuration
+  - [x] 23.2 Create the Docker Compose configuration
     - Start frontend, backend, PostgreSQL, and Redis with healthchecks reaching healthy within 120s
     - _Requirements: 16.2_
 
