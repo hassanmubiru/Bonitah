@@ -681,7 +681,7 @@ describe('Page Component Tests - Data Source Wiring and States', () => {
       // Should show system health data
       expect(screen.getByText('150')).toBeInTheDocument(); // Total users
       expect(screen.getByText('45')).toBeInTheDocument(); // Active users
-      expect(screen.getByText('Healthy')).toBeInTheDocument(); // Status
+      expect(screen.getByText('Healthy')).toBeInTheDocument(); // Status (capitalized from 'healthy')
       
       // Should show navigation tabs
       expect(screen.getByText('User Management')).toBeInTheDocument();
@@ -728,7 +728,7 @@ describe('Page Component Tests - Data Source Wiring and States', () => {
       expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
       
       // Should show 0 values during loading (not placeholders)
-      expect(screen.getByText('0')).toBeInTheDocument(); // Uses || 0 fallback
+      expect(screen.getAllByText('0')).toHaveLength(3); // Multiple 0 fallback values
       expect(screen.getByText('Unknown')).toBeInTheDocument(); // Status fallback
     });
     it('handles admin data error states with retry functionality', () => {
