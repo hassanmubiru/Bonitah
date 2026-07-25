@@ -109,6 +109,15 @@ export class AdminController {
   }
 
   /**
+   * Get system status and health metrics (Req 14.9).
+   */
+  @Get('system')
+  @HttpCode(HttpStatus.OK)
+  getSystemStatus(@Request() req: AuthenticatedRequest): Promise<AdminSystemResponse> {
+    return this.adminService.getSystemStatus(req.user);
+  }
+
+  /**
    * Update user role - administrative action (Req 14.9).
    */
   @Put('users/:userId/role')
