@@ -215,7 +215,7 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
               </div>
               {achievements && Array.isArray(achievements) && achievements.length > 0 ? (
                 <div className="grid grid-cols-3 gap-2">
-                  {(achievements as any[]).slice(0, 6).map((achievement: any, index: number) => (
+                  {(achievements as Achievement[]).slice(0, 6).map((achievement: Achievement, index: number) => (
                     <div key={index} className="text-center p-2 rounded bg-muted/50">
                       <div className="text-lg">🏆</div>
                       <div className="text-xs font-medium truncate">
