@@ -17,14 +17,10 @@
  * - Generates optimized exports for tree-shaking
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs');
+const { join } = require('path');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = dirname(__dirname);
+const projectRoot = join(__dirname, '..');
 
 // Contract configuration - matches types.ts ContractName
 const CONTRACTS = [
@@ -388,6 +384,7 @@ export { CONTRACT_NAMES } from './contracts.js';
  * Create directories if they don't exist
  */
 function ensureDirectories() {
+  const { mkdirSync } = await import('fs');
   const dirs = [
     join(projectRoot, 'shared/src/contracts'),
     join(projectRoot, 'shared/src/contracts/abis'),
@@ -397,8 +394,7 @@ function ensureDirectories() {
 
   for (const dir of dirs) {
     if (!existsSync(dir)) {
-      const fs = await import('fs');
-      fs.mkdirSync(dir, { recursive: true });
+      mkdirSync(dir, { recursive: true });
       console.log(`📁 Created directory: ${dir}`);
     }
   }
