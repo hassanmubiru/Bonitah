@@ -491,7 +491,7 @@ describe('Page Component Tests - Data Source Wiring and States', () => {
       );
 
       // Should show loading spinner during auth check
-      expect(screen.getByRole('generic')).toBeInTheDocument();
+      expect(screen.getAllByRole('generic')).toHaveLength(3); // Multiple divs with generic role
       
       // Should NOT show admin content or access denied during loading
       expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
