@@ -24,9 +24,8 @@ export class AdminService {
       this.prisma.user.count(),
       this.prisma.user.count({
         where: {
-          isActive: true,
-          updatedAt: {
-            gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24h
+          createdAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24h as proxy for "active"
           },
         },
       }),

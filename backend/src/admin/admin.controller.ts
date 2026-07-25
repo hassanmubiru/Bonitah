@@ -209,8 +209,8 @@ export class AdminController {
       return await this.adminService.getAuditLog({
         page: pageNum,
         limit: limitNum,
-        action,
-        userId,
+        ...(action !== undefined && { action }),
+        ...(userId !== undefined && { userId }),
       });
     } catch (error) {
       throw new HttpException(
