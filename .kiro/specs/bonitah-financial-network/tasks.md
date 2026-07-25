@@ -443,7 +443,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Prerequisites and ordered steps for Base Sepolia contract deployment and service deployment
     - _Requirements: 18.5_
 
-- [-] 25. Final checkpoint
+- [x] 25. Final checkpoint
   - Ensure all suites pass across contracts, backend, and frontend and CI is green; ask the user if questions arise.
 
 ## Notes
