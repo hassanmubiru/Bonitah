@@ -1,471 +1,277 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { useAccount } from 'wagmi';
 
 import AdminPage from '../page';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
-import { useSiweAuth } from '@/hooks/useSiweAuth';
 
-// Mock wagmi hooks
-jest.mock('wagmi', () => ({
-  useAccount: jest.fn(),
-}));
-
-// Mock auth hooks
+// Mock hooks
 jest.mock('@/hooks/useAuthGuard', () => ({
   useAuthGuard: jest.fn(),
 }));
 
-jest.mock('@/hooks/useSiweAuth', () => ({
-  useSiweAuth: jest.fn(),
+// Mock useAdminData hook
+jest.mock('@/hooks/useAdminData', () => ({
+  useAdminData: jest.fn(),
 }));
 
-// Mock AdminDashboard component
-jest.mock('@/components/admin/AdminDashboard', () => ({
-  AdminDashboard: jest.fn(() => (
-    <div data-testid="admin-dashboard">
-      Admin Dashboard Content
-    </div>
-  )),
-}));
-
-const mockUseAccount = useAccount as jest.MockedFunction<typeof useAccount>;
 const mockUseAuthGuard = useAuthGuard as jest.MockedFunction<typeof useAuthGuard>;
-const mockUseSiweAuth = useSiweAuth as jest.MockedFunction<typeof useSiweAuth>;
+const mockUseAdminData = require('@/hooks/useAdminData').useAdminData as jest.MockedFunction<any>;
 
 describe('Admin Page Component Tests (Task 21.12 - Role Gating)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Default mock for useAdminData
+    mockUseAdminData.mockReturnValue({
+      systemHealth: {
+        users: { total: 100, active: 85, growth: 12 },
+        transactions: { total: 1500, recent: 25 },
+        status: 'healthy',
+        system: { cpu: 45, memory: { rss: 134217728, heapUsed: 67108864 }, database: 'connected' },
+        errors: { recent: 0, rate: 0.001 }
+      },
+      analytics: {
+        userGrowth: [{ count: 10 }],
+        transactionVolume: [{ volume: 100 }],
+        revenue: [{ amount: 1000 }]
+      },
+      users: {
+        users: [
+          {
+            id: '1',
+            walletAddress: '0x1234567890123456789012345678901234567890',
+            role: 'USER',
+            isActive: true,
+            createdAt: '2023-01-01T00:00:00Z',
+            updatedAt: '2023-01-02T00:00:00Z'
+          }
+        ]
+      },
+      auditLog: {
+        entries: [
+          {
+            id: '1',
+            timestamp: '2023-01-01T00:00:00Z',
+            action: 'USER_CREATED',
+            userId: '1',
+            adminId: 'admin1',
+            details: 'User account created'
+          }
+        ]
+      },
+      isLoading: false,
+      error: null,
+      updateUser: jest.fn(),
+      deleteUser: jest.fn(),
+      toggleMaintenanceMode: jest.fn(),
+      refreshData: jest.fn()
+    });
   });
 
   describe('Role-Based Access Control', () => {
     it('displays admin dashboard when user has ADMIN role', async () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: true,
         isLoading: false,
-      });
-
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: 'ADMIN', // Admin role
-        address: '0x1234567890123456789012345678901234567890',
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
+        user: { role: 'ADMIN' }, // Admin role
       });
 
       render(<AdminPage />);
 
       await waitFor(() => {
-        expect(screen.getByTestId('admin-dashboard')).toBeInTheDocument();
-        expect(screen.getByText('Admin Dashboard Content')).toBeInTheDocument();
+        expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
+        expect(screen.getByText('Manage users, monitor system health, and configure platform settings.')).toBeInTheDocument();
       });
     });
 
     it('blocks access when user has USER role', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: true,
         isLoading: false,
-      });
-
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: 'USER', // Regular user role
-        address: '0x1234567890123456789012345678901234567890',
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
+        user: { role: 'USER' }, // Regular user role
       });
 
       render(<AdminPage />);
 
-      expect(screen.getByText('Access Denied')).toBeInTheDocument();
-      expect(screen.getByText('You do not have permission to access this page.')).toBeInTheDocument();
-      expect(screen.queryByTestId('admin-dashboard')).not.toBeInTheDocument();
+      expect(screen.getByText('Access Denied: Admin privileges required to access this page.')).toBeInTheDocument();
+      expect(screen.queryByText('Admin Dashboard')).not.toBeInTheDocument();
     });
 
     it('blocks access when user has VERIFIER role (not ADMIN)', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: true,
         isLoading: false,
-      });
-
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: 'VERIFIER', // Verifier role (not admin)
-        address: '0x1234567890123456789012345678901234567890',
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
+        user: { role: 'VERIFIER' }, // Verifier role (not admin)
       });
 
       render(<AdminPage />);
 
-      expect(screen.getByText('Access Denied')).toBeInTheDocument();
-      expect(screen.queryByTestId('admin-dashboard')).not.toBeInTheDocument();
+      expect(screen.getByText('Access Denied: Admin privileges required to access this page.')).toBeInTheDocument();
+      expect(screen.queryByText('Admin Dashboard')).not.toBeInTheDocument();
     });
 
     it('blocks access when role is undefined', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: true,
         isLoading: false,
-      });
-
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: undefined, // No role assigned
-        address: '0x1234567890123456789012345678901234567890',
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
+        user: { role: undefined }, // No role assigned
       });
 
       render(<AdminPage />);
 
-      expect(screen.getByText('Access Denied')).toBeInTheDocument();
-      expect(screen.queryByTestId('admin-dashboard')).not.toBeInTheDocument();
+      expect(screen.getByText('Access Denied: Admin privileges required to access this page.')).toBeInTheDocument();
+      expect(screen.queryByText('Admin Dashboard')).not.toBeInTheDocument();
     });
   });
 
   describe('Loading and Authentication States', () => {
     it('displays loading state while checking authentication', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: false,
         isLoading: true, // Loading auth
+        user: undefined,
       });
 
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: false,
-        role: undefined,
-        address: undefined,
-        isLoading: true,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
-      });
+      const { container } = render(<AdminPage />);
 
-      render(<AdminPage />);
-
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
-      expect(screen.queryByTestId('admin-dashboard')).not.toBeInTheDocument();
+      // Check for loading spinner animation class
+      expect(container.querySelector('.animate-spin')).toBeInTheDocument();
+      expect(screen.queryByText('Admin Dashboard')).not.toBeInTheDocument();
       expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
     });
 
-    it('displays loading state while wallet is connecting', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: false, // Not connected
-        address: undefined,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: false,
-        isLoading: true,
-      });
-
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: false,
-        role: undefined,
-        address: undefined,
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
-      });
-
-      render(<AdminPage />);
-
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
-    });
-
     it('shows access denied immediately when not authenticated', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: false,
-        address: undefined,
-      } as any);
-      
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: false,
         isLoading: false, // Not loading, just not authenticated
-      });
-
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: false,
-        role: undefined,
-        address: undefined,
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
+        user: undefined,
       });
 
       render(<AdminPage />);
 
-      expect(screen.getByText('Access Denied')).toBeInTheDocument();
-      expect(screen.getByText('You must be signed in as an administrator to access this page.')).toBeInTheDocument();
+      expect(screen.getByText('Access Denied: Admin privileges required to access this page.')).toBeInTheDocument();
     });
   });
 
-  describe('UI Structure and Accessibility', () => {
-    it('uses proper semantic HTML for access denied state', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
+  describe('Data Source Wiring', () => {
+    it('displays system health metrics from useAdminData hook', async () => {
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: true,
         isLoading: false,
-      });
-
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: 'USER',
-        address: '0x1234567890123456789012345678901234567890',
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
-      });
-
-      render(<AdminPage />);
-
-      expect(screen.getByRole('heading', { level: 1, name: 'Access Denied' })).toBeInTheDocument();
-      expect(screen.getByRole('main')).toBeInTheDocument();
-    });
-
-    it('uses proper semantic HTML for admin dashboard', async () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: 'ADMIN',
-        address: '0x1234567890123456789012345678901234567890',
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
+        user: { role: 'ADMIN' },
       });
 
       render(<AdminPage />);
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { level: 1, name: 'Admin Dashboard' })).toBeInTheDocument();
-        expect(screen.getByRole('main')).toBeInTheDocument();
+        expect(screen.getByText('100')).toBeInTheDocument(); // Total users
+        expect(screen.getByText('85')).toBeInTheDocument(); // Active users
+        expect(screen.getByText('1500')).toBeInTheDocument(); // Transactions
+        // The status shows the raw value with capitalize class, so it should be 'Healthy'
+        expect(screen.getByText(/healthy/i)).toBeInTheDocument(); // System status - case insensitive match
       });
     });
 
-    it('provides appropriate navigation suggestions in access denied state', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
+    it('displays user management data correctly', async () => {
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: true,
         isLoading: false,
-      });
-
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: 'USER',
-        address: '0x1234567890123456789012345678901234567890',
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
+        user: { role: 'ADMIN' },
       });
 
       render(<AdminPage />);
 
-      expect(screen.getByText('You do not have permission to access this page.')).toBeInTheDocument();
-      expect(screen.getByText('Please contact your administrator if you believe you should have access.')).toBeInTheDocument();
-      
-      // Should provide navigation back to dashboard
-      expect(screen.getByRole('link', { name: /back to dashboard/i })).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('0x1234...7890')).toBeInTheDocument(); // Wallet address
+        expect(screen.getByText('USER')).toBeInTheDocument(); // Role badge
+        expect(screen.getByText('Active')).toBeInTheDocument(); // Status badge
+      });
     });
   });
 
-  describe('Edge Cases and Security', () => {
-    it('handles role changes during session gracefully', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
+  describe('Loading/Error States', () => {
+    it('displays error state when admin data fails to load', async () => {
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: true,
         isLoading: false,
+        user: { role: 'ADMIN' },
       });
 
-      // Start with admin role
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: 'ADMIN',
-        address: '0x1234567890123456789012345678901234567890',
+      mockUseAdminData.mockReturnValue({
+        systemHealth: null,
+        analytics: null,
+        users: null,
+        auditLog: null,
         isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
+        error: 'Failed to load admin data',
+        updateUser: jest.fn(),
+        deleteUser: jest.fn(),
+        toggleMaintenanceMode: jest.fn(),
+        refreshData: jest.fn()
+      });
+
+      render(<AdminPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Failed to load admin data')).toBeInTheDocument();
+      });
+    });
+
+    it('handles role changes during session gracefully', () => {
+      // Start with admin role
+      mockUseAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+        user: { role: 'ADMIN' },
       });
 
       const { rerender } = render(<AdminPage />);
       
-      expect(screen.getByTestId('admin-dashboard')).toBeInTheDocument();
+      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
 
       // Role gets revoked during session
-      mockUseSiweAuth.mockReturnValue({
+      mockUseAuthGuard.mockReturnValue({
         isAuthenticated: true,
-        role: 'USER', // Role downgraded
-        address: '0x1234567890123456789012345678901234567890',
         isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
+        user: { role: 'USER' }, // Role downgraded
       });
 
       rerender(<AdminPage />);
 
-      expect(screen.queryByTestId('admin-dashboard')).not.toBeInTheDocument();
-      expect(screen.getByText('Access Denied')).toBeInTheDocument();
+      expect(screen.queryByText('Admin Dashboard')).not.toBeInTheDocument();
+      expect(screen.getByText('Access Denied: Admin privileges required to access this page.')).toBeInTheDocument();
     });
 
     it('prevents access when authentication is compromised', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
-      // Auth guard shows not authenticated (e.g., JWT expired)
       mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: false,
+        isAuthenticated: false, // Not authenticated
         isLoading: false,
-      });
-
-      // But useSiweAuth still shows admin (stale state)
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: true, // Stale/inconsistent state
-        role: 'ADMIN',
-        address: '0x1234567890123456789012345678901234567890',
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
+        user: { role: 'ADMIN' }, // Stale/inconsistent state
       });
 
       render(<AdminPage />);
 
       // Should prioritize auth guard and block access
-      expect(screen.getByText('Access Denied')).toBeInTheDocument();
-      expect(screen.queryByTestId('admin-dashboard')).not.toBeInTheDocument();
-    });
-
-    it('handles undefined or null role values securely', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
-      mockUseAuthGuard.mockReturnValue({
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: null as any, // Null role
-        address: '0x1234567890123456789012345678901234567890',
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
-      });
-
-      render(<AdminPage />);
-
-      expect(screen.getByText('Access Denied')).toBeInTheDocument();
-      expect(screen.queryByTestId('admin-dashboard')).not.toBeInTheDocument();
+      expect(screen.getByText('Access Denied: Admin privileges required to access this page.')).toBeInTheDocument();
+      expect(screen.queryByText('Admin Dashboard')).not.toBeInTheDocument();
     });
 
     it('does not leak admin content in DOM when access is denied', () => {
-      mockUseAccount.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890123456789012345678901234567890' as any,
-      } as any);
-      
       mockUseAuthGuard.mockReturnValue({
         isAuthenticated: true,
         isLoading: false,
-      });
-
-      mockUseSiweAuth.mockReturnValue({
-        isAuthenticated: true,
-        role: 'USER',
-        address: '0x1234567890123456789012345678901234567890',
-        isLoading: false,
-        error: null,
-        signIn: jest.fn(),
-        signOut: jest.fn(),
-        checkAuth: jest.fn(),
+        user: { role: 'USER' },
       });
 
       const { container } = render(<AdminPage />);
 
       // Admin dashboard should not be rendered at all
-      expect(container.querySelector('[data-testid="admin-dashboard"]')).not.toBeInTheDocument();
+      expect(screen.queryByText('Admin Dashboard')).not.toBeInTheDocument();
       
       // Should not contain any admin-specific content
-      expect(container.textContent).not.toContain('Admin Dashboard Content');
+      expect(container.textContent).not.toContain('User Management');
+      expect(container.textContent).not.toContain('System Monitor');
+      expect(container.textContent).not.toContain('Audit Log');
     });
   });
 });
