@@ -162,15 +162,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - **Property 26: Unauthorized privileged operations revert without state change**
     - **Validates: Requirements 3.10, 6.5, 9.7, 9.10, 14.5, 14.7, 14.9**
 
-  - [ ] 8.3 Write property test for event emission discipline
+  - [x] 8.3 Write property test for event emission discipline
     - **Property 33: Exactly one event per successful state change; none on revert**
     - **Validates: Requirements 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8, 13.9, 13.10**
 
-  - [ ] 8.4 Checkpoint - contracts test suite
+  - [x] 8.4 Checkpoint - contracts test suite
     - Ensure all contract tests pass and coverage meets >=90% line/branch; ask the user if questions arise.
 
-- [ ] 9. Deployment scripts and shared ABI/address emission
-  - [ ] 9.1 Implement Foundry Base Sepolia deployment scripts
+- [x] 9. Deployment scripts and shared ABI/address emission
+  - [x] 9.1 Implement Foundry Base Sepolia deployment scripts
     - Deploy all five contracts behind UUPS proxies, wire roles, record deployed addresses to `deployment/` and `shared/`, and fail non-zero naming the failed contract with no partial-success report
     - _Requirements: 16.5, 16.6_
 
@@ -314,7 +314,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Assert 503 with retained history on timeout/unavailable and unavailable-figure handling on read failure
     - _Requirements: 10.8, 10.9_
 
-  - [ ] 17.5 Checkpoint - backend test suite
+  - [x] 17.5 Checkpoint - backend test suite
     - Ensure all backend tests pass and coverage meets >=80% line; ask the user if questions arise.
 
 - [ ] 18. Establish frontend foundation (Next.js)
@@ -353,15 +353,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 2.2, 2.3, 2.5_
 
 - [ ] 21. Implement the frontend pages
-  - [ ] 21.1 Implement Landing and 404 pages
+  - [x] 21.1 Implement Landing and 404 pages
     - Static theme-aware landing hero and not-found route
     - _Requirements: 11.7_
 
-  - [ ] 21.2 Implement the Dashboard page
+  - [x] 21.2 Implement the Dashboard page
     - Display savings, locked, goals, community contributions, achievements, and portfolio growth from on-chain reads; recent transactions (<=50, most-recent-first); charts from real data only
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.7_
 
-  - [ ] 21.3 Implement the Savings page
+  - [x] 21.3 Implement the Savings page
     - Deposit/withdraw flows wired to SavingsVault with signed transactions and live reads
     - _Requirements: 4.2, 4.3, 11.7_
 
@@ -397,7 +397,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Admin-only operations gated by role with unauthorized access blocked
     - _Requirements: 14.9, 11.7_
 
-  - [ ] 21.12 Write component tests for pages
+  - [-] 21.12 Write component tests for pages
     - Cover data-source wiring, loading/error/retry rendering, and role gating across pages
     - _Requirements: 11.1, 11.3, 11.4, 14.9, 15.5_
 
@@ -406,7 +406,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Cover account creation, authentication, initiating a transaction, and viewing transaction history
     - _Requirements: 15.5_
 
-  - [ ] 22.2 Checkpoint - frontend test suite
+  - [x] 22.2 Checkpoint - frontend test suite
     - Ensure all frontend tests pass and coverage meets >=80% line; ask the user if questions arise.
 
 - [ ] 23. Implement DevOps tooling
@@ -427,15 +427,15 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 16.8, 17.6, 17.7_
 
 - [ ] 24. Write documentation
-  - [ ] 24.1 Write the README and environment/developer guide
+  - [x] 24.1 Write the README and environment/developer guide
     - Platform description, ordered local setup steps, description of every top-level directory, required tools/versions, env vars, and per-service build/start commands
     - _Requirements: 18.1, 18.6_
 
-  - [ ] 24.2 Write the API documentation
+  - [x] 24.2 Write the API documentation
     - Document every REST endpoint: method, path, params/body, response body, auth requirement, and error conditions/responses
     - _Requirements: 18.2, 18.3_
 
-  - [ ] 24.3 Write the contract documentation
+  - [x] 24.3 Write the contract documentation
     - Document every contract's public/external functions, events, and roles generated from NatSpec
     - _Requirements: 18.4_
 
@@ -443,7 +443,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Prerequisites and ordered steps for Base Sepolia contract deployment and service deployment
     - _Requirements: 18.5_
 
-- [ ] 25. Final checkpoint
+- [~] 25. Final checkpoint
   - Ensure all suites pass across contracts, backend, and frontend and CI is green; ask the user if questions arise.
 
 ## Notes
