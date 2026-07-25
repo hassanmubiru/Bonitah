@@ -169,9 +169,9 @@ export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
                       </div>
                     );
                   })}
-                  {(activeGoals as any[]).length > 3 && (
+                  {(activeGoals as Goal[]).length > 3 && (
                     <p className="text-xs text-muted-foreground">
-                      +{(activeGoals as any[]).length - 3} more goals
+                      +{(activeGoals as Goal[]).length - 3} more goals
                     </p>
                   )}
                 </div>
@@ -185,7 +185,7 @@ export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
               <h4 className="font-medium mb-3">Locked Savings</h4>
               {activeLocks && Array.isArray(activeLocks) && activeLocks.length > 0 ? (
                 <div className="space-y-3">
-                  {(activeLocks as any[]).slice(0, 3).map((lock: any, index: number) => (
+                  {(activeLocks as Lock[]).slice(0, 3).map((lock: Lock, index: number) => (
                     <div key={index} className="flex justify-between items-center">
                       <div>
                         <div className="font-medium">${formatValue(lock.amount)}</div>
@@ -198,9 +198,9 @@ export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
                       </div>
                     </div>
                   ))}
-                  {(activeLocks as any[]).length > 3 && (
+                  {(activeLocks as Lock[]).length > 3 && (
                     <p className="text-xs text-muted-foreground">
-                      +{(activeLocks as any[]).length - 3} more locks
+                      +{(activeLocks as Lock[]).length - 3} more locks
                     </p>
                   )}
                 </div>
