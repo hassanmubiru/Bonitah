@@ -177,28 +177,32 @@ contract EventEmissionDisciplinePropertyTest is Test {
         } else if (operation == 7) {
             _testSavingsVaultFundsLocking(amount);
         } else if (operation == 8) {
-            _testCommunityTreasuryCircleCreation(maxMembers, threshold);
+            _testSavingsVaultGoalCompletion(amount);
         } else if (operation == 9) {
-            _testCommunityTreasuryMemberJoining();
+            _testSavingsVaultLockRelease(amount);
         } else if (operation == 10) {
-            _testCommunityTreasuryContribution(amount);
+            _testCommunityTreasuryCircleCreation(maxMembers, threshold);
         } else if (operation == 11) {
-            _testCommunityTreasuryVoting();
+            _testCommunityTreasuryMemberJoining();
         } else if (operation == 12) {
-            _testEducationCertificateIssuance(courseId);
+            _testCommunityTreasuryContribution(amount);
         } else if (operation == 13) {
-            _testEducationBadgeAwarding(badgeId);
+            _testCommunityTreasuryVoting();
         } else if (operation == 14) {
-            _testEducationAchievementRecording(badgeId, amount);
+            _testEducationCertificateIssuance(courseId);
         } else if (operation == 15) {
-            _testGovernanceProposalCreation();
+            _testEducationBadgeAwarding(badgeId);
         } else if (operation == 16) {
-            _testGovernanceVoteCasting();
+            _testEducationAchievementRecording(badgeId, amount);
         } else if (operation == 17) {
-            _testGovernanceProposalFinalization();
+            _testGovernanceProposalCreation();
         } else if (operation == 18) {
-            _testFailedOperationsEmitNoEvents(amount);
+            _testGovernanceVoteCasting();
         } else if (operation == 19) {
+            _testGovernanceProposalFinalization();
+        } else if (operation == 20) {
+            _testFailedOperationsEmitNoEvents(amount);
+        } else if (operation == 21) {
             _testRevertingOperationsEmitNoEvents();
         }
     }
@@ -370,6 +374,68 @@ contract EventEmissionDisciplinePropertyTest is Test {
             }
         }
         assertEq(vaultEventCount, 1, "Exactly one vault event should be emitted for funds locking");
+    }
+    
+    function _testSavingsVaultGoalCompletion(uint256 amount) internal {
+        // Create goal and contribute to complete it
+        uint256 targetDate = block.timestamp + 30 days;
+        vm.prank(user1);
+        vault.createGoal(amount, targetDate);
+        
+        // Deposit the required amount
+        vm.prank(user1);
+        vault.deposit(amount * 2);
+        
+        vm.recordLogs();
+        
+        vm.prank(user1);
+        vault.contributeToGoal(0, amount);
+        
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        uint256 vaultEventCount = 0;
+        for (uint256 i = 0; i < logs.length; i++) {
+            if (logs[i].emitter == address(vault)) {
+                vaultEventCount++;
+                // Could be GoalCompleted event if the contribution completed the goal
+                if (logs[i].topics[0] == keccak256("GoalCompleted(address,uint256)")) {
+                    assertEq(address(uint160(uint256(logs[i].topics[1]))), user1, "Event should contain correct user address");
+                    assertEq(uint256(logs[i].topics[2]), 0, "Event should contain correct goal ID");
+                }
+            }
+        }
+        assertGe(vaultEventCount, 1, "At least one vault event should be emitted for goal contribution");
+    }
+    
+    function _testSavingsVaultLockRelease(uint256 amount) internal {
+        // First deposit and lock funds
+        vm.prank(user1);
+        vault.deposit(amount * 2);
+        
+        uint256 duration = 1 days;
+        vm.prank(user1);
+        vault.lockFunds(amount, duration);
+        
+        // Move past lock expiry
+        vm.warp(block.timestamp + duration + 1);
+        
+        vm.recordLogs();
+        
+        vm.prank(user1);
+        vault.withdrawLocked(0);
+        
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        uint256 vaultEventCount = 0;
+        for (uint256 i = 0; i < logs.length; i++) {
+            if (logs[i].emitter == address(vault)) {
+                vaultEventCount++;
+                assertEq(logs[i].topics[0], keccak256("LockReleased(address,uint256,uint256)"), "Event should be LockReleased");
+                assertEq(address(uint160(uint256(logs[i].topics[1]))), user1, "Event should contain correct user address");
+                assertEq(uint256(logs[i].topics[2]), 0, "Event should contain correct lock ID");
+                uint256 eventAmount = abi.decode(logs[i].data, (uint256));
+                assertEq(eventAmount, amount, "Event should contain correct amount");
+            }
+        }
+        assertEq(vaultEventCount, 1, "Exactly one vault event should be emitted for lock release");
     }
     
     // CommunityTreasury Event Tests
