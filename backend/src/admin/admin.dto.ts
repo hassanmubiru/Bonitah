@@ -6,12 +6,10 @@ import { IsBoolean, IsOptional, IsString, IsIn } from 'class-validator';
 
 export class AdminUserUpdateDto {
   @IsOptional()
-  @IsIn(['USER', 'ADMIN', 'MODERATOR'])
+  @IsIn(['USER', 'ADMIN', 'VERIFIER'])
   role?: string;
 
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
+  // Note: isActive field removed as it doesn't exist in the Prisma schema
 }
 
 export interface AdminSystemHealthDto {

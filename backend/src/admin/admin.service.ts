@@ -188,8 +188,8 @@ export class AdminService {
     return await this.prisma.user.update({
       where: { id: userId },
       data: {
-        ...updateData,
-        updatedAt: new Date(),
+        ...(updateData.role && { role: updateData.role as any }),
+        // Note: isActive field doesn't exist in schema, so it's ignored
       },
     });
   }
