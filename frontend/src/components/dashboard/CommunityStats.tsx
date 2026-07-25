@@ -197,9 +197,9 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
                       <span>${formatValue(pool.amount)}</span>
                     </div>
                   ))}
-                  {(poolContributions as any[]).length > 2 && (
+                  {(poolContributions as PoolContribution[]).length > 2 && (
                     <p className="text-xs text-muted-foreground">
-                      +{(poolContributions as any[]).length - 2} more pools
+                      +{(poolContributions as PoolContribution[]).length - 2} more pools
                     </p>
                   )}
                 </div>
