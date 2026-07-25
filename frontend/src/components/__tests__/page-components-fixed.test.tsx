@@ -263,3 +263,153 @@ describe('Page Component Tests - Data Source Wiring and States', () => {
       expect(screen.queryByTestId('dashboard-content')).not.toBeInTheDocument();
     });
   });
+  describe('Savings Page - Loading/Error/Retry States', () => {
+    it('displays loading states without placeholder financial values', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { 
+        useSavingsVaultBalances,
+        useTokenBalance,
+        formatTokenAmount,
+      } = require('@/hooks/useSavingsVault');
+
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      // Mock loading states
+      useSavingsVaultBalances.mockReturnValue({
+        availableBalance: { data: undefined, isLoading: true, isError: false, refetch: jest.fn() },
+        portfolioValue: { data: undefined, isLoading: true, isError: false, refetch: jest.fn() },
+      });
+
+      useTokenBalance.mockReturnValue({
+        data: undefined,
+        formatted: undefined,
+        symbol: 'ETH',
+        isLoading: true,
+        isError: false,
+        refetch: jest.fn(),
+      });
+
+      formatTokenAmount.mockReturnValue('0');
+
+      render(
+        <TestWrapper>
+          <MockSavings />
+        </TestWrapper>
+      );
+
+      // Should show loading states (Req 11.4)
+      expect(screen.getAllByText(/Loading/i)).toHaveLength(3);
+
+      // Should NOT show any financial placeholder values (Req 11.4)
+      expect(screen.queryByText(/\$\d+/)).not.toBeInTheDocument();
+      expect(screen.queryByDisplayValue(/\d+\.\d+/)).not.toBeInTheDocument();
+    });
+
+    it('displays error states with retry functionality', () => {
+      const mockRefetch = jest.fn();
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { 
+        useSavingsVaultBalances,
+        useTokenBalance,
+        formatTokenAmount,
+      } = require('@/hooks/useSavingsVault');
+
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      // Mock error states
+      useSavingsVaultBalances.mockReturnValue({
+        availableBalance: { 
+          data: undefined, 
+          isLoading: false, 
+          isError: true,
+          error: { message: 'Failed to load balance' },
+          refetch: mockRefetch
+        },
+        portfolioValue: { 
+          data: undefined, 
+          isLoading: false, 
+          isError: true,
+          error: { message: 'Failed to load portfolio' },
+          refetch: mockRefetch
+        },
+      });
+
+      useTokenBalance.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        refetch: mockRefetch,
+      });
+
+      formatTokenAmount.mockReturnValue('');
+
+      render(
+        <TestWrapper>
+          <MockSavings />
+        </TestWrapper>
+      );
+
+      // Should show error states (Req 11.6)
+      expect(screen.getAllByText('Error')).toHaveLength(2);
+      expect(screen.getByText('Failed to load balance')).toBeInTheDocument();
+      
+      // Should have retry buttons (Req 11.6)
+      const retryButtons = screen.getAllByText('Retry');
+      expect(retryButtons.length).toBeGreaterThan(0);
+
+      // Retry should call refetch
+      fireEvent.click(retryButtons[0]);
+      expect(mockRefetch).toHaveBeenCalled();
+
+      // Should NOT show placeholder financial values in error state
+      expect(screen.queryByText(/\$\d+/)).not.toBeInTheDocument();
+    });
+
+    it('properly displays successful data without placeholders', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { 
+        useSavingsVaultBalances,
+        useTokenBalance,
+        formatTokenAmount,
+      } = require('@/hooks/useSavingsVault');
+
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      // Mock successful data states
+      useSavingsVaultBalances.mockReturnValue({
+        availableBalance: { data: 1000n, isLoading: false, isError: false, refetch: jest.fn() },
+        portfolioValue: { data: 1500n, isLoading: false, isError: false, refetch: jest.fn() },
+      });
+
+      useTokenBalance.mockReturnValue({
+        data: 2000n,
+        formatted: '2000',
+        symbol: 'USDC',
+        isLoading: false,
+        isError: false,
+        refetch: jest.fn(),
+      });
+
+      formatTokenAmount.mockImplementation((amount) => amount?.toString() || '0');
+
+      render(
+        <TestWrapper>
+          <MockSavings />
+        </TestWrapper>
+      );
+
+      // Should display real balance data (not placeholders)
+      expect(screen.getByText('1000 USDC')).toBeInTheDocument();
+      expect(screen.getByText('1500 USDC')).toBeInTheDocument();
+      expect(screen.getByText('2000 USDC')).toBeInTheDocument();
+    });
+  });
