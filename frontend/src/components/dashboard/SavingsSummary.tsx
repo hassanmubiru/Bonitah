@@ -28,6 +28,9 @@ interface Lock {
 interface SavingsSummaryProps {
   userAddress: Address;
 }
+
+/**
+ * Savings summary showing goal progress and locked savings status.
  * 
  * Requirements: 11.1, 11.3, 11.4, 11.5, 11.6
  * - Goal progress from on-chain reads
@@ -35,9 +38,6 @@ interface SavingsSummaryProps {
  * - Proper loading/error/retry states
  */
 export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
- * - Goal progress from on-chain reads
- * - Locked savings details with time remaining
- * - Proper loading/error/retry states
  */
 /**
  * Savings summary showing goal progress and locked savings status.
