@@ -794,7 +794,17 @@ describe('Page Component Tests - Data Source Wiring and States', () => {
       });
 
       useAdminData.mockReturnValue({
-        systemHealth: { status: 'healthy', users: { total: 1, active: 1 }, transactions: { total: 0, recent: 0 } },
+        systemHealth: { 
+          status: 'healthy', 
+          users: { total: 1, active: 1 }, 
+          transactions: { total: 0, recent: 0 },
+          system: { 
+            cpu: 35, 
+            memory: { rss: 104857600, heapUsed: 52428800 }, 
+            database: 'connected' 
+          },
+          errors: { recent: 2, rate: 0.01 }
+        },
         analytics: null,
         users: mockUsers,
         auditLog: null,
