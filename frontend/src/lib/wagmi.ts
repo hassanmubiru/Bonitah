@@ -39,3 +39,13 @@ export const wagmiConfig = getDefaultConfig({
   },
   ssr: true,
 });
+
+// Ensure the config is properly initialized for SSR
+if (typeof window === 'undefined') {
+  // Server-side initialization
+  wagmiConfig.setState((state) => ({
+    ...state,
+    status: 'disconnected',
+    connections: new Map(),
+  }));
+}

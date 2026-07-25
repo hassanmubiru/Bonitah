@@ -17,15 +17,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
  * - Keyboard-accessible navigation (Req 19.6)
  */
 export function SiteHeader() {
-  // Safely handle Wagmi context - during SSR or when provider isn't ready, isConnected will be false
-  let isConnected = false;
-  try {
-    const account = useAccount();
-    isConnected = account.isConnected;
-  } catch (error) {
-    // If useAccount throws (provider not ready), fall back to disconnected state
-    isConnected = false;
-  }
+  const { isConnected } = useAccount();
 
   return (
     <>
