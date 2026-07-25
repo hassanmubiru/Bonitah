@@ -233,3 +233,58 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
       { numRuns: 20 }
     );
   });
+  /**
+   * Property: Only retry on network/timeout errors, not contract-specific errors
+   * Requirements: 1.6 (smart retry logic based on error type)
+   */
+  it('only retries on network/timeout errors, not contract-specific errors', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          contractAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          errorType: fc.constantFrom(
+            'network error',    // Should retry
+            'timeout',          // Should retry  
+            'rpc error',        // Should retry
+            'function not found' // Should NOT retry
+          ),
+        }),
+        async ({ contractAddress, userAddress, errorType }) => {
+          mockReadContractAttempts = 0;
+          const shouldRetry = ['network error', 'timeout', 'rpc error'].includes(errorType);
+          
+          mockReadContractResponse = async () => {
+            throw new Error(errorType);
+          };
+
+          const { result } = renderHook(
+            () => useContractRead({
+              address: contractAddress,
+              abi: mockAbi,
+              functionName: 'balanceOf',
+              args: [userAddress],
+            }),
+            { wrapper: TestWrapper }
+          );
+
+          await waitFor(() => {
+            expect(result.current.isError).toBe(true);
+          }, { timeout: 10000 });
+
+          if (shouldRetry) {
+            // Network/timeout/RPC errors should retry up to 4 attempts total - Req 1.6
+            expect(mockReadContractAttempts).toBe(4);
+          } else {
+            // Contract errors should NOT retry - immediate failure
+            expect(mockReadContractAttempts).toBe(1);
+          }
+
+          // Always should end in error state with no data - Req 1.7
+          expect(result.current.data).toBeUndefined();
+          expect(result.current.error).toBeDefined();
+        }
+      ),
+      { numRuns: 30 }
+    );
+  });
