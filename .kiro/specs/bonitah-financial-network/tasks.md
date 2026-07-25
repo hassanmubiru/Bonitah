@@ -377,7 +377,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Pool contribution, ownership share, and yield display from on-chain state with error-on-failure
     - _Requirements: 7.1, 7.4, 7.5, 11.7_
 
-  - [ ] 21.7 Implement the Education page
+  - [x] 21.7 Implement the Education page
     - Courses/progress from backend and certificates from the Education contract
     - _Requirements: 8.1, 8.3, 11.7_
 
