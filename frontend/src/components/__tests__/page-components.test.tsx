@@ -66,3 +66,94 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
     </QueryClientProvider>
   );
 }
+// Mock Dashboard Component
+const MockDashboard = ({ userAddress }: { userAddress: string }) => {
+  const { useAuthGuard } = require('@/hooks/useAuthGuard');
+  const { isAuthenticated, isLoading: authLoading } = useAuthGuard();
+
+  if (authLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div className="container mx-auto py-6 space-y-8">
+      <h1>Dashboard</h1>
+      <p>Your financial overview and recent activity on Bonitah Financial Network</p>
+      <div data-testid="dashboard-content">
+        <div data-testid="user-address">{userAddress}</div>
+      </div>
+    </div>
+  );
+};
+
+// Mock Savings Component
+const MockSavings = () => {
+  const { useAuthGuard } = require('@/hooks/useAuthGuard');
+  const { 
+    useSavingsVaultBalances,
+    useTokenBalance,
+    formatTokenAmount,
+  } = require('@/hooks/useSavingsVault');
+
+  const { isLoading: authLoading } = useAuthGuard();
+  const { availableBalance, portfolioValue } = useSavingsVaultBalances();
+  const tokenBalance = useTokenBalance();
+
+  if (authLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <main>
+      <h1>Savings</h1>
+      
+      {/* Available Balance */}
+      <div data-testid="available-balance">
+        {availableBalance.isLoading ? (
+          <span className="text-sm text-muted-foreground">Loading...</span>
+        ) : availableBalance.isError ? (
+          <div>
+            <p className="text-2xl font-bold text-destructive">Error</p>
+            <p className="text-sm text-muted-foreground">Failed to load balance</p>
+            <button onClick={() => availableBalance.refetch()}>Retry</button>
+          </div>
+        ) : (
+          <div>{formatTokenAmount(availableBalance.data)} {tokenBalance.symbol}</div>
+        )}
+      </div>
+
+      {/* Portfolio Value */}
+      <div data-testid="portfolio-value">
+        {portfolioValue.isLoading ? (
+          <span className="text-sm text-muted-foreground">Loading...</span>
+        ) : portfolioValue.isError ? (
+          <div>
+            <p className="text-2xl font-bold text-destructive">Error</p>
+            <p className="text-sm text-muted-foreground">Failed to load portfolio value</p>
+            <button onClick={() => portfolioValue.refetch()}>Retry</button>
+          </div>
+        ) : (
+          <div>{formatTokenAmount(portfolioValue.data)} {tokenBalance.symbol}</div>
+        )}
+      </div>
+
+      {/* Wallet Balance */}
+      <div data-testid="wallet-balance">
+        {tokenBalance.isLoading ? (
+          <span>Loading wallet balance...</span>
+        ) : tokenBalance.isError ? (
+          <div>
+            <p>Failed to load wallet balance</p>
+            <button onClick={() => tokenBalance.refetch()}>Retry</button>
+          </div>
+        ) : (
+          <div>{tokenBalance.formatted} {tokenBalance.symbol}</div>
+        )}
+      </div>
+    </main>
+  );
+};
