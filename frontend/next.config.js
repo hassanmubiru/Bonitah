@@ -34,7 +34,7 @@ const nextConfig = {
   
   // Turbopack configuration (Next.js 16+ default in dev mode)
   turbopack: {
-    root: process.cwd(),
+    root: '/home/error51/project/Bonitah',
     resolveAlias: {
       '@x402/evm/upto/client': './public/x402-fallback.js',
       '@x402/evm/exact/client': './public/x402-fallback.js',
