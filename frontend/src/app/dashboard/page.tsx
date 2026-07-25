@@ -2,7 +2,7 @@
 
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { DashboardContent } from '@/components/dashboard/DashboardContent';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
@@ -22,24 +22,34 @@ import { useAuthGuard } from '@/hooks/useAuthGuard';
 export default function DashboardPage() {
   const router = useRouter();
   const { address } = useAccount();
+  const redirectedRef = useRef(false);
   
   // Use auth guard to check authentication state
   const { isAuthenticated, isLoading, isOnCorrectNetwork, isConnected } = useAuthGuard();
 
   // Handle redirects carefully to prevent loops
   useEffect(() => {
-    // Only redirect after loading is complete and we're sure about the state
-    if (!isLoading) {
+    // Only redirect after loading is complete, we're sure about the state, and haven't already redirected
+    if (!isLoading && !redirectedRef.current) {
       if (!isConnected) {
+        redirectedRef.current = true;
         router.push('/auth');
       } else if (isConnected && !isOnCorrectNetwork) {
         // User is connected but on wrong network - stay on page to show network switch prompt
         return;
       } else if (isConnected && isOnCorrectNetwork && !isAuthenticated) {
+        redirectedRef.current = true;
         router.push('/auth');
       }
     }
   }, [isLoading, isConnected, isOnCorrectNetwork, isAuthenticated, router]);
+
+  // Reset redirect flag when loading starts or conditions change
+  useEffect(() => {
+    if (isLoading) {
+      redirectedRef.current = false;
+    }
+  }, [isLoading]);
 
   // Show loading while checking auth or if we don't have required state
   if (isLoading || !isConnected || !isOnCorrectNetwork || !address) {

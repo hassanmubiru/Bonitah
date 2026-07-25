@@ -43,9 +43,6 @@ export function useSiweAuth() {
     error: null,
   });
 
-  // Backend API base URL - updated to port 3002
-  const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
-
   /**
    * Check if current JWT is valid and get user info
    */
@@ -98,6 +95,8 @@ export function useSiweAuth() {
    * Sign in with connected wallet using SIWE
    */
   const signIn = useCallback(async () => {
+    const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
+    
     if (!address || !isConnected || chainId !== BASE_SEPOLIA_CHAIN_ID) {
       setAuthState((prev) => ({
         ...prev,
@@ -185,12 +184,14 @@ export function useSiweAuth() {
         error: error instanceof Error ? error.message : 'Authentication failed',
       }));
     }
-  }, [address, isConnected, chainId, signMessageAsync, apiUrl]);
+  }, [address, isConnected, chainId, signMessageAsync]);
 
   /**
    * Sign out and clear session
    */
   const signOut = useCallback(async () => {
+    const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
+    
     try {
       const token = localStorage.getItem('bfn-auth-token');
       if (token) {
@@ -214,7 +215,7 @@ export function useSiweAuth() {
       });
       disconnect();
     }
-  }, [apiUrl, disconnect]);
+  }, [disconnect]);
 
   // Check authentication on mount and when wallet changes
   useEffect(() => {
