@@ -192,9 +192,9 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
                       </span>
                     </div>
                   ))}
-                  {(certificates as any[]).length > 3 && (
+                  {(certificates as Certificate[]).length > 3 && (
                     <p className="text-xs text-muted-foreground">
-                      +{(certificates as any[]).length - 3} more certificates
+                      +{(certificates as Certificate[]).length - 3} more certificates
                     </p>
                   )}
                 </div>
@@ -209,7 +209,7 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
                 <h4 className="font-medium">Badges</h4>
                 <span className="text-sm text-muted-foreground">
                   {achievements && Array.isArray(achievements) 
-                    ? (achievements as any[]).length 
+                    ? (achievements as Achievement[]).length 
                     : 0} unlocked
                 </span>
               </div>

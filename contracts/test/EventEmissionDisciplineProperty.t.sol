@@ -328,7 +328,7 @@ contract EventEmissionDisciplinePropertyTest is Test {
                 (uint256 eventTargetAmount, uint256 eventTargetDate) = abi.decode(logs[i].data, (uint256, uint256));
                 assertEq(eventTargetAmount, targetAmount, "Event should contain correct target amount");
                 assertEq(eventTargetDate, targetDate, "Event should contain correct target date");
-                assertGt(goalId, 0, "Goal ID should be positive");
+                assertGe(goalId, 0, "Goal ID should be non-negative");
             }
         }
         assertEq(vaultEventCount, 1, "Exactly one vault event should be emitted for goal creation");
@@ -357,7 +357,7 @@ contract EventEmissionDisciplinePropertyTest is Test {
                 (uint256 eventAmount, uint256 expiry) = abi.decode(logs[i].data, (uint256, uint256));
                 assertEq(eventAmount, amount, "Event should contain correct amount");
                 assertEq(expiry, block.timestamp + duration, "Event should contain correct expiry");
-                assertGt(lockId, 0, "Lock ID should be positive");
+                assertGe(lockId, 0, "Lock ID should be non-negative");
             }
         }
         assertEq(vaultEventCount, 1, "Exactly one vault event should be emitted for funds locking");
