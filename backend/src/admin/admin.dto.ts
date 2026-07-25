@@ -62,9 +62,8 @@ export interface AdminUserListDto {
     id: string;
     walletAddress: string;
     role: string;
-    isActive: boolean;
+    displayName: string | null;
     createdAt: Date;
-    updatedAt: Date;
   }>;
   pagination: {
     page: number;
