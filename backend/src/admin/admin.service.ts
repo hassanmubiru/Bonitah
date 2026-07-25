@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
 
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
+import { ChainReadService } from '../chain-read/chain-read.service';
 import type {
   AdminDashboardResponse,
   AdminUsersResponse,
@@ -24,6 +25,7 @@ export class AdminService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly chainRead: ChainReadService,
   ) {}
 
   /**
