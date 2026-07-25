@@ -34,6 +34,11 @@ interface SavingsSummaryProps {
  * - Locked savings details with time remaining
  * - Proper loading/error/retry states
  */
+export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
+ * - Goal progress from on-chain reads
+ * - Locked savings details with time remaining
+ * - Proper loading/error/retry states
+ */
 /**
  * Savings summary showing goal progress and locked savings status.
   const savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
@@ -141,7 +146,7 @@ interface SavingsSummaryProps {
               <h4 className="font-medium mb-3">Active Goals</h4>
               {activeGoals && Array.isArray(activeGoals) && activeGoals.length > 0 ? (
                 <div className="space-y-3">
-                  {(activeGoals as any[]).slice(0, 3).map((goal: any, index: number) => {
+                  {(activeGoals as Goal[]).slice(0, 3).map((goal: Goal, index: number) => {
                     const progress = goal.targetAmount > 0n 
                       ? Number((goal.savedAmount * 100n) / goal.targetAmount) 
                       : 0;
