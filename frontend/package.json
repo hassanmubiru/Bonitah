@@ -5,7 +5,7 @@
   "description": "Bonitah Financial Network frontend (Next.js App Router) - wallet connection, on-chain reads, and dashboards for Base Sepolia.",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint --max-warnings 0",
