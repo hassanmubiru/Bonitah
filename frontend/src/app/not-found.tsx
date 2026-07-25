@@ -37,10 +37,10 @@ export default function NotFound() {
           {/* Navigation Options */}
           <Card className="mx-auto max-w-md">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
+              <h3 className="font-semibold leading-none tracking-tight flex items-center gap-2 text-xl">
                 <Search className="h-5 w-5" />
                 What would you like to do?
-              </CardTitle>
+              </h3>
               <CardDescription>Here are some ways to get back on track</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

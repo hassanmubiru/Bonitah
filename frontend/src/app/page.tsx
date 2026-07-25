@@ -32,12 +32,10 @@ export default function HomePage() {
           <div className="mx-auto max-w-4xl space-y-8">
             <div className="space-y-4">
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-                Building Financial
+                Building Financial{' '}
                 <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                  {' '}
                   Freedom
-                </span>
-                <br />
+                </span>{' '}
                 Together
               </h1>
               <p className="mx-auto max-w-2xl text-lg text-muted-foreground sm:text-xl">
@@ -96,7 +94,7 @@ export default function HomePage() {
                   <div className="rounded-lg bg-primary/10 p-2">
                     <TrendingUp className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle className="text-xl">Smart Savings</CardTitle>
+                  <h3 className="text-xl font-semibold leading-none tracking-tight">Smart Savings</h3>
                 </div>
                 <CardDescription>
                   Earn yield on your savings with transparent, decentralized protocols on Base blockchain.
@@ -118,7 +116,7 @@ export default function HomePage() {
                   <div className="rounded-lg bg-primary/10 p-2">
                     <Target className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle className="text-xl">Goal Setting</CardTitle>
+                  <h3 className="text-xl font-semibold leading-none tracking-tight">Goal Setting</h3>
                 </div>
                 <CardDescription>
                   Set and track financial goals with milestone rewards and community support.
@@ -140,7 +138,7 @@ export default function HomePage() {
                   <div className="rounded-lg bg-primary/10 p-2">
                     <Users className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle className="text-xl">Community</CardTitle>
+                  <h3 className="text-xl font-semibold leading-none tracking-tight">Community</h3>
                 </div>
                 <CardDescription>
                   Join investment circles and learn from experienced community members.
@@ -162,7 +160,7 @@ export default function HomePage() {
                   <div className="rounded-lg bg-primary/10 p-2">
                     <BookOpen className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle className="text-xl">Education</CardTitle>
+                  <h3 className="text-xl font-semibold leading-none tracking-tight">Education</h3>
                 </div>
                 <CardDescription>
                   Learn DeFi, blockchain, and traditional finance through interactive content.

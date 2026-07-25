@@ -38,11 +38,12 @@ describe('Landing Page (Task 21.1)', () => {
       expect(screen.getByText(/Build wealth, learn together, achieve your goals/)).toBeInTheDocument();
     });
 
-    it('renders Connect Wallet button', () => {
+    it('renders Connect Wallet buttons', () => {
       render(<HomePage />);
       
-      expect(screen.getByTestId('connect-button')).toBeInTheDocument();
-      expect(ConnectButton).toHaveBeenCalled();
+      const connectButtons = screen.getAllByTestId('connect-button');
+      expect(connectButtons).toHaveLength(2); // One in hero, one in CTA section
+      expect(ConnectButton).toHaveBeenCalledTimes(2);
     });
 
     it('includes Learn More CTA button', () => {
@@ -108,6 +109,8 @@ describe('Landing Page (Task 21.1)', () => {
       render(<HomePage />);
       
       // Should have two ConnectButton instances
+      const connectButtons = screen.getAllByTestId('connect-button');
+      expect(connectButtons).toHaveLength(2);
       expect(ConnectButton).toHaveBeenCalledTimes(2);
     });
   });
