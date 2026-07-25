@@ -1,12 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  
-  // Temporarily skip type checking during build for Next.js 16 upgrade
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  
+
   // Handle CORS policy issues
   async headers() {
     return [
@@ -19,7 +14,7 @@ const nextConfig = {
             value: 'same-origin-allow-popups',
           },
           {
-            key: 'Cross-Origin-Embedder-Policy', 
+            key: 'Cross-Origin-Embedder-Policy',
             value: 'unsafe-none',
           },
         ],
@@ -31,7 +26,7 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
-  
+
   // Turbopack configuration (Next.js 16+ default in dev mode)
   turbopack: {
     root: '/home/error51/project/Bonitah',
@@ -46,7 +41,7 @@ const nextConfig = {
       '@react-native-async-storage/async-storage': './public/x402-fallback.js',
     },
   },
-  
+
   // Webpack configuration for better tree-shaking
   webpack: (config, { isServer }) => {
     if (!isServer && config.optimization?.splitChunks) {
@@ -57,7 +52,7 @@ const nextConfig = {
           cacheGroups: {},
         };
       }
-      
+
       // Optimize client bundle
       config.optimization.splitChunks.cacheGroups = {
         ...config.optimization.splitChunks.cacheGroups,
@@ -84,7 +79,7 @@ const nextConfig = {
       '@x402/core': false,
       '@react-native-async-storage/async-storage': false,
     };
-    
+
     return config;
   },
 };
