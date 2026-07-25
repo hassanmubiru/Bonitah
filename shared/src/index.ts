@@ -21,3 +21,7 @@ export * from './schemas.js';
 // import { BASE_SEPOLIA_ADDRESSES } from '@bonitah/shared/contracts/addresses';
 // OR 
 // import RegistryAbi from '@bonitah/shared/contracts/abis/Registry';
+
+
+// Contract ABIs and addresses
+export * from './contracts';

@@ -1,12 +1,7 @@
-/**
- * SavingsVault Contract ABI
- * Auto-generated from Foundry build artifacts
- * 
- * Type-safe ABI for SavingsVault contract interactions with viem/wagmi
- */
-import type { Abi } from 'abitype';
+// Auto-generated ABI for SavingsVault
+// Do not edit manually
 
-export const savingsVaultAbi = [
+export const SavingsVaultABI = [
   {
     "type": "constructor",
     "inputs": [],
@@ -1043,6 +1038,6 @@ export const savingsVaultAbi = [
     "name": "ZeroAmount",
     "inputs": []
   }
-] as const satisfies Abi;
+] as const;
 
-export default savingsVaultAbi;
+export type SavingsVaultABI = typeof SavingsVaultABI;

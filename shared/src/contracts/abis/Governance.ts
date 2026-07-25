@@ -1,12 +1,7 @@
-/**
- * Governance Contract ABI
- * Auto-generated from Foundry build artifacts
- * 
- * Type-safe ABI for Governance contract interactions with viem/wagmi
- */
-import type { Abi } from 'abitype';
+// Auto-generated ABI for Governance
+// Do not edit manually
 
-export const governanceAbi = [
+export const GovernanceABI = [
   {
     "type": "constructor",
     "inputs": [],
@@ -703,6 +698,6 @@ export const governanceAbi = [
     "name": "ZeroAdmin",
     "inputs": []
   }
-] as const satisfies Abi;
+] as const;
 
-export default governanceAbi;
+export type GovernanceABI = typeof GovernanceABI;

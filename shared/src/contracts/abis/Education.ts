@@ -1,12 +1,7 @@
-/**
- * Education Contract ABI
- * Auto-generated from Foundry build artifacts
- * 
- * Type-safe ABI for Education contract interactions with viem/wagmi
- */
-import type { Abi } from 'abitype';
+// Auto-generated ABI for Education
+// Do not edit manually
 
-export const educationAbi = [
+export const EducationABI = [
   {
     "type": "constructor",
     "inputs": [],
@@ -671,6 +666,6 @@ export const educationAbi = [
     "name": "ZeroAdmin",
     "inputs": []
   }
-] as const satisfies Abi;
+] as const;
 
-export default educationAbi;
+export type EducationABI = typeof EducationABI;

@@ -1,7 +1,7 @@
-// Auto-generated addresses for Base Sepolia
+// Auto-generated addresses for Local
 // Do not edit manually - updated by deployment scripts
 
-export const basesepoliaAddresses = {
+export const localhostAddresses = {
   "SavingsVault": "0x0000000000000000000000000000000000000000",
   "CommunityTreasury": "0x0000000000000000000000000000000000000000",
   "Education": "0x0000000000000000000000000000000000000000",
@@ -9,4 +9,4 @@ export const basesepoliaAddresses = {
   "Governance": "0x0000000000000000000000000000000000000000"
 } as const;
 
-export type ContractAddresses = typeof basesepoliaAddresses;
+export type ContractAddresses = typeof localhostAddresses;

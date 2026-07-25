@@ -1,474 +1,270 @@
 #!/usr/bin/env node
 
-/**
- * ABI Generation Script for BFN Contracts
- * 
- * Extracts full ABIs from Foundry compilation artifacts and generates TypeScript exports
- * for the shared package, enabling typed contract interactions in frontend and backend.
- * 
- * Usage:
- *   node scripts/generate-abis.js
- *   
- * Features:
- * - Extracts full ABIs from contracts/out/ artifacts
- * - Generates TypeScript-compatible ABI exports
- * - Creates typed contract interfaces using viem patterns
- * - Validates ABI structure and completeness
- * - Generates optimized exports for tree-shaking
- */
+const fs = require('fs');
+const path = require('path');
 
-const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs');
-const { join } = require('path');
+const CONTRACTS_OUT_DIR = path.join(__dirname, '../contracts/out');
+const SHARED_SRC_DIR = path.join(__dirname, '../shared/src');
+const CONTRACTS_DIR = path.join(SHARED_SRC_DIR, 'contracts');
 
-const projectRoot = join(__dirname, '..');
-
-// Contract configuration - matches types.ts ContractName
+// Contract names to process
 const CONTRACTS = [
-  'Registry',
-  'SavingsVault', 
-  'CommunityTreasury',
+  'SavingsVault',
+  'CommunityTreasury', 
   'Education',
+  'Registry',
   'Governance'
 ];
 
+// Network configurations
+const NETWORKS = {
+  'base-sepolia': {
+    name: 'Base Sepolia',
+    chainId: 84532
+  },
+  'localhost': {
+    name: 'Local',
+    chainId: 31337
+  }
+};
+
 /**
- * Extract ABI from Foundry compilation artifact
+ * Ensure directory exists
+ */
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+/**
+ * Extract ABI from Foundry build artifact
  */
 function extractABI(contractName) {
-  const artifactPath = join(projectRoot, `contracts/out/${contractName}.sol/${contractName}.json`);
+  const artifactPath = path.join(CONTRACTS_OUT_DIR, `${contractName}.sol`, `${contractName}.json`);
   
-  if (!existsSync(artifactPath)) {
-    throw new Error(`Compilation artifact not found for ${contractName} at ${artifactPath}`);
+  if (!fs.existsSync(artifactPath)) {
+    console.warn(`⚠️  Artifact not found: ${artifactPath}`);
+    return null;
   }
 
-  console.log(`📄 Extracting ABI for ${contractName}...`);
-  
   try {
-    const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'));
-    const abi = artifact.abi;
-
-    if (!Array.isArray(abi) || abi.length === 0) {
-      throw new Error(`Invalid or empty ABI found for ${contractName}`);
-    }
-
-    console.log(`   ✅ Extracted ${abi.length} ABI items`);
-    return abi;
+    const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
+    return artifact.abi;
   } catch (error) {
-    throw new Error(`Failed to extract ABI for ${contractName}: ${error.message}`);
+    console.error(`❌ Failed to parse ${contractName} artifact:`, error.message);
+    return null;
   }
 }
 
 /**
- * Generate TypeScript ABI export for a contract
+ * Generate TypeScript ABI file
  */
-function generateContractABI(contractName, abi) {
-  const camelCaseName = contractName.charAt(0).toLowerCase() + contractName.slice(1);
-  
-  // Format ABI with proper TypeScript syntax
-  const abiJson = JSON.stringify(abi, null, 2)
-    .replace(/"/g, "'")
-    .replace(/'/g, '"');
+function generateABIFile(contractName, abi) {
+  const content = `// Auto-generated ABI for ${contractName}
+// Do not edit manually
 
-  return `/** ${contractName}.sol - Auto-generated from Foundry artifacts */
-export const ${camelCaseName}Abi = ${abiJson} as const satisfies Abi;`;
+export const ${contractName}ABI = ${JSON.stringify(abi, null, 2)} as const;
+
+export type ${contractName}ABI = typeof ${contractName}ABI;
+`;
+
+  const filePath = path.join(CONTRACTS_DIR, 'abis', `${contractName}.ts`);
+  fs.writeFileSync(filePath, content);
+  console.log(`✅ Generated ABI: ${filePath}`);
 }
 
 /**
- * Generate the complete abis.ts file
+ * Generate addresses configuration file for a network
  */
-function generateABIsFile() {
-  console.log('\n🔧 Generating TypeScript ABI exports...');
+function generateAddressesFile(networkName) {
+  const addressesPath = path.join(__dirname, '../deployment', networkName, 'addresses.json');
+  
+  // Create default addresses structure if deployment file doesn't exist
+  const defaultAddresses = CONTRACTS.reduce((acc, contractName) => {
+    acc[contractName] = '0x0000000000000000000000000000000000000000'; // Placeholder
+    return acc;
+  }, {});
 
-  const imports = [
-    "import type { Abi } from 'abitype';",
-    "",
-    "import type { ContractName } from './types.js';"
-  ];
-
-  const exports = [];
-  const abiEntries = [];
-
-  // Extract and generate each contract's ABI
-  for (const contractName of CONTRACTS) {
+  let addresses = defaultAddresses;
+  
+  if (fs.existsSync(addressesPath)) {
     try {
-      const abi = extractABI(contractName);
-      const camelCaseName = contractName.charAt(0).toLowerCase() + contractName.slice(1);
-      
-      exports.push(generateContractABI(contractName, abi));
-      abiEntries.push(`  ${contractName}: ${camelCaseName}Abi,`);
+      addresses = JSON.parse(fs.readFileSync(addressesPath, 'utf8'));
     } catch (error) {
-      console.error(`❌ Failed to process ${contractName}: ${error.message}`);
-      throw error;
+      console.warn(`⚠️  Failed to parse addresses for ${networkName}, using defaults`);
     }
   }
 
-  // Generate the CONTRACT_ABIS registry and helper function
-  const registry = `
-/** Registry of every contract ABI keyed by contract name. */
-export const CONTRACT_ABIS = {
-${abiEntries.join('\n')}
-} as const satisfies Record<ContractName, Abi>;
+  const content = `// Auto-generated addresses for ${NETWORKS[networkName].name}
+// Do not edit manually - updated by deployment scripts
 
-/** Resolve the ABI for a given contract name. */
-export function getContractAbi(name: ContractName): Abi {
-  return CONTRACT_ABIS[name];
-}`;
+export const ${networkName.replace('-', '')}Addresses = ${JSON.stringify(addresses, null, 2)} as const;
 
-  // Combine all parts
-  const fileContent = [
-    '/**',
-    ' * Auto-generated Contract ABIs',
-    ' * ',
-    ' * This file is automatically generated from Foundry compilation artifacts.',
-    ' * DO NOT EDIT MANUALLY - changes will be overwritten.',
-    ' * ',
-    ' * Generated by: scripts/generate-abis.js',
-    ' * Source: contracts/out/ContractName.sol/ContractName.json',
-    ' * ',
-    ' * Each ABI is declared as const and checked with satisfies Abi so abitype',
-    ' * infers precise argument/return types for full type safety in frontend (viem/wagmi)',
-    ' * and backend (viem) contract interactions.',
-    ' */',
-    '',
-    ...imports,
-    '',
-    ...exports,
-    registry,
-    ''
-  ].join('\n');
-
-  return fileContent;
-}
-
-/**
- * Validate generated ABI structure
- */
-function validateABIs(content) {
-  console.log('🔍 Validating generated ABIs...');
-  
-  // Basic structure validation
-  if (!content.includes('CONTRACT_ABIS') || !content.includes('getContractAbi')) {
-    throw new Error('Generated file missing required exports');
-  }
-
-  for (const contractName of CONTRACTS) {
-    const camelCaseName = contractName.charAt(0).toLowerCase() + contractName.slice(1);
-    if (!content.includes(`${camelCaseName}Abi`)) {
-      throw new Error(`Missing ABI export for ${contractName}`);
-    }
-  }
-
-  console.log('   ✅ ABI validation passed');
-}
-
-/**
- * Write generated content to shared package
- */
-function writeABIsFile(content) {
-  const outputPath = join(projectRoot, 'shared/src/abis.ts');
-  console.log(`📝 Writing ABIs to ${outputPath}...`);
-  
-  try {
-    writeFileSync(outputPath, content, 'utf8');
-    console.log('   ✅ ABIs file written successfully');
-  } catch (error) {
-    throw new Error(`Failed to write ABIs file: ${error.message}`);
-  }
-}
-
-/**
- * Generate contracts directory structure in shared package
- */
-function generateContractsStructure() {
-  console.log('\n📁 Generating contracts directory structure...');
-  
-  const contractsBase = join(projectRoot, 'shared/src/contracts');
-  const dirs = ['abis', 'addresses', 'types'];
-  
-  // Create individual ABI files
-  console.log('📄 Generating individual ABI files...');
-  
-  for (const contractName of CONTRACTS) {
-    try {
-      const abi = extractABI(contractName);
-      const camelCaseName = contractName.charAt(0).toLowerCase() + contractName.slice(1);
-      
-      const abiContent = `/**
- * ${contractName} Contract ABI
- * Auto-generated from Foundry compilation artifacts
- * DO NOT EDIT MANUALLY
- */
-
-import type { Abi } from 'abitype';
-
-export const ${camelCaseName}Abi = ${JSON.stringify(abi, null, 2)} as const satisfies Abi;
-
-export default ${camelCaseName}Abi;
+export type ContractAddresses = typeof ${networkName.replace('-', '')}Addresses;
 `;
 
-      const abiFilePath = join(contractsBase, 'abis', `${contractName}.ts`);
-      writeFileSync(abiFilePath, abiContent, 'utf8');
-      console.log(`   ✅ Generated ${contractName}.ts`);
-    } catch (error) {
-      console.error(`   ❌ Failed to generate ${contractName}.ts: ${error.message}`);
-    }
-  }
+  const filePath = path.join(CONTRACTS_DIR, 'addresses', `${networkName}.ts`);
+  fs.writeFileSync(filePath, content);
+  console.log(`✅ Generated addresses: ${filePath}`);
 }
 
 /**
- * Generate network-specific address files
+ * Generate main contracts index file
  */
-function generateAddressFiles() {
-  console.log('\n🌐 Generating address configuration files...');
-  
-  const addressesBase = join(projectRoot, 'shared/src/contracts/addresses');
-  
-  // Generate base-sepolia.ts
-  const baseSepolia = `/**
- * Base Sepolia Contract Addresses
- * Auto-generated and updated by deployment scripts
- * DO NOT EDIT MANUALLY
- */
+function generateContractsIndex() {
+  const abiExports = CONTRACTS.map(name => 
+    `export { ${name}ABI } from './abis/${name}';`
+  ).join('\n');
 
-import type { Address } from 'viem';
-import type { ContractName } from '../types/contracts.js';
+  const addressExports = Object.keys(NETWORKS).map(network =>
+    `export { ${network.replace('-', '')}Addresses } from './addresses/${network}';`
+  ).join('\n');
 
-export const BASE_SEPOLIA_CHAIN_ID = 84532 as const;
+  const content = `// Auto-generated contracts exports
+// Do not edit manually
 
-/** Contract addresses on Base Sepolia - updated by deployment */
-export const BASE_SEPOLIA_ADDRESSES: Record<ContractName, Address> = {
-  Registry: '0x0000000000000000000000000000000000000000' as Address,
-  SavingsVault: '0x0000000000000000000000000000000000000000' as Address,
-  CommunityTreasury: '0x0000000000000000000000000000000000000000' as Address,
-  Education: '0x0000000000000000000000000000000000000000' as Address,
-  Governance: '0x0000000000000000000000000000000000000000' as Address,
-} as const;
+// Contract ABIs
+${abiExports}
 
-/** ERC20 token address used by the contracts */
-export const BASE_SEPOLIA_TOKEN_ADDRESS: Address = '0x0000000000000000000000000000000000000000' as Address;
+// Contract addresses by network
+${addressExports}
 
-/** Block number when contracts were deployed */
-export const BASE_SEPOLIA_DEPLOYED_BLOCK = 0n;
-
-export default BASE_SEPOLIA_ADDRESSES;
+// Re-export types
+export type { ContractAddresses } from './addresses/base-sepolia';
 `;
 
-  writeFileSync(join(addressesBase, 'base-sepolia.ts'), baseSepolia, 'utf8');
-  console.log('   ✅ Generated base-sepolia.ts');
-
-  // Generate index.ts
-  const addressIndex = `/**
- * Contract Addresses Registry
- * Exports addresses for all supported networks
- */
-
-export { BASE_SEPOLIA_ADDRESSES, BASE_SEPOLIA_CHAIN_ID, BASE_SEPOLIA_TOKEN_ADDRESS, BASE_SEPOLIA_DEPLOYED_BLOCK } from './base-sepolia.js';
-
-import { BASE_SEPOLIA_ADDRESSES, BASE_SEPOLIA_CHAIN_ID } from './base-sepolia.js';
-import type { ContractName } from '../types/contracts.js';
-import type { Address } from 'viem';
-
-/** All supported chain IDs */
-export const SUPPORTED_CHAIN_IDS = [BASE_SEPOLIA_CHAIN_ID] as const;
-export type SupportedChainId = typeof SUPPORTED_CHAIN_IDS[number];
-
-/** Network addresses registry */
-export const NETWORK_ADDRESSES = {
-  [BASE_SEPOLIA_CHAIN_ID]: BASE_SEPOLIA_ADDRESSES,
-} as const;
-
-/** Get contract address for a specific network and contract */
-export function getContractAddress(chainId: SupportedChainId, contractName: ContractName): Address {
-  const networkAddresses = NETWORK_ADDRESSES[chainId];
-  if (!networkAddresses) {
-    throw new Error(\`Unsupported chain ID: \${chainId}\`);
-  }
-  
-  const address = networkAddresses[contractName];
-  if (address === '0x0000000000000000000000000000000000000000') {
-    throw new Error(\`Contract \${contractName} not deployed on chain \${chainId}\`);
-  }
-  
-  return address;
-}
-
-/** Check if a contract is deployed (non-zero address) */
-export function isContractDeployed(chainId: SupportedChainId, contractName: ContractName): boolean {
-  try {
-    const address = NETWORK_ADDRESSES[chainId]?.[contractName];
-    return address !== '0x0000000000000000000000000000000000000000';
-  } catch {
-    return false;
-  }
-}
-`;
-
-  writeFileSync(join(addressesBase, 'index.ts'), addressIndex, 'utf8');
-  console.log('   ✅ Generated addresses/index.ts');
+  const filePath = path.join(CONTRACTS_DIR, 'index.ts');
+  fs.writeFileSync(filePath, content);
+  console.log(`✅ Generated contracts index: ${filePath}`);
 }
 
 /**
- * Generate type definitions for contracts
+ * Update shared package main index
  */
-function generateTypeDefinitions() {
-  console.log('\n🔧 Generating contract type definitions...');
+function updateSharedIndex() {
+  const indexPath = path.join(SHARED_SRC_DIR, 'index.ts');
   
-  const typesPath = join(projectRoot, 'shared/src/contracts/types');
-  
-  // Generate contracts.ts
-  const contractTypes = `/**
- * Contract Type Definitions
- * Auto-generated type definitions for contract interactions
- */
-
-import type { Address, Hash, Hex } from 'viem';
-
-/** The five BFN smart contracts */
-export type ContractName = ${CONTRACTS.map(c => `'${c}'`).join(' | ')};
-
-/** All contract names as a runtime array */
-export const CONTRACT_NAMES = [
-  ${CONTRACTS.map(c => `'${c}',`).join('\n  ')}
-] as const satisfies readonly ContractName[];
-
-/** Contract deployment information */
-export interface ContractDeployment {
-  readonly proxy: Address;
-  readonly implementation: Address;
-  readonly deployedAt: {
-    readonly block: bigint;
-    readonly timestamp: number;
-  };
-}
-
-/** Network deployment record */
-export interface NetworkDeployment {
-  readonly chainId: number;
-  readonly network: string;
-  readonly deployer: Address;
-  readonly contracts: Record<ContractName, ContractDeployment>;
-  readonly token: Address;
-  readonly gasUsed: {
-    readonly total: bigint;
-    readonly contracts: Record<ContractName, bigint>;
-  };
-}
-
-/** Contract interaction configuration */
-export interface ContractConfig {
-  readonly address: Address;
-  readonly abi: readonly unknown[];
-  readonly chainId: number;
-}
-
-export type { Address, Hash, Hex };
-`;
-
-  writeFileSync(join(typesPath, 'contracts.ts'), contractTypes, 'utf8');
-  console.log('   ✅ Generated contracts.ts');
-
-  // Generate index.ts for types
-  const typesIndex = `/**
- * Contract Types - Re-exports for convenience
- */
-
-export type { ContractName, ContractDeployment, NetworkDeployment, ContractConfig, Address, Hash, Hex } from './contracts.js';
-export { CONTRACT_NAMES } from './contracts.js';
-`;
-
-  writeFileSync(join(typesPath, 'index.ts'), typesIndex, 'utf8');
-  console.log('   ✅ Generated types/index.ts');
-}
-
-/**
- * Create directories if they don't exist
- */
-function ensureDirectories() {
-  const dirs = [
-    join(projectRoot, 'shared/src/contracts'),
-    join(projectRoot, 'shared/src/contracts/abis'),
-    join(projectRoot, 'shared/src/contracts/addresses'),
-    join(projectRoot, 'shared/src/contracts/types'),
-  ];
-
-  for (const dir of dirs) {
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
-      console.log(`📁 Created directory: ${dir}`);
-    }
+  // Read existing index or create new one
+  let existingContent = '';
+  if (fs.existsSync(indexPath)) {
+    existingContent = fs.readFileSync(indexPath, 'utf8');
   }
-}
 
-/**
- * Main execution function
- */
-async function main() {
-  try {
-    console.log('🚀 Starting ABI and Address Generation\n');
-
-    // Validate prerequisites
-    console.log('🔍 Validating prerequisites...');
-    const contractsOutDir = join(projectRoot, 'contracts/out');
-    if (!existsSync(contractsOutDir)) {
-      throw new Error('contracts/out directory not found. Run "forge build" first.');
-    }
-    console.log('   ✅ Foundry artifacts found');
-
-    // Ensure directory structure
-    ensureDirectories();
-
-    // Generate main ABIs file (backwards compatibility)
-    const abiContent = generateABIsFile();
-    validateABIs(abiContent);
-    writeABIsFile(abiContent);
-
-    // Generate new structure
-    generateContractsStructure();
-    generateAddressFiles();
-    generateTypeDefinitions();
-
-    // Generate root contracts index
-    const contractsIndex = `/**
- * BFN Contracts - Complete Export
- * Auto-generated exports for contract ABIs, addresses, and types
- */
-
-// ABIs
-export * from './abis/index.js';
-
-// Addresses  
-export * from './addresses/index.js';
-
-// Types
-export * from './types/index.js';
-
-// Individual contract ABIs for tree-shaking
-export { default as RegistryAbi } from './abis/Registry.js';
-export { default as SavingsVaultAbi } from './abis/SavingsVault.js';
-export { default as CommunityTreasuryAbi } from './abis/CommunityTreasury.js';
-export { default as EducationAbi } from './abis/Education.js';
-export { default as GovernanceAbi } from './abis/Governance.js';
-`;
-
-    writeFileSync(join(projectRoot, 'shared/src/contracts/index.ts'), contractsIndex, 'utf8');
-    console.log('   ✅ Generated contracts/index.ts');
-
-    console.log('\n✅ ABI and Address Generation Complete!');
-    console.log('\n📦 Generated Files:');
-    console.log('   📄 shared/src/abis.ts - Main ABI exports (backwards compatibility)');
-    console.log('   📁 shared/src/contracts/ - New structured exports');
-    console.log('   📄 shared/src/contracts/abis/*.ts - Individual ABI files');
-    console.log('   📄 shared/src/contracts/addresses/*.ts - Network address files');
-    console.log('   📄 shared/src/contracts/types/*.ts - Type definitions');
-    console.log('\n🔧 Usage:');
-    console.log('   Frontend: import { registryAbi } from "@bonitah/shared/contracts"');
-    console.log('   Backend: import { getContractAddress } from "@bonitah/shared/contracts"');
+  // Add contracts export if not present
+  const contractsExport = "export * from './contracts';";
+  if (!existingContent.includes(contractsExport)) {
+    const content = existingContent ? 
+      `${existingContent}\n\n// Contract ABIs and addresses\n${contractsExport}\n` :
+      `// Shared package exports\n\n// Contract ABIs and addresses\n${contractsExport}\n`;
     
-  } catch (error) {
-    console.error('\n❌ Generation failed:', error.message);
+    fs.writeFileSync(indexPath, content);
+    console.log(`✅ Updated shared index: ${indexPath}`);
+  }
+}
+
+/**
+ * Create address update script for deployment
+ */
+function createAddressUpdater() {
+  const content = `#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+
+/**
+ * Update contract addresses after deployment
+ * Usage: node update-addresses.js <network> <contract> <address>
+ * Example: node update-addresses.js base-sepolia SavingsVault 0x123...
+ */
+function updateAddress(network, contractName, address) {
+  const addressesPath = path.join(__dirname, '../deployment', network, 'addresses.json');
+  
+  // Read existing addresses
+  let addresses = {};
+  if (fs.existsSync(addressesPath)) {
+    addresses = JSON.parse(fs.readFileSync(addressesPath, 'utf8'));
+  }
+  
+  // Update address
+  addresses[contractName] = address;
+  
+  // Ensure deployment directory exists
+  const deploymentDir = path.dirname(addressesPath);
+  if (!fs.existsSync(deploymentDir)) {
+    fs.mkdirSync(deploymentDir, { recursive: true });
+  }
+  
+  // Write updated addresses
+  fs.writeFileSync(addressesPath, JSON.stringify(addresses, null, 2));
+  console.log(\`✅ Updated \${contractName} address to \${address} on \${network}\`);
+  
+  // Regenerate TypeScript files
+  require('./generate-abis.js');
+}
+
+// CLI usage
+if (require.main === module) {
+  const [network, contractName, address] = process.argv.slice(2);
+  
+  if (!network || !contractName || !address) {
+    console.error('Usage: node update-addresses.js <network> <contract> <address>');
     process.exit(1);
   }
+  
+  updateAddress(network, contractName, address);
 }
 
-// Run the script
-main().catch(console.error);
+module.exports = { updateAddress };
+`;
+
+  const filePath = path.join(__dirname, 'update-addresses.js');
+  fs.writeFileSync(filePath, content);
+  fs.chmodSync(filePath, 0o755);
+  console.log(`✅ Created address updater: ${filePath}`);
+}
+
+/**
+ * Main generation function
+ */
+function generateABIs() {
+  console.log('🏗️  Generating contract ABIs and addresses...\n');
+
+  // Ensure directories exist
+  ensureDir(CONTRACTS_DIR);
+  ensureDir(path.join(CONTRACTS_DIR, 'abis'));
+  ensureDir(path.join(CONTRACTS_DIR, 'addresses'));
+
+  // Generate ABI files
+  console.log('📋 Generating ABIs...');
+  CONTRACTS.forEach(contractName => {
+    const abi = extractABI(contractName);
+    if (abi) {
+      generateABIFile(contractName, abi);
+    }
+  });
+
+  // Generate address files
+  console.log('\n📍 Generating addresses...');
+  Object.keys(NETWORKS).forEach(networkName => {
+    generateAddressesFile(networkName);
+  });
+
+  // Generate index files
+  console.log('\n📦 Generating exports...');
+  generateContractsIndex();
+  updateSharedIndex();
+  
+  // Create utility scripts
+  console.log('\n🔧 Creating utilities...');
+  createAddressUpdater();
+
+  console.log('\n✅ ABI and address generation complete!');
+}
+
+// Run if called directly
+if (require.main === module) {
+  generateABIs();
+}
+
+module.exports = { generateABIs };

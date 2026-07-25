@@ -1,193 +1,241 @@
-import { Controller, Get, Put, Post, Delete, Param, HttpCode, HttpStatus, Request, Query, Body } from '@nestjs/common';
-
-import { Roles } from '../auth/decorators/roles.decorator';
-import type { AuthenticatedRequest } from '../auth/auth.types';
-import { AdminService } from './admin.service';
 import {
-  type AdminDashboardResponse,
-  type AdminUsersResponse,
-  type AdminUserDetailsResponse,
-  type AdminTransactionsResponse,
-  type AdminCommunityResponse,
-  type AdminSystemResponse,
-  updateUserRoleRequestSchema,
-  type UpdateUserRoleRequest,
-  adminActionRequestSchema,
-  type AdminActionRequest,
-} from './admin.schemas';
+  Controller,
+  Get,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  HttpStatus,
+  HttpException,
+} from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { AdminService } from './admin.service';
+import { 
+  AdminUserUpdateDto, 
+  AdminSystemHealthDto, 
+  AdminAnalyticsDto,
+  AdminUserListDto 
+} from './admin.dto';
 
 /**
- * Admin-only endpoints for system management and oversight (Req 14.9, 11.7).
+ * Admin controller - Administrative operations with role-based access control
  * 
- * All endpoints in this controller require ADMIN role, enforced by the
- * global RolesGuard. Unauthorized access is blocked with 403 Forbidden.
+ * Implements Task 21.11 requirements:
+ * - Admin-only operations gated by role with unauthorized access blocked
+ * - Requirements: 14.9, 11.7
  */
 @Controller('admin')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   /**
-   * Get admin dashboard data with system metrics and alerts (Req 14.9).
+   * Get system health metrics
    */
-  @Get('dashboard')
-  @HttpCode(HttpStatus.OK)
-  getDashboard(@Request() req: AuthenticatedRequest): Promise<AdminDashboardResponse> {
-    return this.adminService.getDashboard(req.user);
+  @Get('system/health')
+  async getSystemHealth(): Promise<AdminSystemHealthDto> {
+    try {
+      return await this.adminService.getSystemHealth();
+    } catch (error) {
+      throw new HttpException(
+        'Failed to retrieve system health',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
-   * Get user management data with search and filtering (Req 14.9).
+   * Get admin analytics
+   */
+  @Get('analytics')
+  async getAdminAnalytics(
+    @Query('period') period?: string,
+    @Query('metric') metric?: string,
+  ): Promise<AdminAnalyticsDto> {
+    try {
+      return await this.adminService.getAnalytics(period, metric);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to retrieve analytics',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get user list with filters
    */
   @Get('users')
-  @HttpCode(HttpStatus.OK)
-  getUsers(
-    @Request() req: AuthenticatedRequest,
+  async getUsers(
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
     @Query('search') search?: string,
     @Query('role') role?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ): Promise<AdminUsersResponse> {
-    const filters = {
-      page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
-    };
-
-    if (search) {
-      (filters as any).search = search;
-    }
-
-    if (role && ['USER', 'VERIFIER', 'ADMIN'].includes(role)) {
-      (filters as any).role = role as 'USER' | 'VERIFIER' | 'ADMIN';
-    }
-
-    return this.adminService.getUsers(req.user, filters);
-  }
-
-  /**
-   * Get detailed user information by user ID (Req 14.9).
-   */
-  @Get('users/:userId')
-  @HttpCode(HttpStatus.OK)
-  getUserDetails(
-    @Request() req: AuthenticatedRequest,
-    @Param('userId') userId: string,
-  ): Promise<AdminUserDetailsResponse> {
-    return this.adminService.getUserDetails(req.user, userId);
-  }
-
-  /**
-   * Get transaction oversight data for monitoring (Req 14.9).
-   */
-  @Get('transactions')
-  @HttpCode(HttpStatus.OK)
-  getTransactions(
-    @Request() req: AuthenticatedRequest,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
     @Query('status') status?: string,
-  ): Promise<AdminTransactionsResponse> {
-    const filters = {
-      page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
-    };
+  ): Promise<AdminUserListDto> {
+    try {
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+      
+      if (pageNum < 1 || limitNum < 1 || limitNum > 100) {
+        throw new HttpException('Invalid pagination parameters', HttpStatus.BAD_REQUEST);
+      }
 
-    if (status) {
-      (filters as any).status = status;
+      return await this.adminService.getUsers({
+        page: pageNum,
+        limit: limitNum,
+        search,
+        role,
+        status,
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Failed to retrieve users',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    return this.adminService.getTransactions(req.user, filters);
   }
 
   /**
-   * Get community management data for circles and pools (Req 14.9).
+   * Update user details (admin only)
    */
-  @Get('community')
-  @HttpCode(HttpStatus.OK)
-  getCommunity(@Request() req: AuthenticatedRequest): Promise<AdminCommunityResponse> {
-    return this.adminService.getCommunity(req.user);
+  @Put('users/:id')
+  async updateUser(
+    @Param('id') userId: string,
+    @Body() updateData: AdminUserUpdateDto,
+  ) {
+    try {
+      const user = await this.adminService.updateUser(userId, updateData);
+      return { 
+        message: 'User updated successfully', 
+        user: {
+          id: user.id,
+          walletAddress: user.walletAddress,
+          role: user.role,
+          isActive: user.isActive,
+          updatedAt: user.updatedAt,
+        }
+      };
+    } catch (error) {
+      if (error.message === 'User not found') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Failed to update user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
-   * Get system status and health metrics (Req 14.9).
+   * Deactivate/suspend user account
    */
-  @Get('system')
-  @HttpCode(HttpStatus.OK)
-  getSystemStatus(@Request() req: AuthenticatedRequest): Promise<AdminSystemResponse> {
-    return this.adminService.getSystemStatus(req.user);
+  @Put('users/:id/deactivate')
+  async deactivateUser(@Param('id') userId: string) {
+    try {
+      await this.adminService.updateUser(userId, { isActive: false });
+      return { message: 'User deactivated successfully' };
+    } catch (error) {
+      if (error.message === 'User not found') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Failed to deactivate user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
-   * Update user role - administrative action (Req 14.9).
+   * Reactivate user account
    */
-  @Put('users/:userId/role')
-  @HttpCode(HttpStatus.OK)
-  updateUserRole(
-    @Request() req: AuthenticatedRequest,
-    @Param('userId') userId: string,
-    @Body() body: UpdateUserRoleRequest,
-  ): Promise<{ success: boolean; message: string }> {
-    const validatedBody = updateUserRoleRequestSchema.parse(body);
-    return this.adminService.updateUserRole(req.user, userId, validatedBody.role);
+  @Put('users/:id/activate')
+  async activateUser(@Param('id') userId: string) {
+    try {
+      await this.adminService.updateUser(userId, { isActive: true });
+      return { message: 'User activated successfully' };
+    } catch (error) {
+      if (error.message === 'User not found') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Failed to activate user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
-   * Verify or unverify user account (Req 14.9).
+   * Delete user (permanent)
    */
-  @Put('users/:userId/verification')
-  @HttpCode(HttpStatus.OK)
-  updateUserVerification(
-    @Request() req: AuthenticatedRequest,
-    @Param('userId') userId: string,
-    @Body() body: { verified: boolean },
-  ): Promise<{ success: boolean; message: string }> {
-    return this.adminService.updateUserVerification(req.user, userId, body.verified);
+  @Delete('users/:id')
+  async deleteUser(@Param('id') userId: string) {
+    try {
+      await this.adminService.deleteUser(userId);
+      return { message: 'User deleted successfully' };
+    } catch (error) {
+      if (error.message === 'User not found') {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Failed to delete user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
-   * Execute administrative action (Req 14.9).
-   */
-  @Post('actions/:action')
-  @HttpCode(HttpStatus.OK)
-  executeAction(
-    @Request() req: AuthenticatedRequest,
-    @Param('action') action: string,
-    @Body() body: AdminActionRequest,
-  ): Promise<{ success: boolean; message: string; data?: any }> {
-    const validatedBody = adminActionRequestSchema.parse(body);
-    return this.adminService.executeAction(req.user, action, validatedBody);
-  }
-
-  /**
-   * Get audit logs for admin operations (Req 14.9).
+   * Get audit log
    */
   @Get('audit')
-  @HttpCode(HttpStatus.OK)
-  getAuditLogs(
-    @Request() req: AuthenticatedRequest,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
+  async getAuditLog(
+    @Query('page') page = '1',
+    @Query('limit') limit = '50',
     @Query('action') action?: string,
     @Query('userId') userId?: string,
-  ): Promise<{
-    logs: Array<{
-      id: string;
-      action: string;
-      adminAddress: string;
-      targetUserId?: string;
-      details: any;
-      timestamp: Date;
-    }>;
-    pagination: { page: number; limit: number; total: number; pages: number };
-  }> {
-    const filters = {
-      page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
-    };
+  ) {
+    try {
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+      
+      return await this.adminService.getAuditLog({
+        page: pageNum,
+        limit: limitNum,
+        action,
+        userId,
+      });
+    } catch (error) {
+      throw new HttpException(
+        'Failed to retrieve audit log',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
-    if (action) (filters as any).action = action;
-    if (userId) (filters as any).userId = userId;
-
-    return this.adminService.getAuditLogs(req.user, filters);
+  /**
+   * System maintenance mode toggle
+   */
+  @Put('system/maintenance')
+  async toggleMaintenanceMode(@Body('enabled') enabled: boolean) {
+    try {
+      await this.adminService.setMaintenanceMode(enabled);
+      return { 
+        message: `Maintenance mode ${enabled ? 'enabled' : 'disabled'}`,
+        maintenanceMode: enabled 
+      };
+    } catch (error) {
+      throw new HttpException(
+        'Failed to toggle maintenance mode',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

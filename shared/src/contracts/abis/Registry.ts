@@ -1,12 +1,7 @@
-/**
- * Registry Contract ABI
- * Auto-generated from Foundry build artifacts
- * 
- * Type-safe ABI for Registry contract interactions with viem/wagmi
- */
-import type { Abi } from 'abitype';
+// Auto-generated ABI for Registry
+// Do not edit manually
 
-export const registryAbi = [
+export const RegistryABI = [
   {
     "type": "constructor",
     "inputs": [],
@@ -638,6 +633,6 @@ export const registryAbi = [
     "name": "ZeroAdmin",
     "inputs": []
   }
-] as const satisfies Abi;
+] as const;
 
-export default registryAbi;
+export type RegistryABI = typeof RegistryABI;

@@ -1,12 +1,7 @@
-/**
- * CommunityTreasury Contract ABI
- * Auto-generated from Foundry build artifacts
- * 
- * Type-safe ABI for CommunityTreasury contract interactions with viem/wagmi
- */
-import type { Abi } from 'abitype';
+// Auto-generated ABI for CommunityTreasury
+// Do not edit manually
 
-export const communityTreasuryAbi = [
+export const CommunityTreasuryABI = [
   {
     "type": "constructor",
     "inputs": [],
@@ -1175,6 +1170,6 @@ export const communityTreasuryAbi = [
     "name": "ZeroAmount",
     "inputs": []
   }
-] as const satisfies Abi;
+] as const;
 
-export default communityTreasuryAbi;
+export type CommunityTreasuryABI = typeof CommunityTreasuryABI;
