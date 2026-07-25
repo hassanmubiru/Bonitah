@@ -50,8 +50,8 @@ export function SiteHeader() {
               Bonitah Financial Network
             </Link>
 
-            {/* Navigation links - only show when authenticated */}
-            {isConnected && (
+            {/* Navigation links - only show when authenticated and mounted */}
+            {mounted && isConnected && (
               <nav
                 className="hidden sm:flex items-center gap-4"
                 role="navigation"
