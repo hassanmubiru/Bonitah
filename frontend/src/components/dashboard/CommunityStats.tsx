@@ -10,6 +10,21 @@ import { useContractRead } from '@/hooks/useContractRead';
 import { getContractAddress, getContractAbi } from '@bfn/shared';
 import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
 
+// Define types for contract return values
+interface Circle {
+  id: bigint;
+  creator: Address;
+  maxMembers: bigint;
+  memberCount: bigint;
+  open: boolean;
+}
+
+interface PoolContribution {
+  poolId: bigint;
+  amount: bigint;
+  timestamp: bigint;
+}
+
 interface CommunityStatsProps {
   userAddress: Address;
 }
@@ -135,7 +150,7 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
                 <h4 className="font-medium">Savings Circles</h4>
                 <span className="text-sm text-muted-foreground">
                   {circleMemberships && Array.isArray(circleMemberships) 
-                    ? (circleMemberships as any[]).length 
+                    ? (circleMemberships as Circle[]).length 
                     : 0} joined
                 </span>
               </div>

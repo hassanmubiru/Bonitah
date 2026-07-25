@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useAccount } from 'wagmi';
 
 import { ThemeToggle } from '@/components/theme-toggle';
 
@@ -14,6 +15,8 @@ import { ThemeToggle } from '@/components/theme-toggle';
  * - Keyboard-accessible navigation (Req 19.6)
  */
 export function SiteHeader() {
+  const { isConnected } = useAccount();
+
   return (
     <>
       {/* Skip to main content link for accessibility */}
@@ -29,13 +32,27 @@ export function SiteHeader() {
         role="banner"
       >
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
-          <Link
-            href="/"
-            className="rounded-md text-sm font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            aria-label="Bonitah Financial Network - Go to homepage"
-          >
-            Bonitah Financial Network
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/"
+              className="rounded-md text-sm font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label="Bonitah Financial Network - Go to homepage"
+            >
+              Bonitah Financial Network
+            </Link>
+
+            {/* Navigation links - only show when authenticated */}
+            {isConnected && (
+              <nav className="hidden sm:flex items-center gap-4" role="navigation" aria-label="Main navigation">
+                <Link
+                  href="/savings"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
+                >
+                  Savings
+                </Link>
+              </nav>
+            )}
+          </div>
 
           <nav role="navigation" aria-label="Theme settings">
             <ThemeToggle />

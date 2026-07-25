@@ -22,6 +22,7 @@ import {IGovernance} from "../src/interfaces/IGovernance.sol";
 // Mock imports
 import {MockERC20} from "../src/mocks/MockERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {BFNRoles} from "../src/base/BFNRoles.sol";
 
 /// @title EventEmissionDisciplinePropertyTest
 /// @notice Property-based tests for event emission discipline across all BFN contracts.
@@ -100,12 +101,12 @@ contract EventEmissionDisciplinePropertyTest is Test {
         
         // Grant necessary roles
         vm.startPrank(admin);
-        registry.grantRole(registry.VERIFIER_ROLE(), verifier);
-        registry.grantRole(registry.REPUTATION_ROLE(), address(education));
-        education.grantRole(education.ISSUER_ROLE(), issuer);
-        vault.grantRole(vault.PAUSER_ROLE(), pauser);
-        treasury.grantRole(treasury.PAUSER_ROLE(), pauser);
-        governance.grantRole(governance.TREASURY_ROLE(), address(treasury));
+        registry.grantRole(BFNRoles.VERIFIER_ROLE, verifier);
+        registry.grantRole(BFNRoles.REPUTATION_ROLE, address(education));
+        education.grantRole(BFNRoles.ISSUER_ROLE, issuer);
+        vault.grantRole(BFNRoles.PAUSER_ROLE, pauser);
+        treasury.grantRole(BFNRoles.PAUSER_ROLE, pauser);
+        governance.grantRole(BFNRoles.TREASURY_ROLE, address(treasury));
         vm.stopPrank();
         
         // Register users
