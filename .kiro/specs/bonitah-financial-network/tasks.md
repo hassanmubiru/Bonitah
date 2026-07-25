@@ -174,7 +174,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Deploy all five contracts behind UUPS proxies, wire roles, record deployed addresses to `deployment/` and `shared/`, and fail non-zero naming the failed contract with no partial-success report
     - _Requirements: 16.5, 16.6_
 
-  - [ ] 9.2 Emit typed ABIs and addresses into the shared package
+  - [x] 9.2 Emit typed ABIs and addresses into the shared package
     - Generate ABI + address exports into `shared/` for frontend and backend consumption
     - _Requirements: 17.1, 1.1_
 
