@@ -1,4 +1,4 @@
-import { Controller, Get, Param, HttpCode, HttpStatus, Request, Query } from '@nestjs/common';
+import { Controller, Get, Put, Post, Delete, Param, HttpCode, HttpStatus, Request, Query, Body } from '@nestjs/common';
 
 import { Roles } from '../auth/decorators/roles.decorator';
 import type { AuthenticatedRequest } from '../auth/auth.types';
@@ -10,6 +10,10 @@ import {
   type AdminTransactionsResponse,
   type AdminCommunityResponse,
   type AdminSystemResponse,
+  updateUserRoleRequestSchema,
+  type UpdateUserRoleRequest,
+  adminActionRequestSchema,
+  type AdminActionRequest,
 } from './admin.schemas';
 
 /**
