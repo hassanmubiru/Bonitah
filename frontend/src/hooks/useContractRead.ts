@@ -1,7 +1,8 @@
 'use client';
 
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-import { type Address, type Abi, readContract } from 'viem';
+import { useQuery } from '@tanstack/react-query';
+import { type Address, type Abi } from 'viem';
+import { readContract } from 'viem/actions';
 import { usePublicClient } from 'wagmi';
 
 // Import BASE_SEPOLIA_CHAIN_ID directly to avoid module issues  
