@@ -2,6 +2,7 @@
 
 import { type Address } from 'viem';
 import { formatUnits } from 'viem';
+import { useEffect, useState } from 'react';
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,9 +39,15 @@ interface SavingsSummaryProps {
  * - Proper loading/error/retry states
  */
 export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
+  const [mounted, setMounted] = useState(false);
   let savingsVaultAddress: Address;
   let savingsVaultAbi;
   let contractsDeployed = true;
+  
+  // Prevent hydration mismatch with time-based calculations
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   try {
     savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
@@ -119,6 +126,9 @@ export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
 
   // Format time remaining for locks
   const formatTimeRemaining = (expiry: bigint) => {
+    // Return static value during SSR to prevent hydration mismatch
+    if (!mounted) return 'Loading...';
+    
     const now = Math.floor(Date.now() / 1000);
     const remaining = Number(expiry) - now;
     

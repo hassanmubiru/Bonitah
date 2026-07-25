@@ -3,7 +3,7 @@
 import { RainbowKitProvider, lightTheme, darkTheme } from '@rainbow-me/rainbowkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTheme } from 'next-themes';
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { WagmiProvider } from 'wagmi';
 
 import { ThemeProvider } from '@/components/theme-provider';
@@ -15,11 +15,24 @@ import '@rainbow-me/rainbowkit/styles.css';
  * RainbowKit theming follows the active app theme so the connect modal matches
  * light/dark without a reload (Req 19). Kept as a child of ThemeProvider so
  * `useTheme` resolves the current selection.
+ * 
+ * Uses mounted state to prevent hydration mismatch by defaulting to light theme
+ * during SSR and applying the correct theme only after client hydration.
  */
 function RainbowKit({ children }: { children: ReactNode }) {
   const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch by only applying theme after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // During SSR and initial hydration, use light theme to prevent mismatch
+  const theme = mounted && resolvedTheme === 'dark' ? darkTheme() : lightTheme();
+
   return (
-    <RainbowKitProvider theme={resolvedTheme === 'dark' ? darkTheme() : lightTheme()}>
+    <RainbowKitProvider theme={theme}>
       {children}
     </RainbowKitProvider>
   );
