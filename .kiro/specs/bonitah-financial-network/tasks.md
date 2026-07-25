@@ -365,11 +365,11 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Deposit/withdraw flows wired to SavingsVault with signed transactions and live reads
     - _Requirements: 4.2, 4.3, 11.7_
 
-  - [ ] 21.4 Implement the Goals page
+  - [x] 21.4 Implement the Goals page
     - Create goal, contribute, and lock/withdraw-locked flows wired to SavingsVault
     - _Requirements: 5.1, 5.2, 5.3, 5.5, 11.7_
 
-  - [ ] 21.5 Implement the Community page
+  - [x] 21.5 Implement the Community page
     - Create/join circles, contribute, and vote flows wired to CommunityTreasury
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 11.7_
 
