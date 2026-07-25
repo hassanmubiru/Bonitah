@@ -109,11 +109,76 @@ export class AdminController {
   }
 
   /**
-   * Get system status and health metrics (Req 14.9).
+   * Update user role - administrative action (Req 14.9).
    */
-  @Get('system')
+  @Put('users/:userId/role')
   @HttpCode(HttpStatus.OK)
-  getSystemStatus(@Request() req: AuthenticatedRequest): Promise<AdminSystemResponse> {
-    return this.adminService.getSystemStatus(req.user);
+  updateUserRole(
+    @Request() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+    @Body() body: UpdateUserRoleRequest,
+  ): Promise<{ success: boolean; message: string }> {
+    const validatedBody = updateUserRoleRequestSchema.parse(body);
+    return this.adminService.updateUserRole(req.user, userId, validatedBody.role);
+  }
+
+  /**
+   * Verify or unverify user account (Req 14.9).
+   */
+  @Put('users/:userId/verification')
+  @HttpCode(HttpStatus.OK)
+  updateUserVerification(
+    @Request() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+    @Body() body: { verified: boolean },
+  ): Promise<{ success: boolean; message: string }> {
+    return this.adminService.updateUserVerification(req.user, userId, body.verified);
+  }
+
+  /**
+   * Execute administrative action (Req 14.9).
+   */
+  @Post('actions/:action')
+  @HttpCode(HttpStatus.OK)
+  executeAction(
+    @Request() req: AuthenticatedRequest,
+    @Param('action') action: string,
+    @Body() body: AdminActionRequest,
+  ): Promise<{ success: boolean; message: string; data?: any }> {
+    const validatedBody = adminActionRequestSchema.parse(body);
+    return this.adminService.executeAction(req.user, action, validatedBody);
+  }
+
+  /**
+   * Get audit logs for admin operations (Req 14.9).
+   */
+  @Get('audit')
+  @HttpCode(HttpStatus.OK)
+  getAuditLogs(
+    @Request() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('action') action?: string,
+    @Query('userId') userId?: string,
+  ): Promise<{
+    logs: Array<{
+      id: string;
+      action: string;
+      adminAddress: string;
+      targetUserId?: string;
+      details: any;
+      timestamp: Date;
+    }>;
+    pagination: { page: number; limit: number; total: number; pages: number };
+  }> {
+    const filters = {
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 20,
+    };
+
+    if (action) (filters as any).action = action;
+    if (userId) (filters as any).userId = userId;
+
+    return this.adminService.getAuditLogs(req.user, filters);
   }
 }
