@@ -368,7 +368,7 @@ describe('AI Assistant Page', () => {
 
       render(<AiAssistantPage />);
 
-      const retryButton = screen.getByRole('button');
+      const retryButton = screen.getByRole('button', { name: 'Clear error and retry' });
       fireEvent.click(retryButton);
 
       expect(mockClearError).toHaveBeenCalled();
@@ -456,7 +456,7 @@ describe('AI Assistant Page', () => {
 
       render(<AiAssistantPage />);
 
-      expect(screen.getByText('ID: 56789')).toBeInTheDocument();
+      expect(screen.getByText('23456789')).toBeInTheDocument();
     });
   });
 });

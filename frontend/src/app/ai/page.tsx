@@ -216,6 +216,7 @@ export default function AiAssistantPage() {
                     size="sm"
                     variant="ghost"
                     className="text-destructive hover:text-destructive"
+                    aria-label="Clear error and retry"
                   >
                     <RefreshCw className="h-4 w-4" />
                   </Button>
