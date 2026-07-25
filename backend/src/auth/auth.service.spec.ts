@@ -13,7 +13,6 @@ import type { NonceRequest, VerifyRequest } from './auth.schemas';
 describe('AuthService', () => {
   let service: AuthService;
   let prisma: PrismaService;
-  let tokenService: TokenService;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
