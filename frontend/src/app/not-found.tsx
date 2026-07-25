@@ -2,7 +2,7 @@ import { Home, ArrowLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 
 /**
  * 404 Not Found page (Task 21.1).

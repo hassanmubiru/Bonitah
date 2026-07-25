@@ -5,7 +5,7 @@ import { Target, Users, BookOpen, TrendingUp, ArrowRight, Shield } from 'lucide-
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 
 /**
  * Landing page with hero section and feature highlights (Task 21.1).
