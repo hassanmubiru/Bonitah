@@ -20,8 +20,8 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  * 
  * Deploys all five BFN contracts behind UUPS proxies with proper initialization,
  * configures cross-contract dependencies and roles, records addresses to deployment/,
- * and exports to shared/ package. Implements all-or-nothing deployment with specific
- * error reporting per Req 16.5, 16.6.
+ * and exports to shared/ package. Uses require() for all-or-nothing deployment 
+ * per Req 16.5, 16.6.
  * 
  * Usage:
  *   forge script script/DeployBaseSepolia.s.sol:DeployBaseSepolia \
@@ -59,10 +59,8 @@ contract DeployBaseSepolia is Script {
     
     function run() external {
         // Validate chain
-        if (block.chainid != BASE_SEPOLIA_CHAIN_ID) {
-            console.log("ERROR: Expected Base Sepolia (chain ID %d), got %d", BASE_SEPOLIA_CHAIN_ID, block.chainid);
-            _failDeployment("CHAIN_VALIDATION");
-        }
+        require(block.chainid == BASE_SEPOLIA_CHAIN_ID, 
+            "ERROR: Expected Base Sepolia (chain ID 84532)");
         
         // Setup deployment environment
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -114,7 +112,7 @@ contract DeployBaseSepolia is Script {
         console.log("  MockERC20:    %s", address(token));
         
         // Validate deployment
-        require(address(token) != address(0), "MockERC20 deployment failed");
+        require(address(token) != address(0), "DEPLOYMENT_FAILED: MockERC20");
     }
     
     /**
@@ -123,40 +121,25 @@ contract DeployBaseSepolia is Script {
     function _deployImplementations() private {
         console.log("Phase 2: Deploying implementation contracts...");
         
-        try {
-            registryImpl = new Registry();
-            console.log("  Registry impl:         %s", address(registryImpl));
-        } catch {
-            _failDeployment("Registry");
-        }
+        registryImpl = new Registry();
+        console.log("  Registry impl:         %s", address(registryImpl));
+        require(address(registryImpl) != address(0), "DEPLOYMENT_FAILED: Registry");
         
-        try {
-            savingsVaultImpl = new SavingsVault();
-            console.log("  SavingsVault impl:     %s", address(savingsVaultImpl));
-        } catch {
-            _failDeployment("SavingsVault");
-        }
+        savingsVaultImpl = new SavingsVault();
+        console.log("  SavingsVault impl:     %s", address(savingsVaultImpl));
+        require(address(savingsVaultImpl) != address(0), "DEPLOYMENT_FAILED: SavingsVault");
         
-        try {
-            communityTreasuryImpl = new CommunityTreasury();
-            console.log("  CommunityTreasury impl: %s", address(communityTreasuryImpl));
-        } catch {
-            _failDeployment("CommunityTreasury");
-        }
+        communityTreasuryImpl = new CommunityTreasury();
+        console.log("  CommunityTreasury impl: %s", address(communityTreasuryImpl));
+        require(address(communityTreasuryImpl) != address(0), "DEPLOYMENT_FAILED: CommunityTreasury");
         
-        try {
-            educationImpl = new Education();
-            console.log("  Education impl:        %s", address(educationImpl));
-        } catch {
-            _failDeployment("Education");
-        }
+        educationImpl = new Education();
+        console.log("  Education impl:        %s", address(educationImpl));
+        require(address(educationImpl) != address(0), "DEPLOYMENT_FAILED: Education");
         
-        try {
-            governanceImpl = new Governance();
-            console.log("  Governance impl:       %s", address(governanceImpl));
-        } catch {
-            _failDeployment("Governance");
-        }
+        governanceImpl = new Governance();
+        console.log("  Governance impl:       %s", address(governanceImpl));
+        require(address(governanceImpl) != address(0), "DEPLOYMENT_FAILED: Governance");
     }
     
     /**
@@ -166,61 +149,46 @@ contract DeployBaseSepolia is Script {
         console.log("Phase 3: Deploying UUPS proxies with initialization...");
         
         // Deploy Registry proxy
-        try {
-            bytes memory registryInitData = abi.encodeCall(Registry.initialize, (deployer));
-            registryProxy = address(new ERC1967Proxy(address(registryImpl), registryInitData));
-            console.log("  Registry proxy:        %s", registryProxy);
-        } catch {
-            _failDeployment("Registry Proxy");
-        }
+        bytes memory registryInitData = abi.encodeCall(Registry.initialize, (deployer));
+        registryProxy = address(new ERC1967Proxy(address(registryImpl), registryInitData));
+        console.log("  Registry proxy:        %s", registryProxy);
+        require(registryProxy != address(0), "DEPLOYMENT_FAILED: Registry Proxy");
         
         // Deploy SavingsVault proxy
-        try {
-            bytes memory vaultInitData = abi.encodeCall(
-                SavingsVault.initialize,
-                (address(token), registryProxy, deployer)
-            );
-            savingsVaultProxy = address(new ERC1967Proxy(address(savingsVaultImpl), vaultInitData));
-            console.log("  SavingsVault proxy:    %s", savingsVaultProxy);
-        } catch {
-            _failDeployment("SavingsVault Proxy");
-        }
+        bytes memory vaultInitData = abi.encodeCall(
+            SavingsVault.initialize,
+            (address(token), registryProxy, deployer)
+        );
+        savingsVaultProxy = address(new ERC1967Proxy(address(savingsVaultImpl), vaultInitData));
+        console.log("  SavingsVault proxy:    %s", savingsVaultProxy);
+        require(savingsVaultProxy != address(0), "DEPLOYMENT_FAILED: SavingsVault Proxy");
         
         // Deploy CommunityTreasury proxy
-        try {
-            bytes memory treasuryInitData = abi.encodeCall(
-                CommunityTreasury.initialize,
-                (deployer, IERC20(address(token)))
-            );
-            communityTreasuryProxy = address(new ERC1967Proxy(address(communityTreasuryImpl), treasuryInitData));
-            console.log("  CommunityTreasury proxy: %s", communityTreasuryProxy);
-        } catch {
-            _failDeployment("CommunityTreasury Proxy");
-        }
+        bytes memory treasuryInitData = abi.encodeCall(
+            CommunityTreasury.initialize,
+            (deployer, IERC20(address(token)))
+        );
+        communityTreasuryProxy = address(new ERC1967Proxy(address(communityTreasuryImpl), treasuryInitData));
+        console.log("  CommunityTreasury proxy: %s", communityTreasuryProxy);
+        require(communityTreasuryProxy != address(0), "DEPLOYMENT_FAILED: CommunityTreasury Proxy");
         
         // Deploy Education proxy
-        try {
-            bytes memory educationInitData = abi.encodeCall(
-                Education.initialize,
-                (deployer, registryProxy)
-            );
-            educationProxy = address(new ERC1967Proxy(address(educationImpl), educationInitData));
-            console.log("  Education proxy:       %s", educationProxy);
-        } catch {
-            _failDeployment("Education Proxy");
-        }
+        bytes memory educationInitData = abi.encodeCall(
+            Education.initialize,
+            (deployer, registryProxy)
+        );
+        educationProxy = address(new ERC1967Proxy(address(educationImpl), educationInitData));
+        console.log("  Education proxy:       %s", educationProxy);
+        require(educationProxy != address(0), "DEPLOYMENT_FAILED: Education Proxy");
         
         // Deploy Governance proxy
-        try {
-            bytes memory governanceInitData = abi.encodeCall(
-                Governance.initialize,
-                (deployer, registryProxy)
-            );
-            governanceProxy = address(new ERC1967Proxy(address(governanceImpl), governanceInitData));
-            console.log("  Governance proxy:      %s", governanceProxy);
-        } catch {
-            _failDeployment("Governance Proxy");
-        }
+        bytes memory governanceInitData = abi.encodeCall(
+            Governance.initialize,
+            (deployer, registryProxy)
+        );
+        governanceProxy = address(new ERC1967Proxy(address(governanceImpl), governanceInitData));
+        console.log("  Governance proxy:      %s", governanceProxy);
+        require(governanceProxy != address(0), "DEPLOYMENT_FAILED: Governance Proxy");
     }
     
     /**
@@ -231,29 +199,17 @@ contract DeployBaseSepolia is Script {
         
         Registry registry = Registry(registryProxy);
         
-        try {
-            // Grant REPUTATION_ROLE to Education contract on Registry
-            registry.grantRole(BFNRoles.REPUTATION_ROLE, educationProxy);
-            console.log("  Granted REPUTATION_ROLE to Education");
-        } catch {
-            _failDeployment("Registry Role Configuration");
-        }
+        // Grant REPUTATION_ROLE to Education contract on Registry
+        registry.grantRole(BFNRoles.REPUTATION_ROLE, educationProxy);
+        console.log("  Granted REPUTATION_ROLE to Education");
         
-        try {
-            // Grant VERIFIER_ROLE to deployer (admin can transfer later)
-            registry.grantRole(BFNRoles.VERIFIER_ROLE, deployer);
-            console.log("  Granted VERIFIER_ROLE to deployer");
-        } catch {
-            _failDeployment("Registry VERIFIER_ROLE Configuration");
-        }
+        // Grant VERIFIER_ROLE to deployer (admin can transfer later)
+        registry.grantRole(BFNRoles.VERIFIER_ROLE, deployer);
+        console.log("  Granted VERIFIER_ROLE to deployer");
         
-        try {
-            // Grant ISSUER_ROLE to deployer on Education (admin can transfer later)
-            Education(educationProxy).grantRole(BFNRoles.ISSUER_ROLE, deployer);
-            console.log("  Granted ISSUER_ROLE to deployer on Education");
-        } catch {
-            _failDeployment("Education Role Configuration");
-        }
+        // Grant ISSUER_ROLE to deployer on Education (admin can transfer later)
+        Education(educationProxy).grantRole(BFNRoles.ISSUER_ROLE, deployer);
+        console.log("  Granted ISSUER_ROLE to deployer on Education");
         
         console.log("  Role configuration completed");
     }
@@ -261,7 +217,7 @@ contract DeployBaseSepolia is Script {
     /**
      * @dev Record deployment addresses to deployment/base-sepolia.json
      */
-    function _recordDeployment() private view {
+    function _recordDeployment() private {
         console.log("Phase 5: Recording deployment addresses...");
         
         string memory deploymentJson = string(abi.encodePacked(
@@ -327,14 +283,5 @@ contract DeployBaseSepolia is Script {
         ));
         
         console.log("%s", updateCommand);
-    }
-    
-    /**
-     * @dev Fail deployment with specific contract name and non-zero exit
-     */
-    function _failDeployment(string memory contractName) private pure {
-        console.log("DEPLOYMENT FAILED: %s deployment failed", contractName);
-        console.log("ERROR: No partial deployments. All contracts must deploy successfully.");
-        revert(string(abi.encodePacked("DEPLOYMENT_FAILED_", contractName)));
     }
 }
