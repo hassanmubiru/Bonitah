@@ -96,16 +96,16 @@ export default function AiAssistantPage() {
         window.location.href = '/savings';
         break;
       case 'create_goal':
-        // For now, redirect to savings page which handles goals
-        window.location.href = '/savings';
+        window.location.href = '/savings#goals';
         break;
       case 'join_circle':
-        // TODO: Redirect to community page when implemented
-        alert('Community features coming soon!');
+        window.location.href = '/community';
         break;
       case 'invest_pool':
-        // TODO: Redirect to investments page when implemented  
-        alert('Investment features coming soon!');
+        window.location.href = '/investments';
+        break;
+      case 'withdraw_funds':
+        window.location.href = '/savings#withdraw';
         break;
       default:
         console.warn('Unknown action type:', action.type);

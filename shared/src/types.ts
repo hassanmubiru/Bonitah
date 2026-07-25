@@ -143,6 +143,40 @@ export interface IndexedEvent {
 }
 
 // ---------------------------------------------------------------------------
+// AI Assistant types (Req 10.1, 10.4, 10.7)
+export interface AIAction {
+  type: ActionType;
+  title: string;
+  description: string;
+  amount?: string;
+  targetAddress?: string;
+  requiresSignature: boolean;
+  estimatedGas?: string;
+}
+
+export type ActionType = 
+  | 'deposit_savings'
+  | 'create_goal' 
+  | 'join_circle'
+  | 'invest_pool'
+  | 'withdraw_funds'
+  | 'view_portfolio';
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: Date;
+  actions?: AIAction[];
+}
+
+export interface ConversationSummary {
+  id: string;
+  createdAt: Date;
+  messageCount: number;
+  lastMessage: string | null;
+  lastMessageAt: Date;
+}
+
 // Re-exported viem primitives for downstream convenience.
 // ---------------------------------------------------------------------------
 export type { Address, Hash, Hex };
