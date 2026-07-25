@@ -24,37 +24,28 @@ interface PortfolioOverviewProps {
  * - Real-time updates when wallet/network changes
  */
 export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
-  // Get contract addresses - handle the case where contracts aren't deployed yet
+  // Get contract addresses - but handle gracefully if not deployed
   let savingsVaultAddress: Address;
   let savingsVaultAbi;
+  let contractsDeployed = true;
   
   try {
     savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
     savingsVaultAbi = getContractAbi('SavingsVault');
-  } catch (error) {
-    // Contracts not deployed yet - show appropriate message
-    return (
-      <Card className="p-6">
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Portfolio Overview</h2>
-          <Alert>
-            <p className="text-sm">
-              Contracts are not yet deployed. Please wait for deployment to complete.
-            </p>
-          </Alert>
-        </div>
-      </Card>
-    );
+  } catch {
+    contractsDeployed = false;
+    savingsVaultAddress = '0x0000000000000000000000000000000000000000' as Address;
+    savingsVaultAbi = [];
   }
 
-  // Fetch portfolio value (total across all savings types)
+  // Fetch portfolio value (total across all savings types) - always call hooks
   const {
     data: portfolioValue,
     isLoading: portfolioLoading,
     isError: portfolioError,
     error: portfolioErrorMessage,
     refetch: refetchPortfolio,
-  } = usePortfolioValue(savingsVaultAddress, savingsVaultAbi, userAddress);
+  } = usePortfolioValue(savingsVaultAddress, savingsVaultAbi, userAddress, contractsDeployed);
 
   // Fetch available balance (immediately withdrawable)
   const {
@@ -63,7 +54,7 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
     isError: balanceError,
     error: balanceErrorMessage,
     refetch: refetchBalance,
-  } = useContractBalance(savingsVaultAddress, savingsVaultAbi, userAddress, 'availableBalance');
+  } = useContractBalance(savingsVaultAddress, savingsVaultAbi, userAddress, 'availableBalance', contractsDeployed);
 
   // Fetch locked funds total
   const {
@@ -77,7 +68,24 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
     abi: savingsVaultAbi,
     functionName: 'getLockedTotal',
     args: [userAddress],
+    enabled: contractsDeployed,
   });
+
+  // Handle case where contracts aren't deployed yet
+  if (!contractsDeployed) {
+    return (
+      <Card className="p-6">
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Portfolio Overview</h2>
+          <Alert>
+            <p className="text-sm">
+              Contracts are not yet deployed. Please wait for deployment to complete.
+            </p>
+          </Alert>
+        </div>
+      </Card>
+    );
+  }
 
   // Any loading state
   const isLoading = portfolioLoading || balanceLoading || lockedLoading;
