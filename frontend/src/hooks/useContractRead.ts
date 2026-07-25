@@ -79,14 +79,14 @@ export function useContractRead<
   address,
   abi,
   functionName,
-  args = [] as any,
+  args = [] as unknown[] as TArgs,
   enabled = true,
   queryKey = []
 }: UseContractReadOptions<TAbi, TFunctionName, TArgs>): ContractReadState<unknown> {
   const publicClient = usePublicClient();
 
   const query = useQuery({
-    queryKey: ['contract-read', address, functionName, ...(args as any[]), ...queryKey],
+    queryKey: ['contract-read', address, functionName, ...(args as unknown[]), ...queryKey],
     queryFn: async () => {
       if (!publicClient) {
         throw new Error('Public client not available');
