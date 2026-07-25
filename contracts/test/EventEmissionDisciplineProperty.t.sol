@@ -109,11 +109,17 @@ contract EventEmissionDisciplinePropertyTest is Test {
         governance.grantRole(BFNRoles.TREASURY_ROLE, address(treasury));
         vm.stopPrank();
         
-        // Register users
+        // Register users and give them some reputation for governance
         vm.prank(user1);
         registry.register();
         vm.prank(user2);
         registry.register();
+        
+        // Grant some reputation to users for governance operations
+        vm.prank(address(education));
+        registry.increaseReputation(user1, 100);
+        vm.prank(address(education));
+        registry.increaseReputation(user2, 100);
         
         // Mint tokens to users
         token.mint(user1, INITIAL_TOKEN_BALANCE);
