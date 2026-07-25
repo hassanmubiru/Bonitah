@@ -263,7 +263,7 @@ describe('Auth Flow Component Tests - Fixed', () => {
       // Should show wrong network UI instead of auth flow
       expect(screen.getByTestId('wrong-network-ui')).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'Wrong Network' })).toBeInTheDocument();
-      expect(screen.getByText(/switch to Base Sepolia/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/switch to Base Sepolia/i)).toHaveLength(2); // Text appears in description and button
       
       // Should NOT show normal auth flow
       expect(screen.queryByText('Welcome to BFN')).not.toBeInTheDocument();
