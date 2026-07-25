@@ -61,7 +61,7 @@ jest.mock('@/components/dashboard/DashboardContent', () => {
 
 const mockRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockUseAccount = useAccount as jest.MockedFunction<typeof useAccount>;
-// Test wrapper for React Query
+// Test wrapper for React Query and Suspense
 function TestWrapper({ children }: { children: React.ReactNode }) {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -74,7 +74,9 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <React.Suspense fallback={<div>Loading component...</div>}>
+        {children}
+      </React.Suspense>
     </QueryClientProvider>
   );
 }
