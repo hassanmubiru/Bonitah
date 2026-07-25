@@ -43,28 +43,22 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
   let communityTreasuryAbi;
   let governanceAddress: Address;
   let governanceAbi;
+  let contractsDeployed = true;
   
   try {
     communityTreasuryAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'CommunityTreasury');
     communityTreasuryAbi = getContractAbi('CommunityTreasury');
     governanceAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Governance');
     governanceAbi = getContractAbi('Governance');
-  } catch (error) {
-    return (
-      <Card className="p-6 h-full">
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Community Activity</h3>
-          <Alert>
-            <p className="text-sm">
-              Contracts are not yet deployed. Please wait for deployment to complete.
-            </p>
-          </Alert>
-        </div>
-      </Card>
-    );
+  } catch {
+    contractsDeployed = false;
+    communityTreasuryAddress = '0x0000000000000000000000000000000000000000' as Address;
+    communityTreasuryAbi = [];
+    governanceAddress = '0x0000000000000000000000000000000000000000' as Address;
+    governanceAbi = [];
   }
 
-  // Fetch user's circle memberships
+  // Fetch user's circle memberships - always call hooks
   const {
     data: circleMemberships,
     isLoading: circlesLoading,
@@ -76,6 +70,7 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
     abi: communityTreasuryAbi,
     functionName: 'getUserCircles',
     args: [userAddress],
+    enabled: contractsDeployed,
   });
 
   // Fetch user's pool contributions
@@ -90,6 +85,7 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
     abi: communityTreasuryAbi,
     functionName: 'getUserPoolContributions',
     args: [userAddress],
+    enabled: contractsDeployed,
   });
 
   // Fetch user's voting power in governance
@@ -104,7 +100,24 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
     abi: governanceAbi,
     functionName: 'votingPowerOf',
     args: [userAddress],
+    enabled: contractsDeployed,
   });
+
+  // Handle case where contracts aren't deployed yet
+  if (!contractsDeployed) {
+    return (
+      <Card className="p-6 h-full">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Community Activity</h3>
+          <Alert>
+            <p className="text-sm">
+              Contracts are not yet deployed. Please wait for deployment to complete.
+            </p>
+          </Alert>
+        </div>
+      </Card>
+    );
+  }
 
   const isLoading = circlesLoading || poolsLoading || votingLoading;
   const hasError = circlesError || poolsError || votingError;
