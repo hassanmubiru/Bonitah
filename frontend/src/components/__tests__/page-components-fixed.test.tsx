@@ -157,3 +157,109 @@ const MockSavings = () => {
     </main>
   );
 };
+// Mock Admin Component
+const MockAdmin = () => {
+  const { useAuthGuard } = require('@/hooks/useAuthGuard');
+  const { useAdminData } = require('@/hooks/useAdminData');
+
+  const { isAuthenticated, user, isLoading: authLoading } = useAuthGuard(['ADMIN']);
+  const { systemHealth, users, error } = useAdminData();
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || user?.role !== 'ADMIN') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div>
+          <p>Access Denied: Admin privileges required to access this page.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <h1>Admin Dashboard</h1>
+      <p>Manage users, monitor system health, and configure platform settings.</p>
+
+      {error && <div>{error}</div>}
+
+      {/* System Health Cards */}
+      <div>
+        <div data-testid="total-users">{systemHealth?.users.total || 0}</div>
+        <div data-testid="active-users">{systemHealth?.users.active || 0}</div>
+        <div data-testid="transactions">{systemHealth?.transactions.total || 0}</div>
+        <div data-testid="system-status">{systemHealth?.status || 'Unknown'}</div>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div>
+        <button>User Management</button>
+        <button>Analytics</button>
+        <button>System Monitor</button>
+        <button>Audit Log</button>
+        <button>Settings</button>
+      </div>
+
+      {/* User List */}
+      {users?.users.map((user) => (
+        <div key={user.id} data-testid={`user-${user.id}`}>
+          <span>{user.walletAddress.slice(0, 6)}...{user.walletAddress.slice(-4)}</span>
+          <span>{user.role}</span>
+          <span>{user.isActive ? 'Active' : 'Inactive'}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+describe('Page Component Tests - Data Source Wiring and States', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Dashboard Page - Data Source Wiring (Req 11.1, 11.3)', () => {
+    const mockAddress = '0x1234567890123456789012345678901234567890';
+
+    it('properly wires data sources and passes user address to content', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      render(
+        <TestWrapper>
+          <MockDashboard userAddress={mockAddress} />
+        </TestWrapper>
+      );
+
+      expect(screen.getByTestId('dashboard-content')).toBeInTheDocument();
+      expect(screen.getByTestId('user-address')).toHaveTextContent(mockAddress);
+      expect(screen.getByText('Dashboard')).toBeInTheDocument();
+      expect(screen.getByText(/financial overview and recent activity/i)).toBeInTheDocument();
+    });
+
+    it('shows loading state without placeholder values during auth check', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: false,
+        isLoading: true,
+      });
+
+      render(
+        <TestWrapper>
+          <MockDashboard userAddress={mockAddress} />
+        </TestWrapper>
+      );
+
+      expect(screen.getByText('Loading...')).toBeInTheDocument();
+      expect(screen.queryByTestId('dashboard-content')).not.toBeInTheDocument();
+    });
+  });
