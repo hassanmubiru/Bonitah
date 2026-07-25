@@ -617,3 +617,372 @@ describe('Page Component Tests - Data Source Wiring and States', () => {
     });
   });
 });
+  describe('Cross-Page Integration and Data Consistency', () => {
+    it('consistently handles network connectivity issues across all pages', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { 
+        useSavingsVaultBalances,
+        useTokenBalance,
+        formatTokenAmount,
+      } = require('@/hooks/useSavingsVault');
+      
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      // Simulate network error across all data sources
+      const networkError = { message: 'Network connection failed' };
+      
+      useSavingsVaultBalances.mockReturnValue({
+        availableBalance: { 
+          data: undefined, 
+          isLoading: false, 
+          isError: true, 
+          error: networkError,
+          refetch: jest.fn()
+        },
+        portfolioValue: { 
+          data: undefined, 
+          isLoading: false, 
+          isError: true, 
+          error: networkError,
+          refetch: jest.fn()
+        },
+      });
+
+      useTokenBalance.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        error: networkError,
+        refetch: jest.fn(),
+      });
+
+      formatTokenAmount.mockReturnValue('');
+
+      render(
+        <TestWrapper>
+          <MockSavings />
+        </TestWrapper>
+      );
+
+      // Should show consistent error states across all data sections
+      expect(screen.getAllByText('Error')).toHaveLength(2);
+      expect(screen.getAllByText('Retry')).toHaveLength(3); // One for each failed section
+      
+      // Should never show placeholder financial data during network errors
+      expect(screen.queryByText(/\$\d+/)).not.toBeInTheDocument();
+      expect(screen.queryByDisplayValue(/\d+/)).not.toBeInTheDocument();
+    });
+
+    it('maintains proper data flow from loading to success states', async () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { 
+        useSavingsVaultBalances,
+        useTokenBalance,
+        formatTokenAmount,
+      } = require('@/hooks/useSavingsVault');
+      
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      // Start with loading states
+      const mockBalanceData = {
+        availableBalance: { data: undefined, isLoading: true, isError: false, refetch: jest.fn() },
+        portfolioValue: { data: undefined, isLoading: true, isError: false, refetch: jest.fn() },
+      };
+
+      useSavingsVaultBalances.mockReturnValue(mockBalanceData);
+
+      useTokenBalance.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        isError: false,
+        refetch: jest.fn(),
+      });
+
+      formatTokenAmount.mockReturnValue('0');
+
+      const { rerender } = render(
+        <TestWrapper>
+          <MockSavings />
+        </TestWrapper>
+      );
+
+      // Initially should show loading
+      expect(screen.getAllByText(/Loading/i)).toHaveLength(3);
+
+      // Update to success state
+      useSavingsVaultBalances.mockReturnValue({
+        availableBalance: { data: 1000n, isLoading: false, isError: false, refetch: jest.fn() },
+        portfolioValue: { data: 1500n, isLoading: false, isError: false, refetch: jest.fn() },
+      });
+
+      useTokenBalance.mockReturnValue({
+        data: 2000n,
+        formatted: '2000',
+        symbol: 'USDC',
+        isLoading: false,
+        isError: false,
+        refetch: jest.fn(),
+      });
+
+      formatTokenAmount.mockImplementation((amount) => amount?.toString() || '0');
+
+      rerender(
+        <TestWrapper>
+          <MockSavings />
+        </TestWrapper>
+      );
+
+      // Should now show actual data instead of loading
+      expect(screen.getByText('1000 USDC')).toBeInTheDocument();
+      expect(screen.getByText('1500 USDC')).toBeInTheDocument();
+      expect(screen.queryByText(/Loading/i)).not.toBeInTheDocument();
+    });
+
+    it('properly handles role transitions for admin access', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { useAdminData } = require('@/hooks/useAdminData');
+      
+      // Start as regular user
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        user: { role: 'USER' },
+        isLoading: false,
+      });
+
+      useAdminData.mockReturnValue({
+        systemHealth: null,
+        users: null,
+        error: null,
+      });
+
+      const { rerender } = render(
+        <TestWrapper>
+          <MockAdmin />
+        </TestWrapper>
+      );
+
+      // Should show access denied for USER role
+      expect(screen.getByText('Access Denied: Admin privileges required to access this page.')).toBeInTheDocument();
+
+      // Update to admin role
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        user: { role: 'ADMIN' },
+        isLoading: false,
+      });
+
+      useAdminData.mockReturnValue({
+        systemHealth: { 
+          status: 'healthy', 
+          users: { total: 10, active: 5 }, 
+          transactions: { total: 100, recent: 2 }
+        },
+        users: { users: [] },
+        error: null,
+      });
+
+      rerender(
+        <TestWrapper>
+          <MockAdmin />
+        </TestWrapper>
+      );
+
+      // Should now show admin dashboard
+      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
+      expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Page Component Error Boundaries and Edge Cases', () => {
+    it('handles malformed data gracefully in admin page', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { useAdminData } = require('@/hooks/useAdminData');
+      
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        user: { role: 'ADMIN' },
+        isLoading: false,
+      });
+
+      // Provide malformed/incomplete data
+      useAdminData.mockReturnValue({
+        systemHealth: { 
+          // Missing some expected properties
+          users: {},
+          transactions: null,
+        },
+        users: {
+          users: [
+            {
+              id: 'test1',
+              // Missing some user properties to test robustness
+              walletAddress: '0xtest',
+              role: 'USER',
+            }
+          ]
+        },
+        error: null,
+      });
+
+      render(
+        <TestWrapper>
+          <MockAdmin />
+        </TestWrapper>
+      );
+
+      // Should still render admin dashboard without crashing
+      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
+      
+      // Should show fallback values for missing data
+      expect(screen.getByTestId('total-users')).toHaveTextContent('0');
+      expect(screen.getByTestId('system-status')).toHaveTextContent('Unknown');
+    });
+
+    it('handles rapid state changes without inconsistent UI', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { 
+        useSavingsVaultBalances,
+        useTokenBalance,
+        formatTokenAmount,
+      } = require('@/hooks/useSavingsVault');
+      
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      // Rapidly changing between loading, error, and success
+      let currentState = 'loading';
+      
+      const mockStateChange = () => {
+        switch (currentState) {
+          case 'loading':
+            useSavingsVaultBalances.mockReturnValue({
+              availableBalance: { data: undefined, isLoading: true, isError: false, refetch: jest.fn() },
+              portfolioValue: { data: undefined, isLoading: true, isError: false, refetch: jest.fn() },
+            });
+            break;
+          case 'error':
+            useSavingsVaultBalances.mockReturnValue({
+              availableBalance: { data: undefined, isLoading: false, isError: true, refetch: jest.fn() },
+              portfolioValue: { data: undefined, isLoading: false, isError: true, refetch: jest.fn() },
+            });
+            break;
+          case 'success':
+            useSavingsVaultBalances.mockReturnValue({
+              availableBalance: { data: 1000n, isLoading: false, isError: false, refetch: jest.fn() },
+              portfolioValue: { data: 1500n, isLoading: false, isError: false, refetch: jest.fn() },
+            });
+            break;
+        }
+      };
+
+      useTokenBalance.mockReturnValue({
+        data: 2000n,
+        formatted: '2000',
+        symbol: 'USDC',
+        isLoading: false,
+        isError: false,
+        refetch: jest.fn(),
+      });
+
+      formatTokenAmount.mockImplementation((amount) => amount?.toString() || '');
+
+      mockStateChange(); // Start with loading
+
+      const { rerender } = render(
+        <TestWrapper>
+          <MockSavings />
+        </TestWrapper>
+      );
+
+      // Cycle through states rapidly
+      currentState = 'error';
+      mockStateChange();
+      rerender(<TestWrapper><MockSavings /></TestWrapper>);
+
+      currentState = 'success';
+      mockStateChange();
+      rerender(<TestWrapper><MockSavings /></TestWrapper>);
+
+      currentState = 'loading';
+      mockStateChange();
+      rerender(<TestWrapper><MockSavings /></TestWrapper>);
+
+      // Final state should be consistent
+      expect(screen.getAllByText(/Loading/i)).toHaveLength(2); // Available balance and portfolio loading
+    });
+
+    it('ensures no placeholder financial values leak through during any state', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { 
+        useSavingsVaultBalances,
+        useTokenBalance,
+        formatTokenAmount,
+      } = require('@/hooks/useSavingsVault');
+      
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      // Test various combinations of loading/error/empty states
+      const testStates = [
+        {
+          name: 'all loading',
+          balances: { 
+            availableBalance: { data: undefined, isLoading: true, isError: false, refetch: jest.fn() },
+            portfolioValue: { data: undefined, isLoading: true, isError: false, refetch: jest.fn() }
+          },
+          token: { data: undefined, isLoading: true, isError: false, refetch: jest.fn() }
+        },
+        {
+          name: 'all error',
+          balances: { 
+            availableBalance: { data: undefined, isLoading: false, isError: true, refetch: jest.fn() },
+            portfolioValue: { data: undefined, isLoading: false, isError: true, refetch: jest.fn() }
+          },
+          token: { data: undefined, isLoading: false, isError: true, refetch: jest.fn() }
+        },
+        {
+          name: 'mixed states',
+          balances: { 
+            availableBalance: { data: undefined, isLoading: true, isError: false, refetch: jest.fn() },
+            portfolioValue: { data: undefined, isLoading: false, isError: true, refetch: jest.fn() }
+          },
+          token: { data: 0n, formatted: '0', symbol: 'USDC', isLoading: false, isError: false, refetch: jest.fn() }
+        }
+      ];
+
+      testStates.forEach(({ name, balances, token }) => {
+        useSavingsVaultBalances.mockReturnValue(balances);
+        useTokenBalance.mockReturnValue(token);
+        formatTokenAmount.mockReturnValue('');
+
+        const { unmount } = render(
+          <TestWrapper>
+            <MockSavings />
+          </TestWrapper>
+        );
+
+        // Critical requirement: Never show placeholder financial values (Req 11.4)
+        expect(screen.queryByText(/\$\d+/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/TBD/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/---/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/N\/A/)).not.toBeInTheDocument();
+        
+        // Should not show hardcoded amounts during loading/error
+        expect(screen.queryByDisplayValue(/999/)).not.toBeInTheDocument();
+        expect(screen.queryByDisplayValue(/1000/)).not.toBeInTheDocument();
+
+        unmount();
+      });
+    });
+  });
+});
