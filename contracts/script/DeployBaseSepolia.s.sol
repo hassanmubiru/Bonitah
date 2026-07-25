@@ -186,7 +186,7 @@ contract DeployBaseSepolia is Script {
         try {
             bytes memory vaultInitData = abi.encodeCall(
                 SavingsVault.initialize,
-                (deployer, registryProxy, address(token))
+                (address(token), registryProxy, deployer)
             );
             savingsVaultProxy = address(new ERC1967Proxy(address(savingsVaultImpl), vaultInitData));
             console.log("  SavingsVault proxy:    %s", savingsVaultProxy);
