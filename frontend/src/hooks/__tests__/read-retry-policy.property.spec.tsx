@@ -42,7 +42,7 @@ function TestWrapper({ children }: { children: ReactNode }) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        retry: false, // Use hook's own retry logic
+        retry: false, // Disable default retry to test hook's own logic
         gcTime: 0, // No caching during tests
       },
     },
@@ -55,19 +55,22 @@ function TestWrapper({ children }: { children: ReactNode }) {
   );
 }
 
-// Track attempts for testing
+// Track attempts and responses for testing
 let mockReadContractAttempts = 0;
 let mockReadContractResponse: () => Promise<unknown>;
 
-// Mock wagmi's usePublicClient 
+// Mock the public client used by useContractRead
 const mockPublicClient = {
   readContract: jest.fn(),
-} as any;
+  chainId: 84532,
+};
 
+// Mock wagmi's usePublicClient 
 jest.mock('wagmi', () => ({
   usePublicClient: () => mockPublicClient,
 }));
 
+// Mock viem's readContract function to track calls
 jest.mock('viem', () => ({
   ...jest.requireActual('viem'),
   readContract: jest.fn().mockImplementation(async () => {
