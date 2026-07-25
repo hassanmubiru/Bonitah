@@ -38,9 +38,6 @@ interface SavingsSummaryProps {
  * - Proper loading/error/retry states
  */
 export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
- */
-/**
- * Savings summary showing goal progress and locked savings status.
   const savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
   const savingsVaultAbi = getContractAbi('SavingsVault');
 
