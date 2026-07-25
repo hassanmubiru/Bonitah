@@ -10,6 +10,31 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   createdAt: Date;
+  actions?: AIAction[]; // Actions parsed from AI response
+}
+
+/**
+ * Action types that the AI can recommend
+ */
+export type ActionType = 
+  | 'deposit_savings'
+  | 'create_goal' 
+  | 'join_circle'
+  | 'invest_pool'
+  | 'withdraw_funds'
+  | 'view_portfolio';
+
+/**
+ * Action data from AI recommendations
+ */
+export interface AIAction {
+  type: ActionType;
+  title: string;
+  description: string;
+  amount?: string;
+  targetAddress?: string;
+  requiresSignature: boolean;
+  estimatedGas?: string;
 }
 
 /**
