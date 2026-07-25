@@ -212,8 +212,8 @@ describe('Savings Page Loading/Error/Retry States', () => {
       );
 
       // Balances should show real data
-      expect(screen.getByText('1')).toBeInTheDocument(); // Available balance
-      expect(screen.getByText('2')).toBeInTheDocument(); // Portfolio
+      expect(screen.getByText('1 ETH')).toBeInTheDocument(); // Available balance
+      expect(screen.getByText('2 ETH')).toBeInTheDocument(); // Portfolio
       expect(screen.getByText('3.0 ETH')).toBeInTheDocument(); // Wallet balance
 
       // Deposit button should show loading without placeholders - Req 11.4
