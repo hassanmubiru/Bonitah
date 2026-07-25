@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 
-import { HealthModule } from '../health/health.module';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 
@@ -11,7 +10,6 @@ import { AdminService } from './admin.service';
  * Unauthorized access is blocked by the global RolesGuard.
  */
 @Module({
-  imports: [HealthModule],
   controllers: [AdminController],
   providers: [AdminService],
   exports: [AdminService],

@@ -45,8 +45,8 @@ export class AdminController {
     @Query('limit') limit?: string,
   ): Promise<AdminUsersResponse> {
     return this.adminService.getUsers(req.user, {
-      search,
-      role: role as 'USER' | 'VERIFIER' | 'ADMIN',
+      search: search || undefined,
+      role: (role as 'USER' | 'VERIFIER' | 'ADMIN') || undefined,
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 20,
     });
@@ -78,7 +78,7 @@ export class AdminController {
     return this.adminService.getTransactions(req.user, {
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 20,
-      status,
+      status: status || undefined,
     });
   }
 
