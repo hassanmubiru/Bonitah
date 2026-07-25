@@ -158,8 +158,6 @@ export class AdminService {
     // Transform to match the expected interface
     const transformedUsers = users.map(user => ({
       ...user,
-      isActive: true, // Mock value since field doesn't exist in schema
-      updatedAt: user.createdAt, // Use createdAt as fallback
     }));
 
     return {
