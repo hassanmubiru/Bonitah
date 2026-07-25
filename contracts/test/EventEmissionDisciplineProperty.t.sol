@@ -255,6 +255,9 @@ contract EventEmissionDisciplinePropertyTest is Test {
     }
     
     function _testRegistryReputationIncrease(uint256 amount) internal {
+        // Get current reputation to calculate expected new score
+        uint256 currentReputation = registry.reputationOf(user1);
+        
         vm.recordLogs();
         
         vm.prank(address(education));
@@ -266,7 +269,7 @@ contract EventEmissionDisciplinePropertyTest is Test {
         assertEq(address(uint160(uint256(logs[0].topics[1]))), user1, "Event should contain correct user address");
         (uint256 eventAmount, uint256 newScore) = abi.decode(logs[0].data, (uint256, uint256));
         assertEq(eventAmount, amount, "Event should contain correct amount");
-        assertEq(newScore, amount, "Event should contain correct new score"); // Assuming user1 started with 0 reputation
+        assertEq(newScore, currentReputation + amount, "Event should contain correct new score");
     }
     
     // SavingsVault Event Tests
