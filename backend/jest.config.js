@@ -1,20 +1,20 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} */
+/** @type {import('jest').Config} */
 module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
   testRegex: '.*(\\.spec|\\.test|\\.e2e-spec)\\.ts$',
   transform: {
-    '^.+\\.ts$': [
-      'ts-jest',
-      {
-        tsconfig: 'tsconfig.json',
-      },
-    ],
+    '^.+\\.(t|j)s$': ['ts-jest', {
+      tsconfig: 'tsconfig.json'
+    }],
   },
   setupFiles: ['<rootDir>/test/jest-env-setup.ts'],
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.module.ts', '!src/main.ts'],
   coverageDirectory: './coverage',
   testEnvironment: 'node',
+  coverageReporters: ['text', 'lcov', 'html'],
+  testTimeout: 30000,
+  maxWorkers: 1,
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/src/$1',
     // Resolve the shared workspace package to its TypeScript source so ts-jest
