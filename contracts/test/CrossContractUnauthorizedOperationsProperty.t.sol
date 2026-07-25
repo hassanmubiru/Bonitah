@@ -462,6 +462,17 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
             )
         );
         registry.verifyUser(authorizedUser);
+        
+        // Test zero address rejected for PAUSER operations
+        vm.prank(address(0));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IAccessControl.AccessControlUnauthorizedAccount.selector,
+                address(0),
+                BFNRoles.PAUSER_ROLE
+            )
+        );
+        savingsVault.pause();
     }
     
     /// @notice Test that contract addresses without roles are also rejected
