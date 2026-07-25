@@ -415,7 +415,7 @@ async function main() {
     console.log('   ✅ Foundry artifacts found');
 
     // Ensure directory structure
-    await ensureDirectories();
+    ensureDirectories();
 
     // Generate main ABIs file (backwards compatibility)
     const abiContent = generateABIsFile();
