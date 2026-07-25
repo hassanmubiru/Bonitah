@@ -592,10 +592,10 @@ describe('Auth Flow Component Tests - Fixed', () => {
 
       // Should show security help text
       expect(screen.getByText('Secure Wallet-Based Authentication')).toBeInTheDocument();
-      expect(screen.getByText('No passwords or personal information required')).toBeInTheDocument();
-      expect(screen.getByText('Your wallet signature proves ownership')).toBeInTheDocument();
-      expect(screen.getByText('All financial data comes from the blockchain')).toBeInTheDocument();
-      expect(screen.getByText('You maintain full control of your funds')).toBeInTheDocument();
+      expect(screen.getByText(/No passwords or personal information required/)).toBeInTheDocument();
+      expect(screen.getByText(/Your wallet signature proves ownership/)).toBeInTheDocument();
+      expect(screen.getByText(/All financial data comes from the blockchain/)).toBeInTheDocument();
+      expect(screen.getByText(/You maintain full control of your funds/)).toBeInTheDocument();
     });
 
     test('handles edge case where wallet connects but to wrong network', () => {
