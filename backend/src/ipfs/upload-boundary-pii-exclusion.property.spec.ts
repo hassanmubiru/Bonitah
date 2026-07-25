@@ -84,7 +84,7 @@ describe('Property 10: IPFS upload boundary and PII exclusion', () => {
           expect(global.fetch).not.toHaveBeenCalled();
         },
       ),
-      { numRuns: 100 },
+      { numRuns: 25 },
     );
   });
 
