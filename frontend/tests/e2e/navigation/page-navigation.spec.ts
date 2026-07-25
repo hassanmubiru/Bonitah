@@ -462,7 +462,7 @@ test.describe('Page Navigation', () => {
       await page.keyboard.press('Tab');
       
       // Should be able to navigate using keyboard
-      let activeElement = await page.evaluate(() => document.activeElement?.tagName);
+      const activeElement = await page.evaluate(() => document.activeElement?.tagName);
       
       // Continue tabbing to find navigation elements
       for (let i = 0; i < 10; i++) {
