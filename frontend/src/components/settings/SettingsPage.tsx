@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, Palette, Bell, Shield, Eye, Download, Upload, RotateCcw } from 'lucide-react';
+import { Settings, Palette, Bell, Shield, Eye, Wrench, Download, Upload, RotateCcw } from 'lucide-react';
 
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
