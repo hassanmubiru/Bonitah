@@ -1,8 +1,10 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request } from '@nestjs/common';
 
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import type { AuthenticatedRequest } from './auth.types';
 import {
   type LogoutResponse,
+  type MeResponse,
   type NonceRequest,
   type NonceResponse,
   nonceRequestSchema,
@@ -57,5 +59,17 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   logout(): LogoutResponse {
     return this.authService.logout();
+  }
+
+  /**
+   * Get current authenticated user information (Req 14.9).
+   * 
+   * Returns user ID, address, and role from the JWT session.
+   * Requires valid authentication.
+   */
+  @Get('me')
+  @HttpCode(HttpStatus.OK)
+  me(@Request() req: AuthenticatedRequest): MeResponse {
+    return this.authService.me(req.user.userId, req.user.address, req.user.role);
   }
 }

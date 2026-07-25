@@ -172,6 +172,16 @@ export class AuthService {
   logout(): LogoutResponse {
     return { success: true };
   }
+
+  /**
+   * Get current user information from the authenticated session (Req 14.9).
+   *
+   * Returns the user ID, address, and role from the authenticated principal.
+   * This endpoint requires valid authentication.
+   */
+  me(userId: string, address: string, role: Role): MeResponse {
+    return { userId, address, role };
+  }
 }
 
 /** Generic, detail-free authentication error (Req 2.8, 14.2). */
