@@ -65,7 +65,7 @@ validate_deployment() {
     
     log_info "3. Checking script structure..."
     
-    # Verify key functions exist
+    # Verify key functions exist (we're already in contracts/ directory)
     if grep -q "_deployToken" script/DeployBaseSepolia.s.sol && \
        grep -q "_deployImplementations" script/DeployBaseSepolia.s.sol && \
        grep -q "_deployProxies" script/DeployBaseSepolia.s.sol && \
@@ -74,6 +74,7 @@ validate_deployment() {
         log_success "All required deployment phases present"
     else
         log_error "Missing required deployment phases"
+        cd ..
         return 1
     fi
     
@@ -83,6 +84,7 @@ validate_deployment() {
         log_success "Error handling implemented"
     else
         log_error "Missing error handling"
+        cd ..
         return 1
     fi
     
@@ -92,6 +94,7 @@ validate_deployment() {
         log_success "Chain validation implemented"
     else
         log_error "Missing chain validation"
+        cd ..
         return 1
     fi
     
