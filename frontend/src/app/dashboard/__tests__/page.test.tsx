@@ -214,7 +214,16 @@ describe('DashboardPage', () => {
       expect(screen.getByText(/portfolio overview/i)).toBeInTheDocument();
       expect(screen.getByText(/savings summary/i)).toBeInTheDocument();
       expect(screen.getByText(/community activity/i)).toBeInTheDocument();
-      expect(screen.getByText(/recent activity/i)).toBeInTheDocument();
+      
+      // Use getAllByText to handle multiple matches, then verify we have the section heading
+      const recentActivityElements = screen.getAllByText(/recent activity/i);
+      expect(recentActivityElements.length).toBeGreaterThan(0);
+      
+      // Verify at least one is a section heading (not in the description paragraph)
+      const sectionElement = recentActivityElements.find(
+        element => element.tagName !== 'P' && !element.className.includes('text-muted-foreground')
+      );
+      expect(sectionElement).toBeInTheDocument();
     });
   });
 
