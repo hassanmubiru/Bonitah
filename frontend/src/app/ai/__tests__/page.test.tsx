@@ -456,7 +456,9 @@ describe('AI Assistant Page', () => {
 
       render(<AiAssistantPage />);
 
-      expect(screen.getByText('23456789')).toBeInTheDocument();
+      expect(screen.getByText((content, element) => {
+        return element?.textContent === 'ID: 23456789';
+      })).toBeInTheDocument();
     });
   });
 });
