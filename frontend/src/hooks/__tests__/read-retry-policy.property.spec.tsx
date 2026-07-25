@@ -331,3 +331,111 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
       { numRuns: 25 }
     );
   });
+  /**
+   * Property: Manual refetch works correctly
+   * Requirements: 11.6 (retry action for failed reads)
+   */
+  it('manual refetch works correctly after failures', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          contractAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          expectedValue: fc.bigInt({ min: 0n, max: 1000000n }),
+        }),
+        async ({ contractAddress, userAddress, expectedValue }) => {
+          mockReadContractAttempts = 0;
+          let shouldSucceed = false;
+          
+          mockReadContractResponse = async () => {
+            if (shouldSucceed) {
+              return expectedValue;
+            }
+            throw new Error('Network request failed');
+          };
+
+          const { result } = renderHook(
+            () => useContractRead({
+              address: contractAddress,
+              abi: mockAbi,
+              functionName: 'balanceOf',
+              args: [userAddress],
+            }),
+            { wrapper: TestWrapper }
+          );
+
+          // Wait for initial failure
+          await waitFor(() => {
+            expect(result.current.isError).toBe(true);
+          }, { timeout: 10000 });
+
+          // Now make refetch succeed
+          shouldSucceed = true;
+          const initialAttempts = mockReadContractAttempts;
+
+          // Trigger manual refetch - Req 11.6
+          act(() => {
+            result.current.refetch();
+          });
+
+          await waitFor(() => {
+            expect(result.current.data).toBe(expectedValue);
+            expect(result.current.isError).toBe(false);
+          }, { timeout: 5000 });
+
+          // Verify refetch made additional attempt
+          expect(mockReadContractAttempts).toBeGreaterThan(initialAttempts);
+        }
+      ),
+      { numRuns: 15 }
+    );
+  });
+  /**
+   * Property: Hook configuration properties work correctly
+   * Requirements: 1.6 (proper hook interface and behavior)
+   */
+  it('hook configuration properties work correctly', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          contractAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          enabled: fc.boolean(),
+          expectedValue: fc.bigInt({ min: 0n, max: 1000000n }),
+        }),
+        async ({ contractAddress, userAddress, enabled, expectedValue }) => {
+          mockReadContractAttempts = 0;
+          
+          mockReadContractResponse = async () => {
+            return expectedValue;
+          };
+
+          const { result } = renderHook(
+            () => useContractRead({
+              address: contractAddress,
+              abi: mockAbi,
+              functionName: 'balanceOf',
+              args: [userAddress],
+              enabled,
+            }),
+            { wrapper: TestWrapper }
+          );
+
+          if (enabled) {
+            // Should fetch data when enabled
+            await waitFor(() => {
+              expect(result.current.data).toBe(expectedValue);
+            }, { timeout: 5000 });
+            expect(mockReadContractAttempts).toBe(1);
+          } else {
+            // Should not fetch when disabled
+            expect(result.current.isLoading).toBe(false);
+            expect(result.current.data).toBeUndefined();
+            expect(mockReadContractAttempts).toBe(0);
+          }
+        }
+      ),
+      { numRuns: 20 }
+    );
+  });
+});
