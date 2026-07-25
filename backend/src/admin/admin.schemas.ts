@@ -176,3 +176,18 @@ export type AdminCommunityResponse = z.infer<typeof adminCommunityResponseSchema
 export const adminSystemResponseSchema = adminSystemStatusSchema;
 
 export type AdminSystemResponse = z.infer<typeof adminSystemResponseSchema>;
+
+/** Request for updating user role. */
+export const updateUserRoleRequestSchema = z.object({
+  role: z.enum(['USER', 'VERIFIER', 'ADMIN']),
+});
+
+export type UpdateUserRoleRequest = z.infer<typeof updateUserRoleRequestSchema>;
+
+/** Request for admin actions. */
+export const adminActionRequestSchema = z.object({
+  targetUserId: z.string().cuid().optional(),
+  parameters: z.record(z.any()).optional(),
+});
+
+export type AdminActionRequest = z.infer<typeof adminActionRequestSchema>;
