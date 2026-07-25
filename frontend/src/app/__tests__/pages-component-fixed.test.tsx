@@ -316,7 +316,7 @@ describe('Pages Component Tests - Fixed (Task 21.12)', () => {
       fireEvent.click(screen.getByTestId('trigger-error'));
       
       // Should have consistent error messaging and retry pattern
-      expect(screen.getByText(/Error/)).toBeInTheDocument();
+      expect(screen.getByText('Error loading balance')).toBeInTheDocument();
       expect(screen.getByText('Retry')).toBeInTheDocument();
     });
   });
