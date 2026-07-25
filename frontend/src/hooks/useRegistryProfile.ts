@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAccount, useContractRead, useContractWrite } from 'wagmi';
-import { RegistryABI } from '@bonitah/shared';
+import { getContractAbi } from '@bfn/shared';
 
 /**
  * Profile data structure from Registry contract
@@ -37,10 +37,13 @@ export function useRegistryProfile() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Get Registry ABI
+  const registryABI = getContractAbi('Registry');
+
   // Read profile from Registry contract
   const { data: profileData, isLoading: contractLoading, refetch } = useContractRead({
     address: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS as `0x${string}`,
-    abi: RegistryABI,
+    abi: registryABI,
     functionName: 'getProfile',
     args: address ? [address] : undefined,
     enabled: !!address && isConnected,
@@ -53,7 +56,7 @@ export function useRegistryProfile() {
   // Read reputation from Registry contract
   const { data: reputation } = useContractRead({
     address: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS as `0x${string}`,
-    abi: RegistryABI,
+    abi: registryABI,
     functionName: 'getReputation',
     args: address ? [address] : undefined,
     enabled: !!address && isConnected,
@@ -62,7 +65,7 @@ export function useRegistryProfile() {
   // Read verification status from Registry contract
   const { data: isVerified } = useContractRead({
     address: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS as `0x${string}`,
-    abi: RegistryABI,
+    abi: registryABI,
     functionName: 'isVerified',
     args: address ? [address] : undefined,
     enabled: !!address && isConnected,
@@ -71,7 +74,7 @@ export function useRegistryProfile() {
   // Contract write for updating profile
   const { writeAsync: updateProfileContract } = useContractWrite({
     address: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS as `0x${string}`,
-    abi: RegistryABI,
+    abi: registryABI,
     functionName: 'updateProfile',
   });
 
