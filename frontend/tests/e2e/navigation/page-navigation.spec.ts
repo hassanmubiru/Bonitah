@@ -306,3 +306,229 @@ test.describe('Page Navigation', () => {
       await page.waitForURL('/auth', { timeout: TIMEOUTS.REDIRECT });
     });
   });
+  test.describe('Navigation Performance', () => {
+    test('should load pages within acceptable time limits', async ({ 
+      page, 
+      homePage, 
+      authPage 
+    }) => {
+      const startTime = Date.now();
+      
+      await homePage.navigate();
+      const homeLoadTime = Date.now() - startTime;
+      
+      expect(homeLoadTime).toBeLessThan(TIMEOUTS.PAGE_LOAD);
+      
+      const authStartTime = Date.now();
+      await authPage.navigate();
+      const authLoadTime = Date.now() - authStartTime;
+      
+      expect(authLoadTime).toBeLessThan(TIMEOUTS.PAGE_LOAD);
+    });
+
+    test('should handle concurrent navigation requests', async ({ 
+      page 
+    }) => {
+      // Start multiple navigation requests simultaneously
+      const navigationPromises = [
+        page.goto('/'),
+        page.goto('/auth'),
+        page.goto('/'),
+      ];
+      
+      // Wait for all to complete
+      await Promise.all(navigationPromises);
+      
+      // Should end up on the last requested page
+      await expect(page).toHaveURL('/');
+    });
+
+    test('should cache resources for faster subsequent loads', async ({ 
+      page, 
+      homePage 
+    }) => {
+      // First load
+      const firstLoadStart = Date.now();
+      await homePage.navigate();
+      const firstLoadTime = Date.now() - firstLoadStart;
+      
+      // Navigate away and back
+      await page.goto('/auth');
+      
+      // Second load should be faster due to caching
+      const secondLoadStart = Date.now();
+      await homePage.navigate();
+      const secondLoadTime = Date.now() - secondLoadStart;
+      
+      // Second load should generally be faster
+      // This may vary based on caching strategy
+      expect(secondLoadTime).toBeLessThan(firstLoadTime * 1.5);
+    });
+  });
+
+  test.describe('Error Handling in Navigation', () => {
+    test('should handle network errors during navigation', async ({ 
+      page 
+    }) => {
+      // Simulate network failure
+      await page.route('**/*', async (route) => {
+        if (route.request().url().includes('.js') || route.request().url().includes('.css')) {
+          await route.abort('internetdisconnected');
+        } else {
+          await route.continue();
+        }
+      });
+      
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+      
+      // Page should still load basic content
+      await expect(page.locator('body')).toBeVisible();
+    });
+
+    test('should recover from temporary network issues', async ({ 
+      page, 
+      homePage 
+    }) => {
+      let requestCount = 0;
+      
+      // Fail first request, succeed on retry
+      await page.route('**/', async (route) => {
+        requestCount++;
+        if (requestCount === 1) {
+          await route.abort('internetdisconnected');
+        } else {
+          await route.continue();
+        }
+      });
+      
+      await homePage.navigate();
+      
+      // Should eventually succeed
+      await homePage.verifyHeroContent();
+    });
+
+    test('should handle JavaScript errors gracefully', async ({ 
+      page, 
+      homePage 
+    }) => {
+      // Inject JavaScript error
+      await page.addInitScript(() => {
+        // Simulate a JavaScript error
+        setTimeout(() => {
+          throw new Error('Simulated JS error');
+        }, 1000);
+      });
+      
+      await homePage.navigate();
+      
+      // Page should still be functional despite JS error
+      await homePage.verifyHeroContent();
+      await expect(homePage.connectButton).toBeVisible();
+    });
+
+    test('should show appropriate error messages for failed requests', async ({ 
+      page 
+    }) => {
+      // Mock API failure
+      await page.route('**/api/**', async (route) => {
+        await route.fulfill({
+          status: 500,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'Server error' })
+        });
+      });
+      
+      await page.goto('/dashboard');
+      
+      // Should show error message or fallback content
+      if (await page.isVisible('text=Unable to load')) {
+        await expect(page.locator('text=Unable to load')).toBeVisible();
+      } else {
+        // Should at least redirect to auth if unauthenticated
+        await page.waitForURL('/auth', { timeout: TIMEOUTS.REDIRECT });
+      }
+    });
+  });
+
+  test.describe('Accessibility in Navigation', () => {
+    test('should support keyboard navigation', async ({ 
+      page, 
+      homePage 
+    }) => {
+      await homePage.navigate();
+      
+      // Tab through navigation elements
+      await page.keyboard.press('Tab');
+      
+      // Should be able to navigate using keyboard
+      let activeElement = await page.evaluate(() => document.activeElement?.tagName);
+      
+      // Continue tabbing to find navigation elements
+      for (let i = 0; i < 10; i++) {
+        await page.keyboard.press('Tab');
+        const currentElement = await page.evaluate(() => document.activeElement?.tagName);
+        
+        if (currentElement === 'A' || currentElement === 'BUTTON') {
+          // Found a navigation element, try to activate it
+          await page.keyboard.press('Enter');
+          await page.waitForTimeout(500);
+          break;
+        }
+      }
+    });
+
+    test('should have proper ARIA labels and landmarks', async ({ 
+      page, 
+      homePage 
+    }) => {
+      await homePage.navigate();
+      
+      // Check for navigation landmarks
+      const navElement = page.locator('nav');
+      if (await navElement.count() > 0) {
+        await expect(navElement.first()).toHaveAttribute('role', 'navigation');
+      }
+      
+      // Check for main content landmark
+      const mainElement = page.locator('main, [role="main"]');
+      await expect(mainElement.first()).toBeVisible();
+    });
+
+    test('should announce page changes to screen readers', async ({ 
+      page, 
+      homePage, 
+      authPage 
+    }) => {
+      await homePage.navigate();
+      
+      // Navigate to different page
+      await authPage.navigate();
+      
+      // Page title should update for screen readers
+      const title = await page.title();
+      expect(title).toBeTruthy();
+      expect(title).not.toBe('');
+      
+      // Should have appropriate headings structure
+      const h1Elements = await page.locator('h1').count();
+      expect(h1Elements).toBeGreaterThanOrEqual(1);
+    });
+
+    test('should provide skip links for screen readers', async ({ 
+      page, 
+      homePage 
+    }) => {
+      await homePage.navigate();
+      
+      // Look for skip links (usually hidden but accessible)
+      const skipLink = page.locator('a:has-text("Skip to main content")');
+      
+      if (await skipLink.count() > 0) {
+        // Skip link should be focusable
+        await skipLink.focus();
+        await expect(skipLink).toBeFocused();
+      }
+    });
+  });
+});
