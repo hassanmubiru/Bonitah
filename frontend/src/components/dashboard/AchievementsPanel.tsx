@@ -38,11 +38,31 @@ interface AchievementsPanelProps {
  * - Proper loading/error/retry states
  */
 export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
-  // Get contract addresses and ABIs
-  const registryAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Registry');
-  const registryAbi = getContractAbi('Registry');
-  const educationAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Education');
-  const educationAbi = getContractAbi('Education');
+  // Get contract addresses and ABIs - handle deployment check
+  let registryAddress: Address;
+  let registryAbi;
+  let educationAddress: Address;
+  let educationAbi;
+  
+  try {
+    registryAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Registry');
+    registryAbi = getContractAbi('Registry');
+    educationAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Education');
+    educationAbi = getContractAbi('Education');
+  } catch (error) {
+    return (
+      <Card className="p-6 h-full">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Achievements</h3>
+          <Alert>
+            <p className="text-sm">
+              Contracts are not yet deployed. Please wait for deployment to complete.
+            </p>
+          </Alert>
+        </div>
+      </Card>
+    );
+  }
 
   // Fetch reputation score from Registry
   const {

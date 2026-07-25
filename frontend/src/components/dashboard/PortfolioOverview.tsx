@@ -24,9 +24,28 @@ interface PortfolioOverviewProps {
  * - Real-time updates when wallet/network changes
  */
 export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
-  // Get contract addresses
-  const savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
-  const savingsVaultAbi = getContractAbi('SavingsVault');
+  // Get contract addresses - handle the case where contracts aren't deployed yet
+  let savingsVaultAddress: Address;
+  let savingsVaultAbi;
+  
+  try {
+    savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+    savingsVaultAbi = getContractAbi('SavingsVault');
+  } catch (error) {
+    // Contracts not deployed yet - show appropriate message
+    return (
+      <Card className="p-6">
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Portfolio Overview</h2>
+          <Alert>
+            <p className="text-sm">
+              Contracts are not yet deployed. Please wait for deployment to complete.
+            </p>
+          </Alert>
+        </div>
+      </Card>
+    );
+  }
 
   // Fetch portfolio value (total across all savings types)
   const {

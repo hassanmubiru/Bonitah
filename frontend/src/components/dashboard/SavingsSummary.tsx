@@ -38,8 +38,26 @@ interface SavingsSummaryProps {
  * - Proper loading/error/retry states
  */
 export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
-  const savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
-  const savingsVaultAbi = getContractAbi('SavingsVault');
+  let savingsVaultAddress: Address;
+  let savingsVaultAbi;
+  
+  try {
+    savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+    savingsVaultAbi = getContractAbi('SavingsVault');
+  } catch (error) {
+    return (
+      <Card className="p-6 h-full">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Savings Summary</h3>
+          <Alert>
+            <p className="text-sm">
+              Contracts are not yet deployed. Please wait for deployment to complete.
+            </p>
+          </Alert>
+        </div>
+      </Card>
+    );
+  }
 
   // Fetch user's active goals
   const {

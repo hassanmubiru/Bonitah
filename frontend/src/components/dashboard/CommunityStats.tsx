@@ -39,8 +39,30 @@ interface CommunityStatsProps {
  * - Proper loading/error/retry states
  */
 export function CommunityStats({ userAddress }: CommunityStatsProps) {
-  const communityTreasuryAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'CommunityTreasury');
-  const communityTreasuryAbi = getContractAbi('CommunityTreasury');
+  let communityTreasuryAddress: Address;
+  let communityTreasuryAbi;
+  let governanceAddress: Address;
+  let governanceAbi;
+  
+  try {
+    communityTreasuryAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'CommunityTreasury');
+    communityTreasuryAbi = getContractAbi('CommunityTreasury');
+    governanceAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Governance');
+    governanceAbi = getContractAbi('Governance');
+  } catch (error) {
+    return (
+      <Card className="p-6 h-full">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Community Activity</h3>
+          <Alert>
+            <p className="text-sm">
+              Contracts are not yet deployed. Please wait for deployment to complete.
+            </p>
+          </Alert>
+        </div>
+      </Card>
+    );
+  }
 
   // Fetch user's circle memberships
   const {
@@ -71,9 +93,6 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
   });
 
   // Fetch user's voting power in governance
-  const governanceAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Governance');
-  const governanceAbi = getContractAbi('Governance');
-  
   const {
     data: votingPower,
     isLoading: votingLoading,
