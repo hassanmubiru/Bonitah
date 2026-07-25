@@ -240,3 +240,150 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
       { numRuns: 10 }
     );
   }, 30000);
+  /**
+   * Property: Successful reads return data without unnecessary retries
+   * Requirements: 1.6 (successful reads should not retry unnecessarily)
+   */
+  it('successful reads return data without unnecessary retries', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          contractAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          expectedValue: fc.bigInt({ min: 0n, max: 1000000n }),
+        }),
+        async ({ contractAddress, userAddress, expectedValue }) => {
+          mockReadContractAttempts = 0;
+          
+          mockReadContractResponse = async () => {
+            return expectedValue;
+          };
+
+          const { result } = renderHook(
+            () => useContractRead({
+              address: contractAddress,
+              abi: mockAbi,
+              functionName: 'balanceOf', 
+              args: [userAddress],
+            }),
+            { wrapper: TestWrapper }
+          );
+
+          await waitFor(() => {
+            expect(result.current.isLoading).toBe(false);
+            expect(result.current.data).toBe(expectedValue);
+          }, { timeout: 5000 });
+
+          // Successful read should only make 1 attempt - no retries needed
+          expect(mockReadContractAttempts).toBe(1);
+          expect(result.current.isError).toBe(false);
+          expect(result.current.error).toBeNull();
+        }
+      ),
+      { numRuns: 15 }
+    );
+  }, 20000);
+  /**
+   * Property: Hook configuration properties work correctly
+   * Requirements: 1.6 (proper hook interface and behavior)
+   */
+  it('hook configuration properties work correctly', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          contractAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          enabled: fc.boolean(),
+          expectedValue: fc.bigInt({ min: 0n, max: 1000000n }),
+        }),
+        async ({ contractAddress, userAddress, enabled, expectedValue }) => {
+          mockReadContractAttempts = 0;
+          
+          mockReadContractResponse = async () => {
+            return expectedValue;
+          };
+
+          const { result } = renderHook(
+            () => useContractRead({
+              address: contractAddress,
+              abi: mockAbi,
+              functionName: 'balanceOf',
+              args: [userAddress],
+              enabled,
+            }),
+            { wrapper: TestWrapper }
+          );
+
+          // Allow some time for the hook to settle
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          if (enabled) {
+            // Should fetch data when enabled
+            await waitFor(() => {
+              expect(result.current.data).toBe(expectedValue);
+            }, { timeout: 5000 });
+            expect(mockReadContractAttempts).toBe(1);
+          } else {
+            // Should not fetch when disabled
+            expect(result.current.isLoading).toBe(false);
+            expect(result.current.data).toBeUndefined();
+            expect(mockReadContractAttempts).toBe(0);
+          }
+        }
+      ),
+      { numRuns: 10 }
+    );
+  }, 15000);
+
+  /**
+   * Property: Retry policy configuration is correctly implemented
+   * Requirements: 1.6 (retry policy configuration validation)
+   */
+  it('retry policy configuration validates correctly', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          contractAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+        }),
+        async ({ contractAddress, userAddress }) => {
+          mockReadContractAttempts = 0;
+          
+          // Track retry attempts and timing
+          const retryTimes: number[] = [];
+          mockReadContractResponse = async () => {
+            retryTimes.push(Date.now());
+            throw new Error('network timeout');
+          };
+
+          const { result } = renderHook(
+            () => useContractRead({
+              address: contractAddress,
+              abi: mockAbi,
+              functionName: 'balanceOf',
+              args: [userAddress],
+            }),
+            { wrapper: TestWrapper }
+          );
+
+          await waitFor(() => {
+            expect(result.current.isError).toBe(true);
+          }, { timeout: 15000 });
+
+          // Verify retry configuration - Req 1.6
+          expect(mockReadContractAttempts).toBe(4); // Initial + 3 retries
+          expect(result.current.data).toBeUndefined(); // No placeholder values
+          expect(result.current.error?.message).toContain('timeout');
+          expect(typeof result.current.refetch).toBe('function'); // Refetch available
+
+          // Basic timing validation - retries should have delays
+          if (retryTimes.length >= 2) {
+            const timeBetweenRetries = retryTimes[1]! - retryTimes[0]!;
+            expect(timeBetweenRetries).toBeGreaterThan(500); // Some delay exists
+          }
+        }
+      ),
+      { numRuns: 5 } // Reduced for performance
+    );
+  }, 25000);
+});
