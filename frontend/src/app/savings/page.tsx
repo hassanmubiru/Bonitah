@@ -44,7 +44,7 @@ export default function SavingsPage() {
   const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>('deposit');
 
   // Contract read hooks for live balance data
-  const { availableBalance, portfolioValue } = useSavingsVaultBalances();
+  const { availableBalance, portfolioValue, contractAddress } = useSavingsVaultBalances();
   
   // Token balance for deposit validation
   const tokenBalance = useTokenBalance();
@@ -52,6 +52,9 @@ export default function SavingsPage() {
   // Transaction hooks for deposit/withdraw operations
   const depositTx = useSavingsVaultDeposit();
   const withdrawTx = useSavingsVaultWithdraw();
+
+  // Check if contracts are deployed
+  const contractsDeployed = !!contractAddress;
 
   // Form validation
   const depositValidation = validateAmount(
@@ -136,6 +139,21 @@ export default function SavingsPage() {
             Manage your deposits and withdrawals in the SavingsVault
           </p>
         </div>
+
+        {/* Contract Deployment Warning */}
+        {!contractsDeployed && (
+          <Alert className="mb-8">
+            <AlertTitle>⚠️ Contracts Not Deployed</AlertTitle>
+            <AlertDescription>
+              The SavingsVault contracts haven't been deployed to Base Sepolia yet. 
+              To use the savings features, please deploy the contracts first using the deployment scripts.
+              <br />
+              <code className="mt-2 inline-block text-sm bg-muted px-2 py-1 rounded">
+                ./scripts/deploy-base-sepolia.sh
+              </code>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Balance Overview Cards */}
         <div className="mb-8 grid gap-6 sm:grid-cols-2">
@@ -337,7 +355,7 @@ export default function SavingsPage() {
 
                 <Button
                   type="submit"
-                  disabled={!depositValidation.isValid || depositTx.isLoading || !depositAmount}
+                  disabled={!depositValidation.isValid || depositTx.isLoading || !depositAmount || !contractsDeployed}
                   className="w-full"
                 >
                   {depositTx.isLoading ? (
@@ -345,6 +363,8 @@ export default function SavingsPage() {
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Processing Deposit...
                     </>
+                  ) : !contractsDeployed ? (
+                    'Contracts Not Deployed'
                   ) : (
                     'Deposit'
                   )}
@@ -396,7 +416,7 @@ export default function SavingsPage() {
 
                 <Button
                   type="submit"
-                  disabled={!withdrawValidation.isValid || withdrawTx.isLoading || !withdrawAmount}
+                  disabled={!withdrawValidation.isValid || withdrawTx.isLoading || !withdrawAmount || !contractsDeployed}
                   className="w-full"
                 >
                   {withdrawTx.isLoading ? (
@@ -404,6 +424,8 @@ export default function SavingsPage() {
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Processing Withdrawal...
                     </>
+                  ) : !contractsDeployed ? (
+                    'Contracts Not Deployed'
                   ) : (
                     'Withdraw'
                   )}

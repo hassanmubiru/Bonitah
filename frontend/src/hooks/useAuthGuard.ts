@@ -18,11 +18,11 @@ export function useAuthGuard() {
   const isOnCorrectNetwork = chainId === BASE_SEPOLIA_CHAIN_ID;
 
   useEffect(() => {
-    // Check authentication status on mount and when wallet connects
-    if (isConnected) {
+    // Only check authentication when wallet connects AND we're not already authenticated
+    if (isConnected && !isAuthenticated && !isLoading) {
       checkAuth();
     }
-  }, [isConnected, checkAuth]); // Add checkAuth back since it's now stable
+  }, [isConnected, isAuthenticated, isLoading, checkAuth]);
 
   return {
     isAuthenticated,

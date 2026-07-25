@@ -79,27 +79,56 @@ const SAVINGS_VAULT_ABI = [
 export function useSavingsVaultBalances() {
   const { address: userAddress } = useAccount();
   
-  const contractAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+  // Safely get contract address - return empty state if not deployed
+  const contractAddress = useMemo(() => {
+    try {
+      return getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+    } catch (error) {
+      console.warn('SavingsVault not deployed, using mock state:', error);
+      return null;
+    }
+  }, []);
 
   // Available balance (deposited - locked)
   const availableBalance = useContractRead({
-    address: contractAddress,
+    address: contractAddress || '0x0000000000000000000000000000000000000000',
     abi: SAVINGS_VAULT_ABI,
     functionName: 'availableBalance',
     args: userAddress ? [userAddress] : undefined,
-    enabled: !!userAddress,
-    queryKey: ['savings-available-balance', userAddress || ''],
+    enabled: !!userAddress && !!contractAddress,
+    queryKey: ['savings-available-balance', userAddress || '', contractAddress || ''],
   });
 
   // Total portfolio value
   const portfolioValue = useContractRead({
-    address: contractAddress,
+    address: contractAddress || '0x0000000000000000000000000000000000000000',
     abi: SAVINGS_VAULT_ABI,
     functionName: 'portfolioValue',
     args: userAddress ? [userAddress] : undefined,
-    enabled: !!userAddress,
-    queryKey: ['savings-portfolio-value', userAddress || ''],
+    enabled: !!userAddress && !!contractAddress,
+    queryKey: ['savings-portfolio-value', userAddress || '', contractAddress || ''],
   });
+
+  // If contracts aren't deployed, return mock data
+  if (!contractAddress) {
+    return {
+      availableBalance: {
+        data: BigInt(0),
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: () => Promise.resolve(),
+      },
+      portfolioValue: {
+        data: BigInt(0),
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: () => Promise.resolve(),
+      },
+      contractAddress: null,
+    };
+  }
 
   return {
     availableBalance: {
@@ -119,7 +148,14 @@ export function useSavingsVaultBalances() {
  * Implements Requirements 4.2 for signed deposit transactions.
  */
 export function useSavingsVaultDeposit() {
-  const contractAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+  const contractAddress = useMemo(() => {
+    try {
+      return getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+    } catch (error) {
+      console.warn('SavingsVault not deployed, deposit unavailable:', error);
+      return null;
+    }
+  }, []);
   
   const {
     writeContract,
@@ -139,6 +175,10 @@ export function useSavingsVaultDeposit() {
 
   const deposit = useCallback(
     (amount: string) => {
+      if (!contractAddress) {
+        throw new Error('SavingsVault contract not deployed. Please deploy contracts first.');
+      }
+
       if (!amount || isNaN(Number(amount))) {
         throw new Error('Invalid amount');
       }
@@ -162,6 +202,7 @@ export function useSavingsVaultDeposit() {
     isSuccess: isConfirmed,
     error: writeError || receiptError,
     reset: resetWrite,
+    isContractDeployed: !!contractAddress,
   };
 }
 
@@ -170,7 +211,14 @@ export function useSavingsVaultDeposit() {
  * Implements Requirements 4.3 for signed withdraw transactions.
  */
 export function useSavingsVaultWithdraw() {
-  const contractAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+  const contractAddress = useMemo(() => {
+    try {
+      return getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+    } catch (error) {
+      console.warn('SavingsVault not deployed, withdraw unavailable:', error);
+      return null;
+    }
+  }, []);
   
   const {
     writeContract,
@@ -190,6 +238,10 @@ export function useSavingsVaultWithdraw() {
 
   const withdraw = useCallback(
     (amount: string) => {
+      if (!contractAddress) {
+        throw new Error('SavingsVault contract not deployed. Please deploy contracts first.');
+      }
+
       if (!amount || isNaN(Number(amount))) {
         throw new Error('Invalid amount');
       }
@@ -213,6 +265,7 @@ export function useSavingsVaultWithdraw() {
     isSuccess: isConfirmed,
     error: writeError || receiptError,
     reset: resetWrite,
+    isContractDeployed: !!contractAddress,
   };
 }
 

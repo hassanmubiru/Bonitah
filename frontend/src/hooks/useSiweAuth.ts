@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { useAccount, useSignMessage, useDisconnect } from 'wagmi';
 import { SiweMessage } from 'siwe';
 
@@ -39,23 +39,37 @@ export function useSiweAuth() {
 
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
-    isLoading: false,
+    isLoading: true, // Start in loading state
     error: null,
   });
+
+  // Use refs to track state and prevent multiple calls
+  const isCheckingAuth = useRef(false);
+  const hasInitialized = useRef(false);
 
   /**
    * Check if current JWT is valid and get user info
    */
   const checkAuth = useCallback(async () => {
+    // Prevent multiple simultaneous auth checks
+    if (isCheckingAuth.current) {
+      return;
+    }
+
+    isCheckingAuth.current = true;
+    setAuthState(prev => ({ ...prev, isLoading: true }));
+
     const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
     const token = localStorage.getItem('bfn-auth-token');
+    
     if (!token) {
-      setAuthState((prev) => ({
-        ...prev,
+      setAuthState({
         isAuthenticated: false,
-        address: undefined,
-        role: undefined,
-      }));
+        isLoading: false,
+        error: null,
+      });
+      isCheckingAuth.current = false;
+      hasInitialized.current = true;
       return;
     }
 
@@ -68,28 +82,34 @@ export function useSiweAuth() {
 
       if (response.ok) {
         const user = await response.json();
-        setAuthState((prev) => ({
-          ...prev,
+        setAuthState({
           isAuthenticated: true,
+          isLoading: false,
+          error: null,
           address: user.address,
           role: user.role,
-          error: null,
-        }));
+        });
       } else {
         // Token invalid, remove it
         localStorage.removeItem('bfn-auth-token');
-        setAuthState((prev) => ({
-          ...prev,
+        setAuthState({
           isAuthenticated: false,
-          address: undefined,
-          role: undefined,
-        }));
+          isLoading: false,
+          error: null,
+        });
       }
     } catch (error) {
       console.error('Auth check failed:', error);
-      setAuthState((prev) => ({ ...prev, error: 'Authentication check failed' }));
+      setAuthState({
+        isAuthenticated: false,
+        isLoading: false,
+        error: 'Authentication check failed',
+      });
+    } finally {
+      isCheckingAuth.current = false;
+      hasInitialized.current = true;
     }
-  }, []); // Remove apiUrl dependency to prevent recreating the function
+  }, []); // No dependencies to keep function stable
 
   /**
    * Sign in with connected wallet using SIWE
@@ -217,20 +237,21 @@ export function useSiweAuth() {
     }
   }, [disconnect]);
 
-  // Check authentication on mount and when wallet changes
+  // Check authentication only on mount
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    if (!hasInitialized.current) {
+      checkAuth();
+    }
+  }, []); // Empty dependency array - only run on mount
 
-  // Clear auth state if wallet disconnects
+  // Clear auth state if wallet disconnects, but don't re-check
   useEffect(() => {
-    if (!isConnected) {
-      setAuthState((prev) => ({
-        ...prev,
+    if (!isConnected && hasInitialized.current) {
+      setAuthState({
         isAuthenticated: false,
-        address: undefined,
-        role: undefined,
-      }));
+        isLoading: false,
+        error: null,
+      });
     }
   }, [isConnected]);
 

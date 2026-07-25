@@ -10,9 +10,9 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  forbidOnly: !!process.env['CI'],
+  retries: process.env['CI'] ? 2 : 0,
+  workers: process.env['CI'] ? 1 : undefined,
   
   // Global timeout configurations
   timeout: 60000, // 60s per test
@@ -24,7 +24,7 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/results.json' }],
-    ...(process.env.CI ? [['github']] : [['list']]),
+    ...(process.env['CI'] ? [['github']] : [['list']]),
   ],
   
   // Test output directory
@@ -73,7 +73,7 @@ export default defineConfig({
   webServer: {
     command: 'pnpm dev',
     port: 3000,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !process.env['CI'],
     timeout: 120000, // 2 minutes to start
   },
 });
