@@ -23,8 +23,8 @@ describe('Auth Endpoints (e2e)', () => {
   let tokenService: TokenService;
 
   // Test wallets with known private keys for signing
-  const testWallet = privateKeyToAccount('0xtest1234test5678test9012test3456test7890test2345test6789test0123');
-  const testWallet2 = privateKeyToAccount('0xdemo1234demo5678demo9012demo3456demo7890demo2345demo6789demo0123');
+  const testWallet = privateKeyToAccount('0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef');
+  const testWallet2 = privateKeyToAccount('0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef');
 
   beforeAll(async () => {
     // Set up test environment
