@@ -18,10 +18,8 @@ export * as Types from './types/index.js';
 // Convenience re-exports with prefixes
 export {
   BASE_SEPOLIA_ADDRESSES,
-  BASE_SEPOLIA_IMPLEMENTATIONS, 
   BASE_SEPOLIA_TOKEN_ADDRESS,
-  BASE_SEPOLIA_DEPLOYED_BLOCK,
-  BASE_SEPOLIA_DEPLOYMENT
+  BASE_SEPOLIA_DEPLOYED_BLOCK
 } from './addresses/base-sepolia.js';
 
 export {
