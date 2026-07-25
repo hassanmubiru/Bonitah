@@ -1,97 +1,149 @@
 'use client';
 
-import { useState } from 'react';
-import { useSiweAuth } from './useSiweAuth';
-
-export interface UseDocumentUploadResult {
-  uploadDocuments: (files: File[]) => Promise<string[]>;
-  isUploading: boolean;
-  error: Error | null;
-}
+import { useState, useCallback } from 'react';
 
 /**
- * Hook for uploading profile documents to IPFS via backend service.
+ * Document upload management hook
+ * 
+ * Implements Task 21.9 requirements for IPFS document upload
  */
-export function useDocumentUpload(): UseDocumentUploadResult {
+export function useDocumentUpload() {
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const { token } = useSiweAuth();
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
-  const uploadDocuments = async (files: File[]): Promise<string[]> => {
-    if (!token) {
-      throw new Error('Authentication required for document upload');
+  /**
+   * Upload document to IPFS via backend service
+   */
+  const uploadDocument = useCallback(async (file: File, category: string = 'general') => {
+    // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      throw new Error('File size exceeds 10MB limit');
     }
 
-    if (files.length === 0) {
-      throw new Error('No files provided for upload');
-    }
-
-    if (files.length > 10) {
-      throw new Error('Maximum 10 files allowed per upload');
-    }
-
-    // Validate each file
-    for (const file of files) {
-      if (file.size > 10 * 1024 * 1024) {
-        throw new Error(`File "${file.name}" exceeds 10MB limit`);
-      }
-
-      // Check file type
-      const allowedTypes = [
-        'application/pdf',
-        'image/jpeg',
-        'image/png',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'text/plain',
-      ];
-
-      if (!allowedTypes.includes(file.type)) {
-        throw new Error(`File "${file.name}" has unsupported type: ${file.type}`);
-      }
+    // Validate file type
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/jpg', 
+      'image/png',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error('Unsupported file type. Please use PDF, images, or document files.');
     }
 
     setIsUploading(true);
+    setUploadProgress(0);
     setError(null);
 
     try {
       const formData = new FormData();
-      files.forEach((file) => {
-        formData.append('files', file);
-      });
+      formData.append('files', file);
+      formData.append('category', category);
 
-      const response = await fetch('/api/ipfs/profile-docs', {
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      const response = await fetch('/api/ipfs/upload', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${localStorage.getItem('bfn-auth-token')}`,
         },
         body: formData,
       });
 
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Upload failed' }));
-        throw new Error(errorData.message || `Upload failed: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Upload failed');
       }
 
-      const data = await response.json();
+      const result = await response.json();
+      
+      setTimeout(() => {
+        setUploadProgress(0);
+        setIsUploading(false);
+      }, 1000);
 
-      if (!data.cids || !Array.isArray(data.cids)) {
-        throw new Error('Invalid response from upload service');
-      }
+      return {
+        cid: result.cids[0],
+        url: `https://ipfs.io/ipfs/${result.cids[0]}`,
+        name: file.name,
+        size: formatFileSize(file.size),
+        type: file.type,
+      };
 
-      return data.cids;
-    } catch (err) {
-      const uploadError = err instanceof Error ? err : new Error('Upload failed');
-      setError(uploadError);
-      throw uploadError;
-    } finally {
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Upload failed');
       setIsUploading(false);
+      setUploadProgress(0);
+      throw error;
     }
-  };
+  }, []);
+
+  /**
+   * Delete document from IPFS (unpin)
+   */
+  const deleteDocument = useCallback(async (documentId: string) => {
+    try {
+      const response = await fetch(`/api/ipfs/unpin/${documentId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('bfn-auth-token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete document');
+      }
+
+      return true;
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Delete failed');
+      throw error;
+    }
+  }, []);
+
+  /**
+   * Clear current error
+   */
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   return {
-    uploadDocuments,
+    uploadDocument,
+    deleteDocument,
     isUploading,
+    uploadProgress,
     error,
+    clearError,
   };
+}
+
+/**
+ * Format file size in human-readable format
+ */
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
