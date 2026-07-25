@@ -22,8 +22,8 @@ jest.mock('@/components/ai/ActionButton', () => ({
   ),
 }));
 
-const mockUseAuthGuard = require('@/hooks/useAuthGuard').useAuthGuard;
-const mockUseChatApi = require('@/hooks/useChatApi').useChatApi;
+const mockUseAuthGuard = jest.requireActual('@/hooks/useAuthGuard').useAuthGuard as jest.MockedFunction<typeof import('@/hooks/useAuthGuard').useAuthGuard>;
+const mockUseChatApi = jest.requireActual('@/hooks/useChatApi').useChatApi as jest.MockedFunction<typeof import('@/hooks/useChatApi').useChatApi>;
 
 describe('AI Assistant Page', () => {
   beforeEach(() => {

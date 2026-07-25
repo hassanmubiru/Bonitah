@@ -6,7 +6,7 @@ jest.mock('../useSiweAuth', () => ({
   useSiweAuth: jest.fn(),
 }));
 
-const mockUseSiweAuth = require('../useSiweAuth').useSiweAuth as jest.MockedFunction<any>;
+const mockUseSiweAuth = jest.requireActual('../useSiweAuth').useSiweAuth as jest.MockedFunction<() => { isAuthenticated: boolean }>;
 
 // Mock fetch
 global.fetch = jest.fn();

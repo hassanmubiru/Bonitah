@@ -17,7 +17,7 @@ describe('ActionButton Component', () => {
     mockUseAccount.mockReturnValue({
       isConnected: true,
       address: '0x123...',
-    } as any);
+    } as ReturnType<typeof useAccount>);
   });
 
   afterEach(() => {

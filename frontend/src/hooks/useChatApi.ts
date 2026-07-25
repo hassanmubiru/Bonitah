@@ -176,7 +176,13 @@ export function useChatApi() {
       const data = await response.json();
       setState((prev) => ({
         ...prev,
-        conversations: (data.conversations || []).map((conv: any) => ({
+        conversations: (data.conversations || []).map((conv: { 
+          id: string; 
+          createdAt: string; 
+          messageCount: number; 
+          lastMessage: string | null; 
+          lastMessageAt: string;
+        }) => ({
           ...conv,
           createdAt: new Date(conv.createdAt),
           lastMessageAt: new Date(conv.lastMessageAt),
