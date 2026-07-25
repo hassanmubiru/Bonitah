@@ -40,26 +40,18 @@ interface SavingsSummaryProps {
 export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
   let savingsVaultAddress: Address;
   let savingsVaultAbi;
+  let contractsDeployed = true;
   
   try {
     savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
     savingsVaultAbi = getContractAbi('SavingsVault');
-  } catch (error) {
-    return (
-      <Card className="p-6 h-full">
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Savings Summary</h3>
-          <Alert>
-            <p className="text-sm">
-              Contracts are not yet deployed. Please wait for deployment to complete.
-            </p>
-          </Alert>
-        </div>
-      </Card>
-    );
+  } catch {
+    contractsDeployed = false;
+    savingsVaultAddress = '0x0000000000000000000000000000000000000000' as Address;
+    savingsVaultAbi = [];
   }
 
-  // Fetch user's active goals
+  // Fetch user's active goals - always call hooks
   const {
     data: activeGoals,
     isLoading: goalsLoading,
@@ -71,6 +63,7 @@ export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
     abi: savingsVaultAbi,
     functionName: 'getActiveGoals',
     args: [userAddress],
+    enabled: contractsDeployed,
   });
 
   // Fetch user's active locks
@@ -85,7 +78,24 @@ export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
     abi: savingsVaultAbi,
     functionName: 'getActiveLocks',
     args: [userAddress],
+    enabled: contractsDeployed,
   });
+
+  // Handle case where contracts aren't deployed yet
+  if (!contractsDeployed) {
+    return (
+      <Card className="p-6 h-full">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Savings Summary</h3>
+          <Alert>
+            <p className="text-sm">
+              Contracts are not yet deployed. Please wait for deployment to complete.
+            </p>
+          </Alert>
+        </div>
+      </Card>
+    );
+  }
 
   const isLoading = goalsLoading || locksLoading;
   const hasError = goalsError || locksError;
