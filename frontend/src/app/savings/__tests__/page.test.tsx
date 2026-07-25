@@ -342,7 +342,7 @@ describe('Savings Page Loading/Error/Retry States', () => {
 
       // Should now show error states - Req 11.5
       expect(screen.queryByText(/Loading/)).not.toBeInTheDocument();
-      expect(screen.getByText('Error')).toBeInTheDocument();
+      expect(screen.getAllByText('Error')).toHaveLength(2); // Available balance and portfolio
       expect(screen.getByText('Failed to load balance')).toBeInTheDocument();
     });
 
@@ -380,7 +380,7 @@ describe('Savings Page Loading/Error/Retry States', () => {
       );
 
       // Available balance should show success
-      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText('1 ETH')).toBeInTheDocument();
 
       // Portfolio should show error - Req 11.5
       expect(screen.getByText('Failed to load portfolio value')).toBeInTheDocument();
@@ -533,7 +533,7 @@ describe('Savings Page Loading/Error/Retry States', () => {
       expect(screen.queryByText(/Available for withdrawal/)).not.toBeInTheDocument(); // No balance descriptions
       
       // Should only show error messages and retry buttons
-      expect(screen.getByText('Error')).toBeInTheDocument();
+      expect(screen.getAllByText('Error')).toHaveLength(2); // Both balance cards show error
       expect(screen.getByText('Failed to load balance')).toBeInTheDocument();
       expect(screen.getByText('Failed to load portfolio value')).toBeInTheDocument();
       expect(screen.getByText('Failed to load wallet balance')).toBeInTheDocument();

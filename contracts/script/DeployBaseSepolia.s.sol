@@ -77,38 +77,31 @@ contract DeployBaseSepolia is Script {
         
         vm.startBroadcast(deployerPrivateKey);
         
-        try {
-            // Record deployment block
-            deploymentBlock = block.number;
-            
-            // Phase 1: Deploy test token
-            _deployToken();
-            
-            // Phase 2: Deploy implementation contracts
-            _deployImplementations();
-            
-            // Phase 3: Deploy UUPS proxies with initialization
-            _deployProxies();
-            
-            // Phase 4: Configure cross-contract permissions and roles
-            _configureRoles();
-            
-            vm.stopBroadcast();
-            
-            // Phase 5: Record deployment addresses
-            _recordDeployment();
-            
-            // Phase 6: Output for shared package update
-            _outputSharedPackageUpdate();
-            
-            console.log("");
-            console.log("SUCCESS: All contracts deployed and configured successfully!");
-            
-        } catch {
-            vm.stopBroadcast();
-            console.log("FATAL: Deployment failed. No contracts were partially deployed.");
-            // Exit code 1 will be returned by forge on revert
-        }
+        // Record deployment block
+        deploymentBlock = block.number;
+        
+        // Phase 1: Deploy test token
+        _deployToken();
+        
+        // Phase 2: Deploy implementation contracts
+        _deployImplementations();
+        
+        // Phase 3: Deploy UUPS proxies with initialization
+        _deployProxies();
+        
+        // Phase 4: Configure cross-contract permissions and roles
+        _configureRoles();
+        
+        vm.stopBroadcast();
+        
+        // Phase 5: Record deployment addresses
+        _recordDeployment();
+        
+        // Phase 6: Output for shared package update
+        _outputSharedPackageUpdate();
+        
+        console.log("");
+        console.log("SUCCESS: All contracts deployed and configured successfully!");
     }
     
     /**
