@@ -10,19 +10,32 @@ import { useContractRead } from '@/hooks/useContractRead';
 import { getContractAddress, getContractAbi } from '@bfn/shared';
 import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
 
+// Define types for contract return values
+interface Goal {
+  id: bigint;
+  targetAmount: bigint;
+  targetDate: bigint;
+  savedAmount: bigint;
+  completed: boolean;
+}
+
+interface Lock {
+  amount: bigint;
+  expiry: bigint;
+  released: boolean;
+}
+
 interface SavingsSummaryProps {
   userAddress: Address;
 }
-
-/**
- * Savings summary showing goal progress and locked savings status.
  * 
  * Requirements: 11.1, 11.3, 11.4, 11.5, 11.6
  * - Goal progress from on-chain reads
  * - Locked savings details with time remaining
  * - Proper loading/error/retry states
  */
-export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
+/**
+ * Savings summary showing goal progress and locked savings status.
   const savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
   const savingsVaultAbi = getContractAbi('SavingsVault');
 
