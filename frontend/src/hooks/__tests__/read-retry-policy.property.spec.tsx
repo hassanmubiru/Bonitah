@@ -55,9 +55,6 @@ function TestWrapper({ children }: { children: ReactNode }) {
   );
 }
 
-// Mock viem's readContract function directly
-const mockReadContract = jest.fn();
-
 // Track attempts for testing
 let mockReadContractAttempts = 0;
 let mockReadContractResponse: () => Promise<unknown>;
@@ -73,7 +70,10 @@ jest.mock('wagmi', () => ({
 
 jest.mock('viem', () => ({
   ...jest.requireActual('viem'),
-  readContract: mockReadContract,
+  readContract: jest.fn().mockImplementation(async () => {
+    mockReadContractAttempts++;
+    return mockReadContractResponse();
+  }),
 }));
 
 describe('Property 3: Read retry policy is bounded and correct', () => {
