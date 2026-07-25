@@ -402,7 +402,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - _Requirements: 11.1, 11.3, 11.4, 14.9, 15.5_
 
 - [ ] 22. Implement frontend end-to-end tests
-  - [ ] 22.1 Write Playwright e2e tests for primary user flows
+  - [x] 22.1 Write Playwright e2e tests for primary user flows
     - Cover account creation, authentication, initiating a transaction, and viewing transaction history
     - _Requirements: 15.5_
 
@@ -418,7 +418,7 @@ Languages are fixed by the design: Solidity ^0.8.24 (Foundry) for contracts, Typ
     - Start frontend, backend, PostgreSQL, and Redis with healthchecks reaching healthy within 120s
     - _Requirements: 16.2_
 
-  - [ ] 23.3 Create the GitHub Actions CI workflow
+  - [x] 23.3 Create the GitHub Actions CI workflow
     - Run lint -> test -> build within 30 minutes; fail and report the failing step, blocking deployment on failure
     - _Requirements: 16.3, 16.4, 15.6, 15.7, 15.8_
 
