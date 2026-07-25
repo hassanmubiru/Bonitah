@@ -517,7 +517,7 @@ describe('AiAssistantPage Component Tests', () => {
         },
       ];
 
-      mockUseChatApi.makeReturnValue({
+      mockUseChatApi.mockReturnValue({
         ...mockUseChatApi(),
         messages: mockMessages,
       });
