@@ -90,7 +90,7 @@ validate_deployment() {
     
     # Check chain validation
     if grep -q "BASE_SEPOLIA_CHAIN_ID" script/DeployBaseSepolia.s.sol && \
-       grep -q "block.chainid.*84532" script/DeployBaseSepolia.s.sol; then
+       grep -q "block.chainid.*BASE_SEPOLIA_CHAIN_ID" script/DeployBaseSepolia.s.sol; then
         log_success "Chain validation implemented"
     else
         log_error "Missing chain validation"
