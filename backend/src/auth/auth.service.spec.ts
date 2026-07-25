@@ -44,7 +44,6 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService);
     prisma = module.get<PrismaService>(PrismaService);
-    tokenService = module.get<TokenService>(TokenService);
   });
 
   afterEach(async () => {
