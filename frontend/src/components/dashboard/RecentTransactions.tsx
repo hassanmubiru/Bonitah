@@ -61,7 +61,7 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
   });
 
   // Format transaction event for display
-  const formatTransactionEvent = (event: any) => {
+  const formatTransactionEvent = (event: { eventName: string; payload: Record<string, unknown> }) => {
     const eventName = event.eventName;
     const payload = event.payload;
     
