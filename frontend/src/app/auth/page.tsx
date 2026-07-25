@@ -30,10 +30,19 @@ export default function AuthPage() {
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     if (isAuthenticated && !isRedirecting) {
-      setIsRedirecting(true);
-      router.push('/dashboard');
+      // Add a small delay to prevent rapid redirects
+      timeoutId = setTimeout(() => {
+        setIsRedirecting(true);
+        router.push('/dashboard');
+      }, 100);
     }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [isAuthenticated, router, isRedirecting]);
 
   // Handle SIWE sign-in after wallet connection

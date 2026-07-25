@@ -50,6 +50,7 @@ export function useSiweAuth() {
    * Check if current JWT is valid and get user info
    */
   const checkAuth = useCallback(async () => {
+    const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
     const token = localStorage.getItem('bfn-auth-token');
     if (!token) {
       setAuthState((prev) => ({
@@ -91,7 +92,7 @@ export function useSiweAuth() {
       console.error('Auth check failed:', error);
       setAuthState((prev) => ({ ...prev, error: 'Authentication check failed' }));
     }
-  }, [apiUrl]);
+  }, []); // Remove apiUrl dependency to prevent recreating the function
 
   /**
    * Sign in with connected wallet using SIWE

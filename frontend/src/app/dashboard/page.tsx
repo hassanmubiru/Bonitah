@@ -26,11 +26,16 @@ export default function DashboardPage() {
   // Use auth guard to check authentication state
   const { isAuthenticated, isLoading, isOnCorrectNetwork, isConnected } = useAuthGuard();
 
-  // Handle redirect only when we have definitive state
+  // Handle redirects carefully to prevent loops
   useEffect(() => {
-    // Only redirect if we're not loading and we're sure the user needs to authenticate
+    // Only redirect after loading is complete and we're sure about the state
     if (!isLoading) {
-      if (!isConnected || !isOnCorrectNetwork || !isAuthenticated) {
+      if (!isConnected) {
+        router.push('/auth');
+      } else if (isConnected && !isOnCorrectNetwork) {
+        // User is connected but on wrong network - stay on page to show network switch prompt
+        return;
+      } else if (isConnected && isOnCorrectNetwork && !isAuthenticated) {
         router.push('/auth');
       }
     }
@@ -47,7 +52,7 @@ export default function DashboardPage() {
     );
   }
 
-  // Show loading if not authenticated (redirect is handled by useEffect)
+  // Show loading if not authenticated (redirect will happen via useEffect)
   if (!isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center">

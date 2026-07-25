@@ -43,7 +43,7 @@ export class HealthController {
   readiness(): Promise<HealthCheckResult> {
     return this.health.check([
       () => this.database.isHealthy(),
-      () => this.redis.isHealthy(),
+      // () => this.redis.isHealthy(), // Temporarily disabled - Redis not installed
       () => this.rpc.isHealthy(),
     ]);
   }

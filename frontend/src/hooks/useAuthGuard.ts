@@ -22,7 +22,7 @@ export function useAuthGuard() {
     if (isConnected) {
       checkAuth();
     }
-  }, [isConnected, checkAuth]);
+  }, [isConnected]); // Remove checkAuth from deps to prevent loops
 
   return {
     isAuthenticated,
