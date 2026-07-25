@@ -163,7 +163,7 @@ validate_contracts() {
 validate_shared_package() {
     log_info "6. Validating shared package integration..."
     
-    if [ -f "shared/src/addresses.ts" ] && grep -q "BASE_SEPOLIA_CHAIN_ID.*84532" shared/src/addresses.ts; then
+    if [ -f "shared/src/addresses.ts" ] && grep -q "BASE_SEPOLIA_CHAIN_ID.*=.*84532" shared/src/networks.ts; then
         log_success "Base Sepolia configuration in shared package"
     else
         log_error "Missing Base Sepolia configuration in shared package"
