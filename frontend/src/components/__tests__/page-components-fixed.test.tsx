@@ -413,3 +413,207 @@ describe('Page Component Tests - Data Source Wiring and States', () => {
       expect(screen.getByText('2000 USDC')).toBeInTheDocument();
     });
   });
+  describe('Admin Page - Role Gating (Req 14.9)', () => {
+    it('blocks unauthorized access for non-admin users', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { useAdminData } = require('@/hooks/useAdminData');
+      
+      // Mock non-admin user
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        user: { role: 'USER' }, // Non-admin role
+        isLoading: false,
+      });
+
+      useAdminData.mockReturnValue({
+        systemHealth: null,
+        users: null,
+        error: null,
+      });
+
+      render(
+        <TestWrapper>
+          <MockAdmin />
+        </TestWrapper>
+      );
+
+      // Should show access denied message (Req 14.9)
+      expect(screen.getByText('Access Denied: Admin privileges required to access this page.')).toBeInTheDocument();
+      
+      // Should NOT show admin content
+      expect(screen.queryByText('Admin Dashboard')).not.toBeInTheDocument();
+    });
+
+    it('blocks access for unauthenticated users', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { useAdminData } = require('@/hooks/useAdminData');
+      
+      // Mock unauthenticated user
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: false,
+        user: null,
+        isLoading: false,
+      });
+
+      useAdminData.mockReturnValue({
+        systemHealth: null,
+        users: null,
+        error: null,
+      });
+
+      render(
+        <TestWrapper>
+          <MockAdmin />
+        </TestWrapper>
+      );
+
+      // Should show access denied (Req 14.9)
+      expect(screen.getByText('Access Denied: Admin privileges required to access this page.')).toBeInTheDocument();
+      
+      // Should NOT show admin functionality
+      expect(screen.queryByText('Admin Dashboard')).not.toBeInTheDocument();
+    });
+
+    it('shows loading state during authentication check', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      
+      // Mock loading state
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: false,
+        user: null,
+        isLoading: true,
+      });
+
+      render(
+        <TestWrapper>
+          <MockAdmin />
+        </TestWrapper>
+      );
+
+      // Should show loading spinner during auth check
+      expect(screen.getByRole('generic')).toBeInTheDocument();
+      
+      // Should NOT show admin content or access denied during loading
+      expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
+      expect(screen.queryByText('Admin Dashboard')).not.toBeInTheDocument();
+    });
+
+    it('allows access for admin users and displays admin functionality', () => {
+      const mockSystemHealth = {
+        status: 'healthy',
+        users: { total: 150, active: 45, growth: 12 },
+        transactions: { total: 2500, recent: 8 },
+      };
+
+      const mockUsers = {
+        users: [
+          {
+            id: 'user1',
+            walletAddress: '0x1234567890123456789012345678901234567890',
+            role: 'USER',
+            isActive: true,
+          }
+        ]
+      };
+
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { useAdminData } = require('@/hooks/useAdminData');
+      
+      // Mock admin user
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        user: { role: 'ADMIN' }, // Admin role
+        isLoading: false,
+      });
+
+      useAdminData.mockReturnValue({
+        systemHealth: mockSystemHealth,
+        users: mockUsers,
+        error: null,
+      });
+
+      render(
+        <TestWrapper>
+          <MockAdmin />
+        </TestWrapper>
+      );
+
+      // Should show admin dashboard (Req 14.9 - authorized access)
+      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
+      expect(screen.getByText('Manage users, monitor system health, and configure platform settings.')).toBeInTheDocument();
+      
+      // Should show system health data
+      expect(screen.getByTestId('total-users')).toHaveTextContent('150');
+      expect(screen.getByTestId('active-users')).toHaveTextContent('45');
+      expect(screen.getByTestId('system-status')).toHaveTextContent('healthy');
+      
+      // Should show navigation tabs
+      expect(screen.getByText('User Management')).toBeInTheDocument();
+      expect(screen.getByText('Analytics')).toBeInTheDocument();
+      expect(screen.getByText('System Monitor')).toBeInTheDocument();
+      
+      // Should NOT show access denied message
+      expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
+    });
+
+    it('handles admin data loading states correctly', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { useAdminData } = require('@/hooks/useAdminData');
+      
+      // Mock admin user with loading data
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        user: { role: 'ADMIN' },
+        isLoading: false,
+      });
+
+      useAdminData.mockReturnValue({
+        systemHealth: null,
+        users: null,
+        error: null,
+        isLoading: true,
+      });
+
+      render(
+        <TestWrapper>
+          <MockAdmin />
+        </TestWrapper>
+      );
+
+      // Should show admin interface even during data loading
+      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
+      
+      // Should show fallback values during loading (not placeholders)
+      expect(screen.getByTestId('total-users')).toHaveTextContent('0');
+      expect(screen.getByTestId('system-status')).toHaveTextContent('Unknown');
+    });
+
+    it('handles admin data error states', () => {
+      const { useAuthGuard } = require('@/hooks/useAuthGuard');
+      const { useAdminData } = require('@/hooks/useAdminData');
+      
+      // Mock admin user with data error
+      useAuthGuard.mockReturnValue({
+        isAuthenticated: true,
+        user: { role: 'ADMIN' },
+        isLoading: false,
+      });
+
+      useAdminData.mockReturnValue({
+        systemHealth: null,
+        users: null,
+        error: 'Failed to load admin data',
+      });
+
+      render(
+        <TestWrapper>
+          <MockAdmin />
+        </TestWrapper>
+      );
+
+      // Should show admin interface with error message
+      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
+      expect(screen.getByText('Failed to load admin data')).toBeInTheDocument();
+    });
+  });
+});
