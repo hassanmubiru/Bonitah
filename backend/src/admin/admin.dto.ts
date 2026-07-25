@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString, IsIn } from 'class-validator';
+import { IsOptional, IsIn } from 'class-validator';
 
 /**
  * Admin DTOs for API request/response validation

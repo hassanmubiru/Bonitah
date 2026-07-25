@@ -267,7 +267,7 @@ describe('AuthService', () => {
                 // Log the JWT and error for debugging
                 console.error('JWT verification failed:', {
                   jwt: successResponse.jwt,
-                  error: error.message,
+                  error: error instanceof Error ? error.message : String(error),
                   userMock: {
                     id: 'user-id',
                     walletAddress: account.address.toLowerCase(),
