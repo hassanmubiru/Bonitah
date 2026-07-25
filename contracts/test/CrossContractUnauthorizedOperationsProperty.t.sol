@@ -136,6 +136,12 @@ contract CrossContractUnauthorizedOperationsPropertyTest is Test {
         // Test Registry unauthorized operations (Req 3.10, 14.5)
         _testRegistryUnauthorizedOperations(unauthorizedCaller, testAmount);
         
+        // Test CommunityTreasury unauthorized operations (Req 6.5)
+        _testCommunityTreasuryUnauthorizedOperations(unauthorizedCaller);
+        
+        // Test SavingsVault unauthorized operations  
+        _testSavingsVaultUnauthorizedOperations(unauthorizedCaller);
+        
         // Test Governance unauthorized operations (Req 9.7, 9.10)  
         _testGovernanceUnauthorizedOperations(unauthorizedCaller, seed);
         

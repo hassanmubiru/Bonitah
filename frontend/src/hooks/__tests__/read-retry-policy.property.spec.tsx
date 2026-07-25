@@ -158,8 +158,10 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
             expect(result.current.isLoading).toBe(true);
           });
 
-          // Fast-forward through all retry delays
-          jest.advanceTimersByTime(8000); // 1s + 2s + 4s + buffer
+          // Fast-forward through all retry delays with act wrapper
+          act(() => {
+            jest.advanceTimersByTime(8000); // 1s + 2s + 4s + buffer
+          });
 
           // Wait for final failure
           await waitFor(() => {
@@ -228,8 +230,10 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
             expect(result.current.isLoading).toBe(true);
           });
 
-          // Fast-forward to timeout
-          jest.advanceTimersByTime(10100);
+          // Fast-forward to timeout with act wrapper
+          act(() => {
+            jest.advanceTimersByTime(10100);
+          });
 
           // Verify timeout occurred within 10s per attempt - Req 1.6
           await waitFor(() => {
@@ -282,13 +286,19 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           });
 
           // Advance through retry delays: 1s, 2s, 4s
-          jest.advanceTimersByTime(1000); // First retry delay
+          act(() => {
+            jest.advanceTimersByTime(1000); // First retry delay
+          });
           await waitFor(() => expect(attemptTimes.length).toBe(2), { timeout: 100 });
           
-          jest.advanceTimersByTime(2000); // Second retry delay  
+          act(() => {
+            jest.advanceTimersByTime(2000); // Second retry delay  
+          });
           await waitFor(() => expect(attemptTimes.length).toBe(3), { timeout: 100 });
           
-          jest.advanceTimersByTime(4000); // Third retry delay
+          act(() => {
+            jest.advanceTimersByTime(4000); // Third retry delay
+          });
           await waitFor(() => expect(attemptTimes.length).toBe(4), { timeout: 100 });
 
           // Verify exponential backoff delays: ~1s, ~2s, ~4s - Req 1.6
@@ -348,7 +358,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           );
 
           // Fast-forward through all retries
-          jest.advanceTimersByTime(8000);
+          act(() => {
+            jest.advanceTimersByTime(8000);
+          });
 
           // Wait for final error state
           await waitFor(() => {
