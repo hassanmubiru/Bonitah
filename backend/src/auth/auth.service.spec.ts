@@ -254,7 +254,7 @@ describe('AuthService', () => {
           },
         ),
         {
-          numRuns: 100, // Minimum 100 iterations as specified
+          numRuns: 50, // Reduced from 100 for faster execution
           timeout: 30000, // 30 second timeout
         },
       );

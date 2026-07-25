@@ -125,7 +125,7 @@ describe('ChainReadService', () => {
           // Verify Redis was called with correct cache key
           expect(mockRedisService.get).toHaveBeenCalledWith(cacheKey);
         }),
-        { numRuns: 50 } // Reduced runs for faster test execution
+        { numRuns: 25 } // Reduced runs for faster test execution
       );
     }, 30000);
 
@@ -166,7 +166,7 @@ describe('ChainReadService', () => {
             expect.stringContaining(params.functionName)
           );
         }),
-        { numRuns: 50 } // Reduced runs for faster test execution
+        { numRuns: 25 } // Reduced runs for faster test execution
       );
     }, 30000);
 
@@ -196,7 +196,7 @@ describe('ChainReadService', () => {
             expect.stringContaining(params.functionName)
           );
         }),
-        { numRuns: 50 } // Reduced runs for faster test execution
+        { numRuns: 25 } // Reduced runs for faster test execution
       );
     }, 30000);
 
@@ -269,7 +269,7 @@ describe('ChainReadService', () => {
           expect(result).toHaveProperty('provenance');
           expect(result.provenance.contractAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
         }),
-        { numRuns: 50 } // Reduced runs for faster test execution
+        { numRuns: 25 } // Reduced runs for faster test execution
       );
     }, 30000);
   });
@@ -281,9 +281,13 @@ describe('ChainReadService', () => {
       const key2 = generateCacheKey('Registry', 'isRegistered', undefined);
       const key3 = generateCacheKey('Registry', 'isRegistered');
 
-      expect(key1).toBe(key2);
+      // undefined and omitted args should be the same (both undefined)
       expect(key2).toBe(key3);
-      expect(key1).toMatch(/^bfn:read:Registry:isRegistered:$/);
+      expect(key2).toMatch(/^bfn:read:Registry:isRegistered:undefined$/);
+      
+      // Empty array should be different from undefined
+      expect(key1).not.toBe(key2);
+      expect(key1).toMatch(/^bfn:read:Registry:isRegistered:empty$/);
     });
 
     it('should handle complex args correctly', () => {

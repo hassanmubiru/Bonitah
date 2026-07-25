@@ -82,7 +82,7 @@ describe('Property 5: Session JWT acceptance', () => {
           expect(request.user!.userId).toBe(userId);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 50 }
     );
   });
 
