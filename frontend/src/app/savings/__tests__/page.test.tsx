@@ -664,8 +664,8 @@ describe('Savings Page Loading/Error/Retry States', () => {
       // Should show validation error
       expect(screen.getByText('Insufficient balance')).toBeInTheDocument();
 
-      // Deposit button should be disabled
-      const depositButton = screen.getByRole('button', { name: /Deposit/ });
+      // Deposit button should be disabled (the submit button, not the tab button)
+      const depositButton = screen.getByRole('button', { name: 'Deposit' });
       expect(depositButton).toBeDisabled();
     });
   });
