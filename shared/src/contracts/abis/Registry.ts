@@ -1,9 +1,9 @@
 /**
  * Registry Contract ABI
- * Auto-generated from Foundry compilation artifacts
- * DO NOT EDIT MANUALLY
+ * Auto-generated from Foundry build artifacts
+ * 
+ * Type-safe ABI for Registry contract interactions with viem/wagmi
  */
-
 import type { Abi } from 'abitype';
 
 export const registryAbi = [
