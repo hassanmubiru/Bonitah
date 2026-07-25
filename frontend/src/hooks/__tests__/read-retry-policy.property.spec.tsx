@@ -288,3 +288,46 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
       { numRuns: 30 }
     );
   });
+  /**
+   * Property: Successful reads return data without retries
+   * Requirements: 1.6 (successful reads should not retry unnecessarily)
+   */
+  it('successful reads return data without unnecessary retries', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          contractAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map(s => `0x${s.slice(2).padStart(40, '0')}` as Address),
+          expectedValue: fc.bigInt({ min: 0n, max: 1000000n }),
+        }),
+        async ({ contractAddress, userAddress, expectedValue }) => {
+          mockReadContractAttempts = 0;
+          
+          mockReadContractResponse = async () => {
+            return expectedValue;
+          };
+
+          const { result } = renderHook(
+            () => useContractRead({
+              address: contractAddress,
+              abi: mockAbi,
+              functionName: 'balanceOf', 
+              args: [userAddress],
+            }),
+            { wrapper: TestWrapper }
+          );
+
+          await waitFor(() => {
+            expect(result.current.isLoading).toBe(false);
+            expect(result.current.data).toBe(expectedValue);
+          }, { timeout: 5000 });
+
+          // Successful read should only make 1 attempt - no retries needed
+          expect(mockReadContractAttempts).toBe(1);
+          expect(result.current.isError).toBe(false);
+          expect(result.current.error).toBeNull();
+        }
+      ),
+      { numRuns: 25 }
+    );
+  });
