@@ -291,16 +291,31 @@ export default function AiAssistantPage() {
                         )}
                       </div>
                       <div
-                        className={`max-w-[80%] rounded-lg p-3 ${
-                          message.role === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
+                        className={`max-w-[80%] space-y-3 ${
+                          message.role === 'user' ? '' : ''
                         }`}
                       >
-                        <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-                        <div className="text-xs opacity-70 mt-1">
-                          {new Date(message.createdAt).toLocaleTimeString()}
+                        <div
+                          className={`rounded-lg p-3 ${
+                            message.role === 'user'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                          }`}
+                        >
+                          <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                          <div className="text-xs opacity-70 mt-1">
+                            {new Date(message.createdAt).toLocaleTimeString()}
+                          </div>
                         </div>
+                        
+                        {/* Action buttons for AI messages */}
+                        {message.role === 'assistant' && message.actions && message.actions.length > 0 && (
+                          <ActionButtons
+                            actions={message.actions}
+                            onExecuteAction={handleActionExecution}
+                            className="mt-2"
+                          />
+                        )}
                       </div>
                     </div>
                   ))}
