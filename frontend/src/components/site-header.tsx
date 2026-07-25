@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
+import { useEffect, useState } from 'react';
 
 import { ThemeToggle } from '@/components/theme-toggle';
 
@@ -18,6 +19,12 @@ import { ThemeToggle } from '@/components/theme-toggle';
  */
 export function SiteHeader() {
   const { isConnected } = useAccount();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch by only showing navigation after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <>
