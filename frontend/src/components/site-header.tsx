@@ -45,7 +45,11 @@ export function SiteHeader() {
 
             {/* Navigation links - only show when authenticated */}
             {isConnected && (
-              <nav className="hidden sm:flex items-center gap-4" role="navigation" aria-label="Main navigation">
+              <nav
+                className="hidden sm:flex items-center gap-4"
+                role="navigation"
+                aria-label="Main navigation"
+              >
                 <Link
                   href="/dashboard"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
@@ -57,6 +61,12 @@ export function SiteHeader() {
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
                 >
                   Savings
+                </Link>
+                <Link
+                  href="/ai"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
+                >
+                  AI Assistant
                 </Link>
               </nav>
             )}
