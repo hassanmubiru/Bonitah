@@ -57,7 +57,7 @@ const USDC_TOKEN = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 4. **Event Indexing**: Backend indexes real emitted contract events
 5. **Data Provenance**: All cached data tagged with block number and contract source
 
-### ✅ Real Security Model
+### Real Security Model
 
 1. **Access Control**: OpenZeppelin AccessControl with real role assignments
 2. **Reentrancy Protection**: Real ReentrancyGuard on value-transferring functions
