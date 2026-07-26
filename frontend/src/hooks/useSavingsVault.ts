@@ -91,7 +91,7 @@ export function useSavingsVaultBalances() {
     address: contractAddress || '0x0000000000000000000000000000000000000000',
     abi: SAVINGS_VAULT_ABI,
     functionName: 'availableBalance',
-    args: userAddress ? [userAddress] : undefined,
+    args: userAddress ? [userAddress] : [],
     enabled: !!userAddress && !!contractAddress,
     queryKey: ['savings-available-balance', userAddress || '', contractAddress || ''],
   });
@@ -101,7 +101,7 @@ export function useSavingsVaultBalances() {
     address: contractAddress || '0x0000000000000000000000000000000000000000',
     abi: SAVINGS_VAULT_ABI,
     functionName: 'portfolioValue',
-    args: userAddress ? [userAddress] : undefined,
+    args: userAddress ? [userAddress] : [],
     enabled: !!userAddress && !!contractAddress,
     queryKey: ['savings-portfolio-value', userAddress || '', contractAddress || ''],
   });
