@@ -297,8 +297,9 @@ export class IndexerService implements OnModuleInit {
    */
   private extractWalletAddress(log: Log): string | null {
     // Most events have indexed address as first topic after event signature
-    if (log.topics && log.topics.length > 1) {
-      const addressTopic = log.topics[1];
+    const topics = (log as any).topics;
+    if (topics && topics.length > 1) {
+      const addressTopic = topics[1];
       if (addressTopic && addressTopic.length === 66) { // 0x + 64 chars
         // Extract address from padded topic (last 20 bytes)
         return `0x${addressTopic.slice(-40)}`;
@@ -312,7 +313,8 @@ export class IndexerService implements OnModuleInit {
    */
   private getEventName(log: Log): string {
     // Would need ABI to decode properly, for now use signature
-    return log.topics?.[0] || 'Unknown';
+    const topics = (log as any).topics;
+    return topics?.[0] || 'Unknown';
   }
 
   /**
