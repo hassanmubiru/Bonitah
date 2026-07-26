@@ -14,12 +14,12 @@ export async function POST(request: NextRequest) {
     const profileData = await request.json();
 
     // Forward to backend IPFS service
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const backendUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001';
     const response = await fetch(`${backendUrl}/ipfs/profile-metadata`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authorization,
+        Authorization: authorization,
       },
       body: JSON.stringify(profileData),
     });
@@ -33,9 +33,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Profile metadata upload error:', error);
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
