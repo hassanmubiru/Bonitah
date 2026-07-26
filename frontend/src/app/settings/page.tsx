@@ -40,7 +40,7 @@ export default function SettingsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard();
 
   // Theme management
-  const { theme, setTheme, themes } = useTheme();
+  const { theme, setTheme } = useTheme();
   
   // Settings management with persistence
   const {
