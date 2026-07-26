@@ -1,6 +1,6 @@
 /**
  * Mock wallet utility for deterministic Playwright testing
- * 
+ *
  * This provides a predictable wallet interface that can be used
  * in e2e tests to simulate various wallet states and interactions
  * without relying on real wallet extensions.
@@ -36,37 +36,39 @@ export class MockWallet {
       const mockProvider = {
         isMetaMask: true,
         isConnected: () => config.connected,
-        
+
         request: async ({ method, params }: { method: string; params?: any[] }) => {
           console.log('Mock wallet request:', method, params);
-          
+
           switch (method) {
             case 'eth_requestAccounts':
               if (config.rejected) {
                 throw new Error('User rejected connection');
               }
               return config.connected ? [config.address] : [];
-              
+
             case 'eth_accounts':
               return config.connected ? [config.address] : [];
-              
+
             case 'eth_chainId':
               return `0x${config.chainId.toString(16)}`;
-              
+
             case 'net_version':
               return config.chainId.toString();
-              
+
             case 'eth_getBalance':
               return config.balance;
-              
+
             case 'wallet_switchEthereumChain':
               if (config.networkSwitchRejected) {
                 throw new Error('User rejected network switch');
               }
               // Simulate successful network switch
-              config.chainId = params?.[0]?.chainId ? parseInt(params[0].chainId, 16) : config.chainId;
+              config.chainId = params?.[0]?.chainId
+                ? parseInt(params[0].chainId, 16)
+                : config.chainId;
               return null;
-              
+
             case 'personal_sign':
             case 'eth_signTypedData_v4':
               if (config.rejected) {
@@ -74,7 +76,7 @@ export class MockWallet {
               }
               // Return a mock signature
               return '0x' + '0'.repeat(130);
-              
+
             default:
               throw new Error(`Mock wallet: Unsupported method ${method}`);
           }
@@ -89,14 +91,14 @@ export class MockWallet {
           (window as any).mockWalletCallbacks[event] = callback;
         },
 
-        removeListener: (event: string, callback: Function) => {
+        removeListener: (event: string, _callback: Function) => {
           console.log('Mock wallet removing listener:', event);
         },
       };
 
       // Replace the ethereum provider
       (window as any).ethereum = mockProvider;
-      
+
       // Also make it available on window for debugging
       (window as any).mockWallet = {
         provider: mockProvider,
@@ -116,7 +118,7 @@ export class MockWallet {
         triggerDisconnect: () => {
           const callback = (window as any).mockWalletCallbacks?.['disconnect'];
           if (callback) callback();
-        }
+        },
       };
     }, this.config);
   }
@@ -126,7 +128,7 @@ export class MockWallet {
    */
   async updateConfig(newConfig: Partial<MockWalletConfig>) {
     this.config = { ...this.config, ...newConfig };
-    
+
     await this.page.evaluate((config) => {
       (window as any).mockWallet.config = config;
     }, this.config);
