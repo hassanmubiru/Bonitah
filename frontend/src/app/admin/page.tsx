@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   Shield, Users, Activity, AlertTriangle, Settings, 
   MoreHorizontal, Search, Filter, Download 
