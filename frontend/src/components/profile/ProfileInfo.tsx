@@ -31,7 +31,7 @@ export interface IPFSProfileContent {
 /**
  * Displays user profile information from IPFS and Registry contract.
  */
-export function ProfileInfo({ profileData, userAddress }: ProfileInfoProps) {
+export function ProfileInfo({ profileData, userAddress: _userAddress }: ProfileInfoProps) {
   const { content: ipfsContent, isLoading: ipfsLoading, error: ipfsError } = useIPFSContent<IPFSProfileContent>(
     profileData?.profileHash
   );
