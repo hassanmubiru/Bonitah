@@ -84,7 +84,12 @@ export function ProfileSection({
       />
       <ReputationDisplay 
         userAddress={userAddress as `0x${string}`}
-        reputation={0}
+        reputation={{
+          score: 0n,
+          level: 'Bronze',
+          nextLevelThreshold: 100n,
+          achievements: []
+        }}
       />
 
       {onToggleEdit && (
