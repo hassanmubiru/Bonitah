@@ -20,7 +20,6 @@
     "noImplicitAny": false,
     "strictPropertyInitialization": false,
     "strict": false,
-    "suppressImplicitAnyIndexErrors": true,
     "types": ["node", "jest"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],
