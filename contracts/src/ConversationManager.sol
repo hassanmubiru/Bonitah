@@ -113,7 +113,7 @@ contract ConversationManager is Initializable, BFNAccessUUPSUpgradeable {
         if (bytes(content).length == 0) revert EmptyMessage();
         
         // For AI responses, allow system/admin to add messages
-        if (isAiResponse && !hasRole(BFNRoles.DEFAULT_ADMIN_ROLE, msg.sender)) {
+        if (isAiResponse && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
             revert UnauthorizedAccess(msg.sender, conversationId);
         }
         

@@ -95,7 +95,7 @@ contract EventIndexer is Initializable, BFNAccessUUPSUpgradeable {
         uint256 amount,
         bytes calldata eventData,
         string calldata eventType
-    ) external onlyRole(BFNRoles.DEFAULT_ADMIN_ROLE) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         
         // Generate unique event ID
         bytes32 eventId = keccak256(abi.encodePacked(txHash, logIndex));
