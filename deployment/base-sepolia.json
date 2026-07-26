@@ -1,0 +1,32 @@
+{
+  "chainId": 84532,
+  "network": "Base Sepolia",
+  "deployedAt": {
+    "block": 44629013,
+    "timestamp": 1785026314
+  },
+  "deployer": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+  "contracts": {
+    "Registry": {
+      "proxy": "0xC37319a9ca70AA581b96b96ddb79eb19C2B391C5",
+      "implementation": "0x3CaC459c3b4013AEb64Cc60501498D441e025104"
+    },
+    "SavingsVault": {
+      "proxy": "0x75517c778C77628a5c0D4BBA7398520Da8849eB0",
+      "implementation": "0x8d2f43c7D0ea45E6492eE075B2031AB28E83eCd1"
+    },
+    "CommunityTreasury": {
+      "proxy": "0x07E19c706cf7e77AFd215A6FEf136B3b8a62EEbe",
+      "implementation": "0x4AAaCC58066Eb11E19E4B43C5c9ff6c1DD880D63"
+    },
+    "Education": {
+      "proxy": "0x0806ebCbD047A9a264027C2a31693FF26a69b3ff",
+      "implementation": "0xc7B76755d433D084a1d91312c6192Fb41e74F172"
+    },
+    "Governance": {
+      "proxy": "0xAB48386f4306b1E356d02456E9Ecf6e74CAfA76B",
+      "implementation": "0xd216a50F4DE6985F2759709E8d505Cff486c9474"
+    }
+  },
+  "token": "0x4FD1403945341786DBa53e31156C2dEdee40Ef34"
+}
