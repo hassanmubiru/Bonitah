@@ -196,7 +196,7 @@ export function ProfileDocuments({
             <AlertCircle className="h-4 w-4" />
             <div>
               <p className="font-medium">Upload Failed</p>
-              <p className="text-sm">{error.message}</p>
+              <p className="text-sm">{error}</p>
             </div>
           </Alert>
         )}
