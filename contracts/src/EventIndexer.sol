@@ -270,7 +270,7 @@ contract EventIndexer is Initializable, BFNAccessUUPSUpgradeable {
      */
     function updateLastProcessedBlock(uint256 blockNumber) 
         external 
-        onlyRole(BFNRoles.DEFAULT_ADMIN_ROLE) 
+        onlyRole(DEFAULT_ADMIN_ROLE) 
     {
         lastProcessedBlock = blockNumber;
     }
