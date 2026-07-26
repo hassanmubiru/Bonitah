@@ -46,7 +46,8 @@ export const DEPLOYMENTS: Readonly<Record<SupportedChainId, NetworkDeployment>> 
       Education: '0x0806ebcbd047a9a264027c2a31693ff26a69b3ff',
       Governance: '0xab48386f4306b1e356d02456e9ecf6e74cafa76b',
     },
-    token: '0x4fd1403945341786dba53e31156c2dedee40ef34',
+    // REAL Circle USDC on Base Sepolia - 6 decimals, official deployment
+    token: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
     deployedAtBlock: 44629468n,
   },
 } as const;
