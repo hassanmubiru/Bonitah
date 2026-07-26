@@ -10,13 +10,15 @@ import {SavingsVault} from "../src/SavingsVault.sol";
 import {CommunityTreasury} from "../src/CommunityTreasury.sol";
 import {Education} from "../src/Education.sol";
 import {Governance} from "../src/Governance.sol";
-import {MockERC20} from "../src/mocks/MockERC20.sol";
 import {BFNRoles} from "../src/base/BFNRoles.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
- * @title DeployBaseSepolia
- * @notice Comprehensive deployment script for Base Sepolia (Chain ID: 84532)
+ * @title DeployBaseSepolia - Real Production Deployment
+ * @notice Production deployment script for Base Sepolia using REAL USDC (Chain ID: 84532)
+ * 
+ * This deployment script uses the official USDC token on Base Sepolia instead of mock tokens.
+ * USDC Address: 0x036CbD53842c5426634e7929541eC2318f3dCF7e
  * 
  * Deploys all five BFN contracts behind UUPS proxies with proper initialization,
  * configures cross-contract dependencies and roles, records addresses to deployment/,
@@ -38,13 +40,16 @@ contract DeployBaseSepolia is Script {
     // Chain ID validation
     uint256 private constant BASE_SEPOLIA_CHAIN_ID = 84532;
     
+    // REAL USDC Token Address on Base Sepolia (6 decimals)
+    // This is the official Circle USDC deployment on Base Sepolia
+    address private constant REAL_USDC_ADDRESS = 0x036CbD53842c5426634e7929541eC2318f3dCF7e;
+    
     // Implementation contracts
     Registry private registryImpl;
     SavingsVault private savingsVaultImpl;
     CommunityTreasury private communityTreasuryImpl;
     Education private educationImpl;
     Governance private governanceImpl;
-    MockERC20 private token;
     
     // Proxy addresses (the actual deployed contracts)
     address private registryProxy;
@@ -69,11 +74,12 @@ contract DeployBaseSepolia is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         deployer = vm.addr(deployerPrivateKey);
         
-        console.log("=== BFN Base Sepolia Deployment ===");
+        console.log("=== BFN Base Sepolia PRODUCTION Deployment ===");
         console.log("Chain ID:      %d", block.chainid);
         console.log("Deployer:      %s", deployer);
         console.log("Block:         %d", block.number);
         console.log("Timestamp:     %d", block.timestamp);
+        console.log("USDC Token:    %s (REAL Circle USDC)", REAL_USDC_ADDRESS);
         console.log("");
         
         vm.startBroadcast(deployerPrivateKey);
@@ -81,8 +87,8 @@ contract DeployBaseSepolia is Script {
         // Record deployment block
         deploymentBlock = block.number;
         
-        // Phase 1: Deploy test token
-        _deployToken();
+        // Phase 1: Validate REAL USDC token exists
+        _validateRealToken();
         
         // Phase 2: Deploy implementation contracts
         _deployImplementations();
@@ -102,20 +108,31 @@ contract DeployBaseSepolia is Script {
         _outputSharedPackageUpdate();
         
         console.log("");
-        console.log("SUCCESS: All contracts deployed and configured successfully!");
+        console.log("SUCCESS: All contracts deployed with REAL USDC and configured successfully!");
     }
     
     /**
-     * @dev Deploy test ERC20 token for Base Sepolia
+     * @dev Validate the real USDC token exists and has expected properties
      */
-    function _deployToken() private {
-        console.log("Phase 1: Deploying test token...");
+    function _validateRealToken() private view {
+        console.log("Phase 1: Validating REAL USDC token...");
         
-        token = new MockERC20("Bonitah Test USD", "bUSD", 6);
-        console.log("  MockERC20:    %s", address(token));
+        // Verify the token contract exists
+        uint256 codeSize;
+        assembly {
+            codeSize := extcodesize(REAL_USDC_ADDRESS)
+        }
+        require(codeSize > 0, "VALIDATION_FAILED: REAL_USDC_ADDRESS has no contract code");
         
-        // Validate deployment
-        require(address(token) != address(0), "DEPLOYMENT_FAILED: MockERC20");
+        // Verify it's an ERC20 by checking basic interface
+        IERC20 usdc = IERC20(REAL_USDC_ADDRESS);
+        try usdc.totalSupply() returns (uint256 supply) {
+            console.log("  REAL USDC total supply: %d", supply);
+        } catch {
+            revert("VALIDATION_FAILED: REAL_USDC_ADDRESS does not implement ERC20");
+        }
+        
+        console.log("  ✓ REAL USDC:    %s (validated)", REAL_USDC_ADDRESS);
     }
     
     /**
@@ -146,10 +163,10 @@ contract DeployBaseSepolia is Script {
     }
     
     /**
-     * @dev Deploy UUPS proxies with proper initialization
+     * @dev Deploy UUPS proxies with proper initialization using REAL USDC
      */
     function _deployProxies() private {
-        console.log("Phase 3: Deploying UUPS proxies with initialization...");
+        console.log("Phase 3: Deploying UUPS proxies with REAL USDC integration...");
         
         // Deploy Registry proxy
         bytes memory registryInitData = abi.encodeCall(Registry.initialize, (deployer));
@@ -157,22 +174,22 @@ contract DeployBaseSepolia is Script {
         console.log("  Registry proxy:        %s", registryProxy);
         require(registryProxy != address(0), "DEPLOYMENT_FAILED: Registry Proxy");
         
-        // Deploy SavingsVault proxy
+        // Deploy SavingsVault proxy with REAL USDC
         bytes memory vaultInitData = abi.encodeCall(
             SavingsVault.initialize,
-            (address(token), registryProxy, deployer)
+            (REAL_USDC_ADDRESS, registryProxy, deployer)
         );
         savingsVaultProxy = address(new ERC1967Proxy(address(savingsVaultImpl), vaultInitData));
-        console.log("  SavingsVault proxy:    %s", savingsVaultProxy);
+        console.log("  SavingsVault proxy:    %s (using REAL USDC)", savingsVaultProxy);
         require(savingsVaultProxy != address(0), "DEPLOYMENT_FAILED: SavingsVault Proxy");
         
-        // Deploy CommunityTreasury proxy
+        // Deploy CommunityTreasury proxy with REAL USDC
         bytes memory treasuryInitData = abi.encodeCall(
             CommunityTreasury.initialize,
-            (deployer, IERC20(address(token)))
+            (deployer, IERC20(REAL_USDC_ADDRESS))
         );
         communityTreasuryProxy = address(new ERC1967Proxy(address(communityTreasuryImpl), treasuryInitData));
-        console.log("  CommunityTreasury proxy: %s", communityTreasuryProxy);
+        console.log("  CommunityTreasury proxy: %s (using REAL USDC)", communityTreasuryProxy);
         require(communityTreasuryProxy != address(0), "DEPLOYMENT_FAILED: CommunityTreasury Proxy");
         
         // Deploy Education proxy
@@ -222,9 +239,10 @@ contract DeployBaseSepolia is Script {
      * Note: File writing disabled due to Foundry security restrictions
      */
     function _recordDeployment() private view {
-        console.log("Phase 5: Deployment addresses recorded in logs...");
+        console.log("Phase 5: PRODUCTION deployment addresses recorded in logs...");
         
         // Just log the addresses for manual extraction
+        console.log("=== PRODUCTION DEPLOYMENT RECORD ===");
         console.log("Chain ID: %d", block.chainid);
         console.log("Block: %d", deploymentBlock);
         console.log("Timestamp: %d", block.timestamp);
@@ -233,7 +251,8 @@ contract DeployBaseSepolia is Script {
         console.log("CommunityTreasury: %s", communityTreasuryProxy);
         console.log("Education: %s", educationProxy);
         console.log("Governance: %s", governanceProxy);
-        console.log("Token: %s", address(token));
+        console.log("USDC Token: %s (REAL Circle USDC)", REAL_USDC_ADDRESS);
+        console.log("=====================================");
     }
     
     /**
@@ -252,7 +271,7 @@ contract DeployBaseSepolia is Script {
             Strings.toHexString(communityTreasuryProxy), " ",
             Strings.toHexString(educationProxy), " ",
             Strings.toHexString(governanceProxy), " ",
-            Strings.toHexString(address(token)), " ",
+            Strings.toHexString(REAL_USDC_ADDRESS), " ",
             Strings.toString(deploymentBlock)
         ));
         
