@@ -33,14 +33,14 @@ BFN has been updated to use **REAL financial assets** instead of mock tokens or 
 
 ## Key Benefits
 
-### ✅ Authentic User Experience
+### Authentic User Experience
 
 - Users interact with real USDC tokens (testnet, but same contract behavior as mainnet)
 - All transactions require real wallet signatures
 - Balances reflect actual on-chain state
 - No confusion between mock and real assets
 
-### ✅ Production-Ready Architecture
+### Production-Ready Architecture
 
 - Smart contracts integrated with Circle's official USDC deployment
 - Financial state lives entirely on Base Sepolia blockchain
