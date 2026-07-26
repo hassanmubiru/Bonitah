@@ -9,8 +9,13 @@ import { MockWallet } from '../helpers/mock-wallet';
 test.describe('Savings Transactions', () => {
   let mockWallet: MockWallet;
 
-  test.beforeEach(async ({ page, context }) => {
-    mockWallet = new MockWallet(page, context);
+  test.beforeEach(async ({ page }) => {
+    mockWallet = new MockWallet(page, {
+      address: '0x742d35Cc6634C0532925a3b8D525e7030144B329',
+      chainId: 84532,
+      balance: '1000000000000000000',
+      connected: true,
+    });
     
     // Setup authenticated user
     await mockWallet.mockConnection('0x742d35Cc6634C0532925a3b8D404d67B18D2f83f');
