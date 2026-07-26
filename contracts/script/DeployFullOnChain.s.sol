@@ -249,8 +249,8 @@ contract DeployFullOnChain is Script {
         
         // Backend service roles
         EducationContent(educationContentProxy).grantRole(BFNRoles.ISSUER_ROLE, deployer);
-        ConversationManager(conversationManagerProxy).grantRole(BFNRoles.DEFAULT_ADMIN_ROLE, deployer);
-        EventIndexer(eventIndexerProxy).grantRole(BFNRoles.DEFAULT_ADMIN_ROLE, deployer);
+        ConversationManager(conversationManagerProxy).grantRole(0x00, deployer); // DEFAULT_ADMIN_ROLE
+        EventIndexer(eventIndexerProxy).grantRole(0x00, deployer); // DEFAULT_ADMIN_ROLE
         
         console.log("  Core roles configured");
         console.log("  Backend service roles configured");
