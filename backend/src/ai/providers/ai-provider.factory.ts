@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EnvService } from '../../config/env.service';
 import { OpenAIProvider } from './openai.provider';
 import { DeepSeekProvider } from './deepseek.provider';
+import { OllamaProvider } from './ollama.provider';
 import type { AIProvider, AIProviderType } from './ai-provider.interface';
 
 /**
@@ -10,7 +11,8 @@ import type { AIProvider, AIProviderType } from './ai-provider.interface';
  * Handles provider selection based on configuration and availability:
  * - 'openai': Use OpenAI exclusively
  * - 'deepseek': Use DeepSeek exclusively  
- * - 'auto': Use DeepSeek if available, fallback to OpenAI
+ * - 'ollama': Use Ollama exclusively
+ * - 'auto': Use Ollama if available, fallback to DeepSeek, then OpenAI
  */
 @Injectable()
 export class AIProviderFactory {
@@ -44,10 +46,17 @@ export class AIProviderFactory {
       case 'deepseek':
         provider = await this.createDeepSeekProvider();
         break;
+
+      case 'ollama':
+        provider = await this.createOllamaProvider();
+        break;
         
       case 'auto':
-        // Try DeepSeek first, fallback to OpenAI
-        provider = await this.createDeepSeekProvider();
+        // Try Ollama first (free & private), then DeepSeek (cheap), then OpenAI
+        provider = await this.createOllamaProvider();
+        if (!provider) {
+          provider = await this.createDeepSeekProvider();
+        }
         if (!provider) {
           provider = await this.createOpenAIProvider();
         }
@@ -58,13 +67,13 @@ export class AIProviderFactory {
     }
 
     if (!provider) {
-      throw new Error('No AI providers are available. Please configure OPENAI_API_KEY or DEEPSEEK_API_KEY.');
+      throw new Error('No AI providers are available. Please configure OPENAI_API_KEY, DEEPSEEK_API_KEY, or install Ollama.');
     }
 
     // Validate the provider
     const isValid = await provider.validateCredentials();
     if (!isValid) {
-      throw new Error(`AI provider ${provider.name} credentials are invalid`);
+      throw new Error(`AI provider ${provider.name} is not available or configured incorrectly`);
     }
 
     this.logger.log(`AI provider initialized: ${provider.name}`);
@@ -104,6 +113,27 @@ export class AIProviderFactory {
     const provider = new DeepSeekProvider(apiKey, this.env.deepseekBaseUrl);
     if (!provider.isAvailable()) {
       this.logger.warn('DeepSeek provider not available');
+      return null;
+    }
+
+    return provider;
+  }
+
+  /**
+   * Create Ollama provider if available.
+   */
+  private async createOllamaProvider(): Promise<AIProvider | null> {
+    const provider = new OllamaProvider(this.env.ollamaBaseUrl, this.env.ollamaModel);
+    
+    if (!provider.isAvailable()) {
+      this.logger.debug('Ollama not configured');
+      return null;
+    }
+
+    // Check if Ollama server is running and model is available
+    const isRunning = await provider.validateCredentials();
+    if (!isRunning) {
+      this.logger.debug('Ollama server not running or model not available');
       return null;
     }
 
