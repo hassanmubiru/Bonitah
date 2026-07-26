@@ -49,83 +49,9 @@ contract Deploy is Script {
         
         vm.startBroadcast(deployerPrivateKey);
         
-        // NOTE: This script is deprecated. Use DeployBaseSepolia.s.sol for production deployment with real USDC
-        
-        // 1. Deploy mock ERC20 token for testing (DEPRECATED)
-        // token = new MockERC20("Bonitah Test USD", "bUSD", 6);
-        // console.log("MockERC20 deployed at:", address(token));
-        
+        // NOTE: This script is deprecated and cannot be used. Use DeployBaseSepolia.s.sol instead.
         console.log("ERROR: This script is deprecated. Use DeployBaseSepolia.s.sol for production deployment.");
         revert("Use DeployBaseSepolia.s.sol for production deployment with real USDC");
-        
-        // 2. Deploy implementation contracts
-        registry = new Registry();
-        savingsVault = new SavingsVault();
-        communityTreasury = new CommunityTreasury();
-        education = new Education();
-        governance = new Governance();
-        
-        console.log("Implementation contracts deployed:");
-        console.log("  Registry impl:", address(registry));
-        console.log("  SavingsVault impl:", address(savingsVault));
-        console.log("  CommunityTreasury impl:", address(communityTreasury));
-        console.log("  Education impl:", address(education));
-        console.log("  Governance impl:", address(governance));
-        
-        // 3. Deploy proxies with initialization
-        
-        // Registry proxy
-        bytes memory registryInitData = abi.encodeCall(
-            Registry.initialize,
-            (deployer)
-        );
-        registryProxy = address(new ERC1967Proxy(address(registry), registryInitData));
-        
-        // SavingsVault proxy
-        bytes memory vaultInitData = abi.encodeCall(
-            SavingsVault.initialize,
-            (deployer, registryProxy, address(token))
-        );
-        savingsVaultProxy = address(new ERC1967Proxy(address(savingsVault), vaultInitData));
-        
-        // CommunityTreasury proxy  
-        bytes memory treasuryInitData = abi.encodeCall(
-            CommunityTreasury.initialize,
-            (deployer, IERC20(address(token)))
-        );
-        communityTreasuryProxy = address(new ERC1967Proxy(address(communityTreasury), treasuryInitData));
-        
-        // Education proxy
-        bytes memory educationInitData = abi.encodeCall(
-            Education.initialize,
-            (deployer, registryProxy)
-        );
-        educationProxy = address(new ERC1967Proxy(address(education), educationInitData));
-        
-        // Governance proxy
-        bytes memory governanceInitData = abi.encodeCall(
-            Governance.initialize,
-            (deployer, registryProxy)
-        );
-        governanceProxy = address(new ERC1967Proxy(address(governance), governanceInitData));
-        
-        console.log("Proxy contracts deployed:");
-        console.log("  Registry proxy:", registryProxy);
-        console.log("  SavingsVault proxy:", savingsVaultProxy);
-        console.log("  CommunityTreasury proxy:", communityTreasuryProxy);
-        console.log("  Education proxy:", educationProxy);
-        console.log("  Governance proxy:", governanceProxy);
-        
-        // 4. Configure cross-contract permissions
-        _configurePermissions(deployer);
-        
-        vm.stopBroadcast();
-        
-        // 5. Output deployment information
-        _outputDeploymentInfo();
-        _updateSharedPackage();
-        
-        console.log("Deployment completed successfully!");
     }
     
     function _configurePermissions(address deployer) internal {
