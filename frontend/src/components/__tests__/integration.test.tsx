@@ -12,6 +12,66 @@ import { ThemeProvider } from '../theme-provider';
 
 expect.extend(toHaveNoViolations);
 
+// Mock next-themes with actual DOM manipulation
+jest.mock('next-themes', () => {
+  const React = require('react');
+
+  // Create a shared context instance that persists across all components
+  const ThemeContext = React.createContext(null);
+
+  return {
+    ThemeProvider: ({ children, defaultTheme = 'light', storageKey }: any) => {
+      const [currentTheme, setCurrentTheme] = React.useState(() => {
+        // Check localStorage first if storageKey is provided
+        if (storageKey && typeof window !== 'undefined') {
+          const stored = localStorage.getItem(storageKey);
+          return stored || defaultTheme;
+        }
+        return defaultTheme;
+      });
+
+      // Apply theme class to document element
+      React.useEffect(() => {
+        const className = currentTheme === 'dark' ? 'dark' : '';
+        document.documentElement.className = className;
+
+        // Store in localStorage if storageKey is provided
+        if (storageKey && typeof window !== 'undefined') {
+          localStorage.setItem(storageKey, currentTheme);
+        }
+      }, [currentTheme, storageKey]);
+
+      const contextValue = React.useMemo(
+        () => ({
+          theme: currentTheme,
+          resolvedTheme: currentTheme,
+          systemTheme: 'light',
+          setTheme: (theme: string) => {
+            setCurrentTheme(theme);
+            // Apply class immediately for synchronous DOM updates
+            document.documentElement.className = theme === 'dark' ? 'dark' : '';
+
+            // Store in localStorage immediately
+            if (storageKey && typeof window !== 'undefined') {
+              localStorage.setItem(storageKey, theme);
+            }
+          },
+        }),
+        [currentTheme, storageKey],
+      );
+
+      return React.createElement(ThemeContext.Provider, { value: contextValue }, children);
+    },
+    useTheme: () => {
+      const context = React.useContext(ThemeContext);
+      if (!context) {
+        throw new Error('useTheme must be used within a ThemeProvider');
+      }
+      return context;
+    },
+  };
+});
+
 // Mock next/link
 jest.mock('next/link', () => {
   return function MockLink({
