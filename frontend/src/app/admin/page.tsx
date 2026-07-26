@@ -75,7 +75,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!isAuthenticated || user?.role !== 'ADMIN') {
+  if (!isAuthenticated || role !== 'ADMIN') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Alert variant="destructive" className="max-w-md">
