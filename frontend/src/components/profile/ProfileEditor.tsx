@@ -24,7 +24,7 @@ export interface ProfileEditorProps {
  * Profile editing interface with IPFS document upload.
  * Updates profile information with IPFS document upload functionality.
  */
-export function ProfileEditor({ userAddress, profileData, onSave, onCancel }: ProfileEditorProps) {
+export function ProfileEditor({ userAddress: _userAddress, profileData, onSave, onCancel }: ProfileEditorProps) {
   const [formData, setFormData] = useState<IPFSProfileContent>({
     name: '',
     bio: '',
