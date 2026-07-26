@@ -49,6 +49,15 @@ export const envSchema = z.object({
   /** OpenAI key is optional at boot; the AI module validates presence on use. */
   OPENAI_API_KEY: z.string().optional(),
 
+  /** DeepSeek API key for AI assistant (optional alternative to OpenAI). */
+  DEEPSEEK_API_KEY: z.string().optional(),
+
+  /** DeepSeek API base URL. */
+  DEEPSEEK_BASE_URL: z.string().url().default('https://api.deepseek.com'),
+
+  /** AI Provider selection: 'openai', 'deepseek', or 'auto' */
+  AI_PROVIDER: z.enum(['openai', 'deepseek', 'auto']).default('auto'),
+
   /** Pinata JWT for IPFS uploads (Req 3.5, 8.4). */
   PINATA_JWT: z.string().optional(),
 
@@ -56,10 +65,16 @@ export const envSchema = z.object({
   PINATA_GATEWAY: z.string().url().optional(),
 
   /** Private key for certificate issuer account with ISSUER_ROLE (Req 8.3). */
-  ISSUER_PRIVATE_KEY: z.string().regex(/^0x[a-fA-F0-9]{64}$/).optional(),
+  ISSUER_PRIVATE_KEY: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{64}$/)
+    .optional(),
 
   /** Education contract address (set after deployment). */
-  EDUCATION_CONTRACT_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
+  EDUCATION_CONTRACT_ADDRESS: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/)
+    .optional(),
 });
 
 /** Fully-typed, validated environment shape. */
