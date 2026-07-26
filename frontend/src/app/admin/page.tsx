@@ -78,6 +78,30 @@ export default function AdminPage() {
   if (!isAuthenticated || role !== 'ADMIN') {
     return (
       <div className="flex items-center justify-center min-h-screen">
+        <Alert>
+          <Shield className="h-4 w-4" />
+          <AlertDescription>
+            Access denied. Admin privileges required.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  if (!isOnCorrectNetwork) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Please switch to Base Sepolia network to access admin features.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+    return (
+      <div className="flex items-center justify-center min-h-screen">
         <Alert variant="destructive" className="max-w-md">
           <Shield className="h-4 w-4" />
           <AlertDescription>
