@@ -32,7 +32,7 @@ export function ProfileDocuments({
   profileHash,
 }: ProfileDocumentsProps) {
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
-  const { uploadDocuments, isUploading, error } = useDocumentUpload();
+  const { uploadDocument, isUploading, error } = useDocumentUpload();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newDocuments: UploadedDocument[] = acceptedFiles.map((file) => ({
