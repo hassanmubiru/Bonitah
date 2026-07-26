@@ -364,7 +364,7 @@ pnpm --filter frontend build
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
