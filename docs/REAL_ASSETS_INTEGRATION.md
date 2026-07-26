@@ -92,18 +92,18 @@ The real USDC token on Base Sepolia:
 
 ### What's Real
 
-- ✅ Smart contract state and logic
-- ✅ Token transfers and balances
-- ✅ Wallet signatures and authentication
-- ✅ Gas fees and transaction costs
-- ✅ Event emissions and blockchain data
+- Smart contract state and logic
+- Token transfers and balances
+- Wallet signatures and authentication
+- Gas fees and transaction costs
+- Event emissions and blockchain data
 
 ### What's Test Environment
 
-- ⚠️ Base Sepolia is a testnet (not mainnet)
-- ⚠️ USDC has no real-world dollar backing on testnet
-- ⚠️ Testnet ETH has no real-world value
-- ⚠️ Data may be reset if testnet is upgraded
+- Base Sepolia is a testnet (not mainnet)
+- USDC has no real-world dollar backing on testnet
+- Testnet ETH has no real-world value
+- Data may be reset if testnet is upgraded
 
 ## Verification Steps
 
