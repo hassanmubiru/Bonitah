@@ -55,37 +55,53 @@ export interface UseProfileDataResult {
  */
 export function useProfileData(userAddress: Address): UseProfileDataResult {
   // Read registration status
-  const { data: isRegistered, isLoading: isRegisteredLoading, error: registeredError, refetch: refetchRegistered } = 
-    useContractRead({
-      address: REGISTRY_ADDRESS,
-      abi: REGISTRY_ABI,
-      functionName: 'isRegistered',
-      args: [userAddress],
-    });
+  const {
+    data: isRegistered,
+    isLoading: isRegisteredLoading,
+    error: registeredError,
+    refetch: refetchRegistered,
+  } = useContractRead({
+    address: REGISTRY_ADDRESS,
+    abi: REGISTRY_ABI,
+    functionName: 'isRegistered',
+    args: [userAddress],
+  });
 
   // Read verification status
-  const { data: isVerified, isLoading: isVerifiedLoading, error: verifiedError, refetch: refetchVerified } =
-    useContractRead({
-      address: REGISTRY_ADDRESS,
-      abi: REGISTRY_ABI,
-      functionName: 'isVerified',
-      args: [userAddress],
-      enabled: !!isRegistered,
-    });
+  const {
+    data: isVerified,
+    isLoading: isVerifiedLoading,
+    error: verifiedError,
+    refetch: refetchVerified,
+  } = useContractRead({
+    address: REGISTRY_ADDRESS,
+    abi: REGISTRY_ABI,
+    functionName: 'isVerified',
+    args: [userAddress],
+    enabled: !!isRegistered,
+  });
 
   // Read profile hash
-  const { data: profileHash, isLoading: isProfileHashLoading, error: profileHashError, refetch: refetchProfileHash } =
-    useContractRead({
-      address: REGISTRY_ADDRESS,
-      abi: REGISTRY_ABI,
-      functionName: 'getProfileHash',
-      args: [userAddress],
-      enabled: !!isRegistered,
-    });
+  const {
+    data: profileHash,
+    isLoading: isProfileHashLoading,
+    error: profileHashError,
+    refetch: refetchProfileHash,
+  } = useContractRead({
+    address: REGISTRY_ADDRESS,
+    abi: REGISTRY_ABI,
+    functionName: 'getProfileHash',
+    args: [userAddress],
+    enabled: !!isRegistered,
+  });
 
   // Read reputation score
-  const { data: reputationScore, isLoading: isReputationLoading, error: reputationError, refetch: refetchReputation } =
-    useReputationScore(REGISTRY_ADDRESS, REGISTRY_ABI, userAddress, !!isRegistered);
+  const {
+    data: reputationScore,
+    isLoading: isReputationLoading,
+    error: reputationError,
+    refetch: refetchReputation,
+  } = useReputationScore(REGISTRY_ADDRESS, REGISTRY_ABI, userAddress, !!isRegistered);
 
   // Query for achievement data (from backend analytics)
   const achievementsQuery = useQuery({
@@ -116,18 +132,26 @@ export function useProfileData(userAddress: Address): UseProfileDataResult {
           category: 'community',
         },
       ];
-      
+
       return mockAchievements;
     },
     enabled: !!isRegistered && !!reputationScore,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const isLoading = isRegisteredLoading || isVerifiedLoading || isProfileHashLoading || 
-                   isReputationLoading || achievementsQuery.isLoading;
-  
-  const error = registeredError || verifiedError || profileHashError || reputationError || 
-                achievementsQuery.error as Error | null;
+  const isLoading =
+    isRegisteredLoading ||
+    isVerifiedLoading ||
+    isProfileHashLoading ||
+    isReputationLoading ||
+    achievementsQuery.isLoading;
+
+  const error =
+    registeredError ||
+    verifiedError ||
+    profileHashError ||
+    reputationError ||
+    (achievementsQuery.error as Error | null);
 
   const refetch = () => {
     refetchRegistered();
@@ -138,20 +162,28 @@ export function useProfileData(userAddress: Address): UseProfileDataResult {
   };
 
   // Build profile data
-  const profileData: ProfileData | null = isRegistered !== undefined ? {
-    ...(profileHash && { profileHash }),
-    isRegistered: Boolean(isRegistered),
-    isVerified: Boolean(isVerified),
-    ...(isRegistered && { registrationDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString() }),
-  } : null;
+  const profileData: ProfileData | null =
+    isRegistered !== undefined
+      ? {
+          profileHash: profileHash || undefined,
+          isRegistered: Boolean(isRegistered),
+          isVerified: Boolean(isVerified),
+          registrationDate: isRegistered
+            ? new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+            : undefined,
+        }
+      : null;
 
   // Build reputation data
-  const reputation: ReputationData | null = reputationScore !== undefined ? {
-    score: reputationScore as bigint,
-    level: getReputationLevel(Number(reputationScore)),
-    nextLevelThreshold: getNextLevelThreshold(Number(reputationScore)),
-    achievements: achievementsQuery.data || [],
-  } : null;
+  const reputation: ReputationData | null =
+    reputationScore !== undefined
+      ? {
+          score: reputationScore as bigint,
+          level: getReputationLevel(Number(reputationScore)),
+          nextLevelThreshold: getNextLevelThreshold(Number(reputationScore)),
+          achievements: achievementsQuery.data || [],
+        }
+      : null;
 
   return {
     profileData,
