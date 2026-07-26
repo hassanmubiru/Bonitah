@@ -139,10 +139,10 @@ export function useProfileData(userAddress: Address): UseProfileDataResult {
 
   // Build profile data
   const profileData: ProfileData | null = isRegistered !== undefined ? {
-    profileHash: profileHash as string | undefined,
+    ...(profileHash && { profileHash }),
     isRegistered: Boolean(isRegistered),
     isVerified: Boolean(isVerified),
-    registrationDate: isRegistered ? new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString() : undefined,
+    ...(isRegistered && { registrationDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString() }),
   } : null;
 
   // Build reputation data
