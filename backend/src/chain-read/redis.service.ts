@@ -49,7 +49,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       throw new Error('Redis client not initialized');
     }
     
-    return this.client.get(key);
+    const result = this.client.get(key);
+    return result as string | null;
   }
 
   /**
