@@ -132,7 +132,7 @@ contract DeployBaseSepolia is Script {
             revert("VALIDATION_FAILED: REAL_USDC_ADDRESS does not implement ERC20");
         }
         
-        console.log("  ✓ REAL USDC:    %s (validated)", REAL_USDC_ADDRESS);
+        console.log("  [OK] REAL USDC:    %s (validated)", REAL_USDC_ADDRESS);
     }
     
     /**
