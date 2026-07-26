@@ -4,7 +4,7 @@
     "module": "CommonJS",
     "moduleResolution": "Node",
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "outDir": "./dist",
     "rootDir": "./",
     "baseUrl": "./",
@@ -17,6 +17,8 @@
     "noEmit": false,
     "incremental": true,
     "skipLibCheck": true,
+    "noImplicitAny": false,
+    "strictPropertyInitialization": false,
     "types": ["node", "jest"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],

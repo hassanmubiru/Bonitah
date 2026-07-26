@@ -25,7 +25,7 @@ export class HealthController {
   constructor(
     private readonly health: HealthCheckService,
     private readonly database: DatabaseHealthIndicator,
-    private readonly redis: RedisHealthIndicator,
+    // private readonly redis: RedisHealthIndicator, // Temporarily disabled - Redis not installed
     private readonly rpc: RpcHealthIndicator,
   ) {}
 
