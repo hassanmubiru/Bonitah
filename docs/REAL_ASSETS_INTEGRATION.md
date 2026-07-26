@@ -182,20 +182,20 @@ A: BFN explicitly prevents showing placeholder financial values - this is by des
 
 If migrating from a system using mock tokens or placeholder data:
 
-### ✅ Remove Mock References
+### Remove Mock References
 
 - Delete or deprecate MockERC20 contracts
 - Remove hardcoded financial values from components
 - Replace test token addresses with real USDC address
 - Update deployment scripts to use real token
 
-### ✅ Update Integration Points
+### Update Integration Points
 
 - Frontend: Use real contract addresses in shared/addresses.ts
 - Backend: Update cached data to reference real contracts
 - Tests: Mock at the hook/service level, not token level
 
-### ✅ Verify Real Behavior
+### Verify Real Behavior
 
 - Test actual USDC transfers on Base Sepolia
 - Verify real wallet connection and signing
