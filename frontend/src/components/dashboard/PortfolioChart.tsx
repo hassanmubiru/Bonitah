@@ -114,7 +114,7 @@ export function PortfolioChart({ userAddress }: PortfolioChartProps) {
           <div>
             <div className="text-sm text-muted-foreground">Current</div>
             <div className="font-semibold">
-              ${formatPortfolioValue(series[series.length - 1]?.value || 0)}
+              ${formatPortfolioValue(series[series.length - 1]?.value || '0')}
             </div>
           </div>
           <div>
