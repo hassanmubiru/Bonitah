@@ -18,7 +18,7 @@ export interface ChatCompletionOptions {
 
 export interface ChatCompletionResponse {
   content: string;
-  tokensUsed?: number;
+  tokensUsed?: number | undefined;
   model?: string;
 }
 
