@@ -360,7 +360,7 @@ export default function AdminPage() {
                   <div className="space-y-2">
                     <h4 className="font-semibold">Revenue</h4>
                     <div className="text-2xl font-bold">
-                      ${analytics?.revenue.reduce((sum, day) => sum + day.amount, 0).toLocaleString() || '0'}
+                      ${analytics?.revenue.reduce((sum: number, day: any) => sum + day.amount, 0).toLocaleString() || '0'}
                     </div>
                     <p className="text-sm text-muted-foreground">Total revenue</p>
                   </div>
