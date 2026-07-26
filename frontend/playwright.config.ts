@@ -20,12 +20,10 @@ export default defineConfig({
     timeout: 10000, // 10s for assertions
   },
 
-  // Reporter configuration
-  reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ...(process.env['CI'] ? [['github', {}] as const] : [['list', {}] as const]),
-  ],
+  // Reporter configuration - simplified
+  reporter: process.env['CI']
+    ? [['html'], ['json', { outputFile: 'test-results/results.json' }], ['github']]
+    : [['html'], ['json', { outputFile: 'test-results/results.json' }], ['list']],
 
   // Test output directory
   outputDir: 'test-results/',
