@@ -187,7 +187,11 @@ export function ActionButtons({ actions, onExecuteAction, className }: ActionBut
       <div className="text-sm font-medium text-muted-foreground">Recommended Actions</div>
       <div className="space-y-2">
         {actions.map((action, index) => (
-          <ActionButton key={index} action={action} onExecute={onExecuteAction} />
+          <ActionButton 
+            key={index} 
+            action={action} 
+            onExecute={onExecuteAction || undefined} 
+          />
         ))}
       </div>
     </div>
