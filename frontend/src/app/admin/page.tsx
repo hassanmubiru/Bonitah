@@ -352,7 +352,7 @@ export default function AdminPage() {
                   <div className="space-y-2">
                     <h4 className="font-semibold">Transaction Volume</h4>
                     <div className="text-2xl font-bold">
-                      {analytics?.transactionVolume.reduce((sum, day) => sum + day.volume, 0) || 0}
+                      {analytics?.transactionVolume.reduce((sum: number, day: any) => sum + day.volume, 0) || 0}
                     </div>
                     <p className="text-sm text-muted-foreground">Total transactions</p>
                   </div>
