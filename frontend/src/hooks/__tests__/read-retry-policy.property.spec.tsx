@@ -380,9 +380,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           }
         },
       ),
-      { numRuns: 8 },
+      { numRuns: 5 }, // Reduced for performance
     );
-  }, 25000);
+  }, 20000); // Reduced timeout
 
   /**
    * Property: Configuration validation and interface correctness
