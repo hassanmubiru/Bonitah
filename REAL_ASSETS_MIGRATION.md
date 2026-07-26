@@ -47,7 +47,7 @@ BFN has been updated to use **REAL financial assets** instead of mock tokens or 
 - No mock data or hardcoded financial values anywhere in production code
 - Real event emission and indexing
 
-### ✅ Trust and Transparency
+### Trust and Transparency
 
 - Users can verify all transactions on Base Sepolia explorer
 - Smart contract interactions are visible and auditable
@@ -84,7 +84,7 @@ const balance = useReadContract({
 
 ## Migration Impact
 
-### ✅ Zero Breaking Changes
+### Zero Breaking Changes
 
 - Frontend components continue to work unchanged
 - Backend APIs maintain same interface
