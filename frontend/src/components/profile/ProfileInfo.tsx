@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { useIPFSContent } from '@/hooks/useIPFSContent';
 
 export interface ProfileData {
-  profileHash?: string;
+  profileHash?: string | undefined;
   isRegistered: boolean;
   isVerified: boolean;
-  registrationDate?: string;
+  registrationDate?: string | undefined;
 }
 
 export interface ProfileInfoProps {
