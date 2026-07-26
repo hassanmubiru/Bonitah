@@ -24,4 +24,4 @@ export * from './schemas.js';
 
 
 // Contract ABIs and addresses
-export * from './contracts';
+// export * from './contracts';  // Temporarily disabled due to ES module issue
