@@ -323,7 +323,7 @@ pnpm test:ci                      # CI-optimized test run
 
 ---
 
-## 📦 Building & Deployment
+## Building & Deployment
 
 ### Local Build
 
