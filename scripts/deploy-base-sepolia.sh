@@ -119,7 +119,7 @@ prepare_environment() {
     
     # Ensure we have the latest dependencies
     log_info "Installing/updating Foundry dependencies..."
-    forge install --no-commit
+    forge install
     
     # Clean and build contracts
     log_info "Building contracts..."
