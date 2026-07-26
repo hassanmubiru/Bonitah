@@ -109,7 +109,7 @@ contract ConversationManager is Initializable, BFNAccessUUPSUpgradeable {
         if (conv.user == address(0)) revert ConversationNotFound(conversationId);
         if (!isAiResponse && conv.user != msg.sender) revert UnauthorizedAccess(msg.sender, conversationId);
         if (!isAiResponse && !registry.isRegistered(msg.sender)) revert NotRegistered(msg.sender);
-        if (!conv.active) revert ConversationArchived();
+        if (!conv.active) revert ConversationInactive();
         if (bytes(content).length == 0) revert EmptyMessage();
         
         // For AI responses, allow system/admin to add messages
