@@ -133,9 +133,14 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           // Verify final state - should be error with no data - Req 1.6, 1.7
           expect(result.current.data).toBeUndefined(); // No placeholder values - Req 1.7
           expect(result.current.error).toBeDefined();
-          // Check if error message is meaningful 
+          // Check if error message is meaningful (contains contract info or viem info)
           const errorMessage = result.current.error?.message || '';
           expect(errorMessage.length).toBeGreaterThan(0);
+          // Accept either our mock error or real viem error
+          const isValidError = errorMessage.includes(errorType) || 
+                               errorMessage.includes('contract function') ||
+                               errorMessage.includes('client.request is not a function');
+          expect(isValidError).toBe(true);
           expect(typeof result.current.refetch).toBe('function'); // Refetch available
         },
       ),
@@ -195,6 +200,11 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           // Check if error message is meaningful (contains contract address or function name)
           const errorMessage = result.current.error?.message || '';
           expect(errorMessage.length).toBeGreaterThan(0);
+          // Accept either our mock error or real viem error
+          const isValidError = errorMessage.includes(errorType) || 
+                               errorMessage.includes('contract function') ||
+                               errorMessage.includes('client.request is not a function');
+          expect(isValidError).toBe(true);
           expect(typeof result.current.refetch).toBe('function'); // Refetch should be available
         },
       ),
