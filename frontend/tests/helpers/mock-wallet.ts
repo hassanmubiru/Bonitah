@@ -7,8 +7,7 @@ import { Page, BrowserContext } from '@playwright/test';
  */
 export class MockWallet {
   constructor(
-    private page: Page,
-    private _context: BrowserContext
+    private page: Page
   ) {}
 
   /**
