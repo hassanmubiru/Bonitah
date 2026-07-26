@@ -80,7 +80,7 @@ export function useContractRead<
   address,
   abi,
   functionName,
-  args = [] as TArgs,
+  args = ([] as unknown) as TArgs,
   enabled = true,
   queryKey = []
 }: UseContractReadOptions<TAbi, TFunctionName, TArgs>): ContractReadState<unknown> {
