@@ -1,22 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/**
- * @title MockERC20 - DEPRECATED
- * @notice This mock token is DEPRECATED and should not be used in production.
- * 
- * BFN now uses REAL USDC token on Base Sepolia:
- * Address: 0x036CbD53842c5426634e7929541eC2318f3dCF7e
- * 
- * This file is kept for historical reference only.
- * All production deployments should use the real USDC contract.
- */
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-// This contract is intentionally left empty to prevent accidental use
-contract MockERC20_DEPRECATED {
-    error ContractDeprecated();
-    
-    constructor() {
-        revert ContractDeprecated();
+/**
+ * @title MockERC20
+ * @notice Simple mock ERC20 token for testing purposes only
+ * @dev This contract is for testing only. Production uses real USDC.
+ */
+contract MockERC20 is ERC20 {
+    uint8 private _decimals;
+
+    constructor(
+        string memory name,
+        string memory symbol,
+        uint8 decimals_
+    ) ERC20(name, symbol) {
+        _decimals = decimals_;
+        _mint(msg.sender, 1_000_000 * 10**decimals_); // Mint 1M tokens to deployer
+    }
+
+    function decimals() public view override returns (uint8) {
+        return _decimals;
+    }
+
+    function mint(address to, uint256 amount) external {
+        _mint(to, amount);
+    }
+
+    function burn(uint256 amount) external {
+        _burn(msg.sender, amount);
     }
 }
