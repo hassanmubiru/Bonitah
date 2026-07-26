@@ -23,31 +23,6 @@ if (baseSepolia.id !== BASE_SEPOLIA_CHAIN_ID) {
   );
 }
 
-import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import { http } from 'wagmi';
-import { baseSepolia } from 'wagmi/chains';
-
-import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
-
-/**
- * wagmi + RainbowKit configuration for BFN.
- *
- * BFN interacts with exactly one network: Base Sepolia (chain ID 84532). The
- * chain list below is intentionally limited to Base Sepolia only so the wallet
- * connection and network guard can enforce it (Req 2.1, 2.3). viem's
- * `baseSepolia` chain carries the canonical 84532 id; we assert it here to fail
- * fast if an upstream definition ever drifts.
- * 
- * We use getDefaultConfig from RainbowKit to ensure all wallets are properly
- * configured and displayed in the connection modal. The missing @x402/evm 
- * dependencies are handled via webpack fallbacks in next.config.js.
- */
-if (baseSepolia.id !== BASE_SEPOLIA_CHAIN_ID) {
-  throw new Error(
-    `Unexpected Base Sepolia chain id ${baseSepolia.id}; expected ${BASE_SEPOLIA_CHAIN_ID}.`,
-  );
-}
-
 /**
  * WalletConnect project id. Required by RainbowKit for WalletConnect-based
  * wallets. For local development, we use a safe placeholder that won't cause
