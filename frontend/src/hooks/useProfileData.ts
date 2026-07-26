@@ -165,7 +165,7 @@ export function useProfileData(userAddress: Address): UseProfileDataResult {
   const profileData: ProfileData | null =
     isRegistered !== undefined
       ? {
-          profileHash: profileHash || undefined,
+          profileHash: typeof profileHash === 'string' ? profileHash : undefined,
           isRegistered: Boolean(isRegistered),
           isVerified: Boolean(isVerified),
           registrationDate: isRegistered
