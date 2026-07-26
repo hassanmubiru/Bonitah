@@ -30,7 +30,7 @@ contract Deploy is Script {
     CommunityTreasury public communityTreasury;
     Education public education;
     Governance public governance;
-    // MockERC20 public token; // DEPRECATED - Use real USDC in production
+    // MockERC20 public token; // REMOVED - Using real USDC only
     
     // Proxy addresses
     address public registryProxy;

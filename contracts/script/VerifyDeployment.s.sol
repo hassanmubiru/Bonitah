@@ -7,7 +7,7 @@ import {SavingsVault} from "../src/SavingsVault.sol";
 import {CommunityTreasury} from "../src/CommunityTreasury.sol";
 import {Education} from "../src/Education.sol";
 import {Governance} from "../src/Governance.sol";
-// import {MockERC20} from "../src/mocks/MockERC20.sol"; // DEPRECATED - Use real USDC
+// import {MockERC20} from "../src/mocks/MockERC20.sol"; // REMOVED - Using real USDC only
 import {BFNRoles} from "../src/base/BFNRoles.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
