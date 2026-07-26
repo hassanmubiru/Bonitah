@@ -108,7 +108,7 @@ export class ChainReadService {
           this.publicClient.getBlockNumber(),
           timeoutMs,
           `Contract read timeout for ${params.contract}.${params.functionName}`
-        );
+        ) as bigint;
         
         // For this implementation, we'll simulate a contract read since we don't have ABIs yet
         // In a real implementation, this would use the contract ABI and call the specific function
