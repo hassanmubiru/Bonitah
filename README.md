@@ -3,18 +3,30 @@
 A production-quality Web3 monorepo for financial education, decentralized savings, and community investing on the Base Sepolia network (chain ID `84532`). The blockchain is the single source of truth for all financial state.
 
 **BFN empowers users to:**
-- **Save & Earn**: Deposit funds in decentralized savings vaults with transparent yield
-- **Set Goals**: Create and track financial goals with milestone rewards  
+
+- **Save & Earn**: Deposit funds in decentralized savings vaults with transparent yield using real USDC
+- **Set Goals**: Create and track financial goals with milestone rewards
 - **Learn Together**: Access financial education with certificates and achievements
 - **Invest as Community**: Join investment circles and collaborative funding pools
 - **Govern Collectively**: Participate in protocol governance with reputation-weighted voting
+
+## 🔗 Real Asset Integration
+
+**BFN uses REAL financial assets - no mock data or test tokens:**
+
+- **Token**: Circle's official USDC on Base Sepolia (`0x036CbD53842c5426634e7929541eC2318f3dCF7e`)
+- **Network**: Base Sepolia testnet (Chain ID: 84532)
+- **Data**: All financial values read directly from deployed smart contracts
+- **Transactions**: All state changes require real wallet signatures
+
+_Note: While Base Sepolia is a testnet, the USDC tokens and smart contracts function identically to mainnet with real transaction signing and on-chain state._
 
 ---
 
 ## 📁 Monorepo Structure
 
-| Directory            | Purpose                                                                            |
-| -------------------- | ---------------------------------------------------------------------------------- |
+| Directory            | Purpose                                                                           |
+| -------------------- | --------------------------------------------------------------------------------- |
 | `contracts/`         | Foundry project: Registry, SavingsVault, CommunityTreasury, Education, Governance |
 | `frontend/`          | Next.js app (App Router, TypeScript, Tailwind, wagmi/viem/RainbowKit)             |
 | `backend/`           | NestJS API, SIWE auth, event indexer, AI assistant, IPFS service                  |
@@ -23,7 +35,7 @@ A production-quality Web3 monorepo for financial education, decentralized saving
 | `docker/`            | Dockerfiles and `docker-compose.yml`                                              |
 | `.github/workflows/` | CI workflows (lint, test, build)                                                  |
 | `scripts/`           | Tooling, codegen, secret scanning, coverage aggregation                           |
-| `deployment/`        | Base Sepolia deployment scripts and recorded contract addresses                    |
+| `deployment/`        | Base Sepolia deployment scripts and recorded contract addresses                   |
 | `tests/`             | Cross-cutting and end-to-end test suites                                          |
 
 ---
@@ -33,7 +45,7 @@ A production-quality Web3 monorepo for financial education, decentralized saving
 ### Prerequisites
 
 - **Node.js** `>=20.0.0` ([Download](https://nodejs.org/))
-- **pnpm** `>=9.0.0` ([Install](https://pnpm.io/installation))  
+- **pnpm** `>=9.0.0` ([Install](https://pnpm.io/installation))
 - **Foundry** (for contract development) ([Install](https://getfoundry.sh/))
 - **Docker** & **Docker Compose** (for full-stack development)
 - **Git** with submodules support
@@ -61,7 +73,7 @@ Each service requires environment variables. Copy example files and configure:
 cp backend/.env.example backend/.env
 # Configure: DATABASE_URL, REDIS_URL, JWT_SECRET, BASE_SEPOLIA_RPC_URL
 
-# Contracts environment  
+# Contracts environment
 cp contracts/.env.example contracts/.env
 # Configure: PRIVATE_KEY, BASE_SEPOLIA_RPC_URL, BASESCAN_API_KEY
 
@@ -109,6 +121,7 @@ cd contracts && forge test --watch
 ```
 
 **Access the application:**
+
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 - API Documentation: http://localhost:3001/docs
@@ -122,7 +135,7 @@ cd contracts && forge test --watch
 Run from the repository root:
 
 ```bash
-pnpm install        # install workspace dependencies  
+pnpm install        # install workspace dependencies
 pnpm lint           # ESLint + Prettier check across the monorepo
 pnpm lint:fix       # auto-fix lint and formatting issues
 pnpm format         # write Prettier formatting
@@ -135,6 +148,7 @@ pnpm clean          # clean build artifacts across all packages
 ### Per-Service Commands
 
 #### Contracts (`contracts/`)
+
 ```bash
 cd contracts
 
@@ -145,15 +159,16 @@ forge test --gas-report     # test with gas usage
 forge coverage              # generate coverage report
 
 # Deployment
-pnpm deploy:sepolia         # deploy to Base Sepolia  
+pnpm deploy:sepolia         # deploy to Base Sepolia
 pnpm verify:deployment      # verify deployed contracts
 ```
 
 #### Backend (`backend/`)
+
 ```bash
 cd backend
 
-# Development  
+# Development
 pnpm dev                    # start development server
 pnpm test                   # run unit tests
 pnpm test:e2e              # run end-to-end tests
@@ -171,12 +186,13 @@ pnpm start                 # start production server
 ```
 
 #### Frontend (`frontend/`)
+
 ```bash
 cd frontend
 
 # Development
 pnpm dev                   # start development server
-pnpm test                  # run unit tests  
+pnpm test                  # run unit tests
 pnpm test:e2e              # run Playwright e2e tests
 pnpm storybook             # start Storybook
 
@@ -187,6 +203,7 @@ pnpm analyze               # analyze bundle size
 ```
 
 #### Shared (`shared/`)
+
 ```bash
 cd shared
 
@@ -202,12 +219,13 @@ pnpm watch                 # build in watch mode
 ### Required Environment Variables
 
 #### Backend (`.env`)
+
 ```bash
 # Database
 DATABASE_URL="postgresql://user:pass@localhost:5432/bfn_dev"
 REDIS_URL="redis://localhost:6379"
 
-# Authentication  
+# Authentication
 JWT_SECRET="your-super-secret-jwt-key"
 SIWE_DOMAIN="localhost"
 
@@ -216,7 +234,7 @@ BASE_SEPOLIA_RPC_URL="https://sepolia.base.org"
 INDEXER_START_BLOCK="12345678"
 
 # External Services
-OPENAI_API_KEY="sk-..." 
+OPENAI_API_KEY="sk-..."
 PINATA_JWT="eyJ..."
 
 # Server
@@ -225,9 +243,10 @@ NODE_ENV="development"
 ```
 
 #### Contracts (`.env`)
+
 ```bash
 # Deployment
-PRIVATE_KEY="0x..." 
+PRIVATE_KEY="0x..."
 BASE_SEPOLIA_RPC_URL="https://sepolia.base.org"
 BASESCAN_API_KEY="your-basescan-api-key"
 
@@ -237,6 +256,7 @@ TENDERLY_USERNAME="your-username"
 ```
 
 #### Frontend (`.env.local`)
+
 ```bash
 # WalletConnect
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID="your-project-id"
@@ -274,7 +294,7 @@ docker compose up -d --build
 # Database services only
 docker compose up -d postgres redis
 
-# Backend only  
+# Backend only
 docker compose up -d backend
 
 # Frontend only
@@ -286,6 +306,7 @@ docker compose up -d frontend
 ## 🧪 Testing
 
 ### Contract Tests
+
 ```bash
 cd contracts
 forge test -vv                    # run with verbosity
@@ -294,6 +315,7 @@ forge test --match-contract Registry  # test specific contract
 ```
 
 ### Backend Tests
+
 ```bash
 cd backend
 pnpm test                         # unit tests
@@ -302,14 +324,16 @@ pnpm test:cov                     # with coverage report
 ```
 
 ### Frontend Tests
+
 ```bash
-cd frontend  
+cd frontend
 pnpm test                         # unit & component tests
 pnpm test:e2e                     # Playwright e2e tests
 pnpm test:e2e --ui                # with Playwright UI
 ```
 
 ### Cross-Package Tests
+
 ```bash
 # From repo root
 pnpm test                         # run all test suites
@@ -328,7 +352,7 @@ pnpm build
 
 # Build specific packages
 pnpm --filter contracts build
-pnpm --filter shared build  
+pnpm --filter shared build
 pnpm --filter backend build
 pnpm --filter frontend build
 ```
@@ -336,12 +360,14 @@ pnpm --filter frontend build
 ### Production Deployment
 
 1. **Deploy Smart Contracts**
+
    ```bash
    cd contracts
    pnpm deploy:sepolia
    ```
 
 2. **Build & Deploy Backend**
+
    ```bash
    cd backend
    pnpm build
@@ -362,6 +388,7 @@ pnpm --filter frontend build
 ### Common Issues
 
 #### Build Failures
+
 ```bash
 # Clear all node_modules and reinstall
 rm -rf node_modules */node_modules
@@ -373,6 +400,7 @@ pnpm build
 ```
 
 #### Database Issues
+
 ```bash
 # Reset database
 cd backend
@@ -381,18 +409,20 @@ pnpm prisma db seed
 ```
 
 #### Contract Deployment Issues
+
 ```bash
 # Check network connection and gas
 cast client $BASE_SEPOLIA_RPC_URL
 cast balance $YOUR_ADDRESS --rpc-url $BASE_SEPOLIA_RPC_URL
 
 # Clean and rebuild
-cd contracts  
+cd contracts
 forge clean
 forge build
 ```
 
 #### Frontend Connection Issues
+
 - Ensure wallet is connected to Base Sepolia (Chain ID: 84532)
 - Check that contract addresses are updated in `shared/src/addresses.ts`
 - Verify RPC endpoint is accessible
@@ -408,14 +438,14 @@ forge build
 
 ## 📋 Project Status
 
-| Component | Status | Test Coverage | Notes |
-|-----------|--------|---------------|-------|
-| Smart Contracts | ✅ Complete | >90% | All 5 contracts deployed |
-| Backend API | ✅ Complete | >80% | Full SIWE auth & indexing |
-| Frontend App | ✅ Complete | >80% | All pages implemented |
-| Documentation | ✅ Complete | N/A | API & contract docs |
-| CI/CD Pipeline | ✅ Complete | N/A | GitHub Actions |
-| Docker Setup | ✅ Complete | N/A | Multi-stage builds |
+| Component       | Status      | Test Coverage | Notes                     |
+| --------------- | ----------- | ------------- | ------------------------- |
+| Smart Contracts | ✅ Complete | >90%          | All 5 contracts deployed  |
+| Backend API     | ✅ Complete | >80%          | Full SIWE auth & indexing |
+| Frontend App    | ✅ Complete | >80%          | All pages implemented     |
+| Documentation   | ✅ Complete | N/A           | API & contract docs       |
+| CI/CD Pipeline  | ✅ Complete | N/A           | GitHub Actions            |
+| Docker Setup    | ✅ Complete | N/A           | Multi-stage builds        |
 
 ---
 
@@ -426,7 +456,7 @@ forge build
 3. Make your changes and add tests
 4. Run the full test suite: `pnpm test`
 5. Commit with conventional commit messages: `git commit -m 'feat: add amazing feature'`
-6. Push to your branch: `git push origin feature/amazing-feature`  
+6. Push to your branch: `git push origin feature/amazing-feature`
 7. Open a Pull Request
 
 ### Development Guidelines
@@ -448,7 +478,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **Base**: For providing the Layer 2 infrastructure
-- **OpenZeppelin**: For secure smart contract primitives  
+- **OpenZeppelin**: For secure smart contract primitives
 - **RainbowKit**: For excellent wallet connection UX
 - **NestJS**: For the robust backend framework
 - **Next.js**: For the powerful React framework
