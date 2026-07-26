@@ -74,11 +74,7 @@ export function useRegistryProfile() {
   });
 
   // Contract write for updating profile
-  const { writeAsync: updateProfileContract } = useContractWrite({
-    address: process.env['NEXT_PUBLIC_REGISTRY_ADDRESS'] as `0x${string}`,
-    abi: registryABI,
-    functionName: 'updateProfile',
-  });
+  const { writeContractAsync: updateProfileContract } = useContractWrite();
 
   /**
    * Fetch and parse profile metadata from IPFS
