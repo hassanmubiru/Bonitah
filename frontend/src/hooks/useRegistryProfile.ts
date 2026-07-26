@@ -40,13 +40,13 @@ export function useRegistryProfile() {
   // Get Registry ABI
   const registryABI = getContractAbi('Registry');
 
-  // Read profile from Registry contract
+  // Read profile from Registry contract (only when connected)
+  const shouldReadProfile = !!address && isConnected;
   const { data: profileData, isLoading: contractLoading, refetch } = useContractRead({
     address: process.env['NEXT_PUBLIC_REGISTRY_ADDRESS'] as `0x${string}`,
     abi: registryABI,
     functionName: 'getProfile',
-    args: address ? [address] : [],
-    enabled: !!address && isConnected,
+    args: shouldReadProfile ? [address] : [],
   });
 
   // Read reputation from Registry contract
