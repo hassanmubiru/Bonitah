@@ -40,15 +40,15 @@ export const DEPLOYMENTS: Readonly<Record<SupportedChainId, NetworkDeployment>> 
   [BASE_SEPOLIA_CHAIN_ID]: {
     chainId: BASE_SEPOLIA_CHAIN_ID,
     contracts: {
-      Registry: '0xc37319a9ca70aa581b96b96ddb79eb19c2b391c5',
-      SavingsVault: '0x75517c778c77628a5c0d4bba7398520da8849eb0',
-      CommunityTreasury: '0x07e19c706cf7e77afd215a6fef136b3b8a62eebe',
-      Education: '0x0806ebcbd047a9a264027c2a31693ff26a69b3ff',
-      Governance: '0xab48386f4306b1e356d02456e9ecf6e74cafa76b',
+      Registry: '0xBd81a62b21eaE93D74daB2B2D93e040D51f75db1',
+      SavingsVault: '0x16E88B4a717B082f8d29C4EeA0796F488C0da7B6',
+      CommunityTreasury: '0xa0D284d9080cb7F6676e62116E0A659BB4Ed9b04',
+      Education: '0x5A63Da81A04BE39d5469B8BD9281CbD3332b51ac',
+      Governance: '0x13B14D148E3369dCC448006494810A95928eEEB4',
     },
     // REAL Circle USDC on Base Sepolia - 6 decimals, official deployment
     token: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-    deployedAtBlock: 44629468n,
+    deployedAtBlock: 44662012n,
   },
 } as const;
 
