@@ -10,7 +10,6 @@ import { AppearanceSection } from './sections/AppearanceSection';
 import { NotificationsSection } from './sections/NotificationsSection';
 import { PrivacySection } from './sections/PrivacySection';
 import { AccessibilitySection } from './sections/AccessibilitySection';
-import { AdvancedSection } from './sections/AdvancedSection';
 import { useSettingsManager } from '@/hooks/useSettingsManager';
 
 /**
