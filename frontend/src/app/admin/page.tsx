@@ -445,7 +445,7 @@ export default function AdminPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {auditLog?.entries.map((entry) => (
+                    {auditLog?.entries.map((entry: any) => (
                       <TableRow key={entry.id}>
                         <TableCell>
                           {new Date(entry.timestamp).toLocaleString()}
