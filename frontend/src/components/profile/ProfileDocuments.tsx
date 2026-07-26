@@ -27,18 +27,21 @@ export interface UploadedDocument {
  * Document management interface with IPFS upload functionality.
  * Implements document upload with validation per requirements.
  */
-export function ProfileDocuments({ userAddress, profileHash }: ProfileDocumentsProps) {
+export function ProfileDocuments({
+  userAddress: _userAddress,
+  profileHash,
+}: ProfileDocumentsProps) {
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
   const { uploadDocuments, isUploading, error } = useDocumentUpload();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newDocuments: UploadedDocument[] = acceptedFiles.map(file => ({
+    const newDocuments: UploadedDocument[] = acceptedFiles.map((file) => ({
       name: file.name,
       size: file.size,
       type: file.type,
     }));
-    
-    setDocuments(prev => [...prev, ...newDocuments]);
+
+    setDocuments((prev) => [...prev, ...newDocuments]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -56,25 +59,27 @@ export function ProfileDocuments({ userAddress, profileHash }: ProfileDocumentsP
   });
 
   const removeDocument = (index: number) => {
-    setDocuments(prev => prev.filter((_, i) => i !== index));
+    setDocuments((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleUpload = async () => {
     if (documents.length === 0) return;
 
-    const files = documents.map(doc => {
+    const files = documents.map((doc) => {
       // Convert document back to File object for upload
       return new File([''], doc.name, { type: doc.type });
     });
 
     try {
       const cids = await uploadDocuments(files);
-      
+
       // Update documents with CIDs
-      setDocuments(prev => prev.map((doc, index) => ({
-        ...doc,
-        cid: cids[index],
-      })));
+      setDocuments((prev) =>
+        prev.map((doc, index) => ({
+          ...doc,
+          cid: cids[index],
+        })),
+      );
     } catch (err) {
       console.error('Upload failed:', err);
     }
@@ -102,9 +107,7 @@ export function ProfileDocuments({ userAddress, profileHash }: ProfileDocumentsP
           <File className="h-5 w-5" />
           Profile Documents
         </CardTitle>
-        <CardDescription>
-          Upload verification documents and profile assets to IPFS
-        </CardDescription>
+        <CardDescription>Upload verification documents and profile assets to IPFS</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Current Profile Hash */}
@@ -114,9 +117,7 @@ export function ProfileDocuments({ userAddress, profileHash }: ProfileDocumentsP
               <CheckCircle className="h-4 w-4 text-green-500" />
               <span className="text-sm font-medium">Current Profile</span>
             </div>
-            <p className="text-xs text-muted-foreground font-mono break-all">
-              {profileHash}
-            </p>
+            <p className="text-xs text-muted-foreground font-mono break-all">{profileHash}</p>
           </div>
         )}
 
@@ -160,9 +161,7 @@ export function ProfileDocuments({ userAddress, profileHash }: ProfileDocumentsP
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{doc.name}</p>
                       <div className="flex items-center gap-2">
-                        <p className="text-xs text-muted-foreground">
-                          {formatFileSize(doc.size)}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{formatFileSize(doc.size)}</p>
                         {doc.cid && (
                           <Badge variant="outline" className="text-xs">
                             Uploaded
@@ -208,17 +207,10 @@ export function ProfileDocuments({ userAddress, profileHash }: ProfileDocumentsP
               Files will be stored on IPFS and linked to your profile
             </p>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setDocuments([])}
-                disabled={isUploading}
-              >
+              <Button variant="outline" onClick={() => setDocuments([])} disabled={isUploading}>
                 Clear All
               </Button>
-              <Button
-                onClick={handleUpload}
-                disabled={isUploading || documents.some(d => d.cid)}
-              >
+              <Button onClick={handleUpload} disabled={isUploading || documents.some((d) => d.cid)}>
                 {isUploading ? 'Uploading...' : 'Upload to IPFS'}
               </Button>
             </div>
