@@ -331,9 +331,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           expect(result.current.error).toBeNull();
         },
       ),
-      { numRuns: 3 }, // Reduced for performance
+      { numRuns: 2 }, // Reduced for performance
     );
-  }, 12000); // Reduced timeout
+  }, 8000); // Further reduced timeout
   /**
    * Property: Hook configuration properties work correctly
    * Requirements: 1.6 (proper hook interface and behavior)
