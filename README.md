@@ -1,6 +1,6 @@
 # Bonitah Financial Network (BFN)
 
-A production-quality Web3 monorepo for financial education, decentralized savings, and community investing on the Base Sepolia network (chain ID `84532`). The blockchain is the single source of truth for all financial state.
+A production-quality Web3 platform for financial education, decentralized savings, and community investing on the Base Sepolia network (chain ID `84532`). The blockchain is the single source of truth for all financial state.
 
 **BFN empowers users to:**
 
@@ -10,7 +10,7 @@ A production-quality Web3 monorepo for financial education, decentralized saving
 - **Invest as Community**: Join investment circles and collaborative funding pools
 - **Govern Collectively**: Participate in protocol governance with reputation-weighted voting
 
-## 🔗 Real Asset Integration
+## Real Asset Integration
 
 **BFN uses REAL financial assets - no mock data or test tokens:**
 
@@ -21,26 +21,7 @@ A production-quality Web3 monorepo for financial education, decentralized saving
 
 _Note: While Base Sepolia is a testnet, the USDC tokens and smart contracts function identically to mainnet with real transaction signing and on-chain state._
 
----
-
-## 📁 Monorepo Structure
-
-| Directory            | Purpose                                                                           |
-| -------------------- | --------------------------------------------------------------------------------- |
-| `contracts/`         | Foundry project: Registry, SavingsVault, CommunityTreasury, Education, Governance |
-| `frontend/`          | Next.js app (App Router, TypeScript, Tailwind, wagmi/viem/RainbowKit)             |
-| `backend/`           | NestJS API, SIWE auth, event indexer, AI assistant, IPFS service                  |
-| `shared/`            | Shared TypeScript types, ABIs, contract addresses, and zod schemas                |
-| `docs/`              | README, API docs, contract docs, deployment and developer guides                  |
-| `docker/`            | Dockerfiles and `docker-compose.yml`                                              |
-| `.github/workflows/` | CI workflows (lint, test, build)                                                  |
-| `scripts/`           | Tooling, codegen, secret scanning, coverage aggregation                           |
-| `deployment/`        | Base Sepolia deployment scripts and recorded contract addresses                   |
-| `tests/`             | Cross-cutting and end-to-end test suites                                          |
-
----
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
