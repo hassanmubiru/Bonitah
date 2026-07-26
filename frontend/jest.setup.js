@@ -170,3 +170,78 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
 // Mock process.env for Next.js
 process.env.NODE_ENV = 'test';
 process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID = 'test-project-id';
+
+// Mock UI components
+jest.mock('@/components/ui/card', () => ({
+  Card: ({ children, className, ...props }) => (
+    <div className={className} {...props}>
+      {children}
+    </div>
+  ),
+}));
+
+jest.mock('@/components/ui/tabs', () => ({
+  Tabs: ({ children, className, value, onValueChange, ...props }) => (
+    <div className={className} data-testid="tabs" data-value={value} {...props}>
+      {children}
+    </div>
+  ),
+  TabsList: ({ children, className, ...props }) => (
+    <div role="tablist" className={className} {...props}>
+      {children}
+    </div>
+  ),
+  TabsTrigger: ({ children, value, className, ...props }) => (
+    <button role="tab" aria-controls={value} data-value={value} className={className} {...props}>
+      {children}
+    </button>
+  ),
+  TabsContent: ({ children, value, className, ...props }) => (
+    <div role="tabpanel" data-value={value} className={className} {...props}>
+      {children}
+    </div>
+  ),
+}));
+
+// Mock settings hooks
+jest.mock('@/hooks/useSettingsManager', () => ({
+  useSettingsManager: jest.fn(() => ({
+    exportSettings: jest.fn(),
+    importSettings: jest.fn(),
+    resetSettings: jest.fn(),
+    isResetting: false,
+  })),
+}));
+
+// Mock settings sections
+jest.mock('@/components/settings/sections/ThemeSection', () => ({
+  ThemeSection: () => <div data-testid="theme-section">Theme Preference</div>,
+}));
+
+jest.mock('@/components/settings/sections/AppearanceSection', () => ({
+  AppearanceSection: () => (
+    <div data-testid="appearance-section">
+      <div>Typography</div>
+      <div>Font Size</div>
+      <div>Layout Preferences</div>
+      <div>Compact Mode</div>
+      <div>Collapsed Sidebar</div>
+    </div>
+  ),
+}));
+
+jest.mock('@/components/settings/sections/NotificationsSection', () => ({
+  NotificationsSection: () => <div data-testid="notifications-section">Notifications settings</div>,
+}));
+
+jest.mock('@/components/settings/sections/PrivacySection', () => ({
+  PrivacySection: () => <div data-testid="privacy-section">Privacy settings</div>,
+}));
+
+jest.mock('@/components/settings/sections/AccessibilitySection', () => ({
+  AccessibilitySection: () => <div data-testid="accessibility-section">Accessibility settings</div>,
+}));
+
+jest.mock('@/components/settings/sections/AdvancedSection', () => ({
+  AdvancedSection: () => <div data-testid="advanced-section">Advanced settings</div>,
+}));
