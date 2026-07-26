@@ -68,9 +68,14 @@ export function ProfileSection({
       <div data-testid="profile-address">Profile for {userAddress}</div>
 
       {isEditing ? (
-        <ProfileEditor userAddress={userAddress as `0x${string}`} />
+        <ProfileEditor
+          userAddress={userAddress as `0x${string}`}
+          profileData={null}
+          onSave={() => {}}
+          onCancel={() => {}}
+        />
       ) : (
-        <ProfileInfo userAddress={userAddress as `0x${string}`} />
+        <ProfileInfo userAddress={userAddress as `0x${string}`} profileData={null} />
       )}
 
       <VerificationStatus userAddress={userAddress} />
