@@ -42,8 +42,17 @@ CHAIN_ID=84532
 JWT_SECRET=YOUR_SUPER_SECURE_JWT_SECRET_AT_LEAST_32_CHARACTERS_LONG
 JWT_EXPIRES_IN=24h
 
-# OpenAI - For AI assistant functionality
+# AI Assistant Providers - Choose one or configure both
+# OpenAI Configuration
 OPENAI_API_KEY=sk-your-openai-api-key
+
+# DeepSeek Configuration (NEW - Cost-effective alternative)
+DEEPSEEK_API_KEY=your-deepseek-api-key
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+
+# AI Provider Selection (openai, deepseek, or auto)
+# auto = use deepseek if available, fallback to openai
+AI_PROVIDER=auto
 
 # IPFS - For document storage
 PINATA_JWT=your-pinata-jwt-token
