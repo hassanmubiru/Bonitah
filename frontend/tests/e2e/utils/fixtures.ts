@@ -148,7 +148,7 @@ export function testWithWallet(
  * Helper to set up an authenticated user session
  */
 export async function setupAuthenticatedUser(
-  page: Page, 
+  _page: Page, 
   mockWallet: MockWallet,
   authPage: AuthPage
 ) {
