@@ -115,4 +115,20 @@ export class AiController {
 
     return { conversation };
   }
+
+  /**
+   * Get current AI provider information for debugging and health checks.
+   *
+   * GET /ai/provider
+   *
+   * @returns Information about configured and available AI providers
+   */
+  @Get('provider')
+  async getProviderInfo(): Promise<{
+    selected: string;
+    available: string[];
+    configured: string[];
+  }> {
+    return await this.aiService.getProviderInfo();
+  }
 }
