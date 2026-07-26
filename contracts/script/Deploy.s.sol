@@ -75,16 +75,8 @@ contract Deploy is Script {
         console.log("");
     }
     
-    function _updateSharedPackage() internal view {
-        console.log("To update the shared package, run:");
-        console.log("node scripts/update-addresses.js");
-        console.log("  Chain ID:", block.chainid);
-        console.log("  Registry:", registryProxy);
-        console.log("  SavingsVault:", savingsVaultProxy);
-        console.log("  CommunityTreasury:", communityTreasuryProxy);
-        console.log("  Education:", educationProxy);
-        console.log("  Governance:", governanceProxy);
-        console.log("  Token:", address(token));
-        console.log("  Block:", block.number);
+    function _updateSharedPackage() internal pure {
+        console.log("To deploy with real USDC, use:");
+        console.log("forge script script/DeployBaseSepolia.s.sol:DeployBaseSepolia --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast --verify");
     }
 }
