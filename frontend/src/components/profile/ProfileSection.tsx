@@ -78,7 +78,10 @@ export function ProfileSection({
         <ProfileInfo userAddress={userAddress as `0x${string}`} profileData={null} />
       )}
 
-      <VerificationStatus userAddress={userAddress as `0x${string}`} />
+      <VerificationStatus 
+        userAddress={userAddress as `0x${string}`}
+        isVerified={false}
+      />
       <ReputationDisplay userAddress={userAddress as `0x${string}`} />
 
       {onToggleEdit && (
