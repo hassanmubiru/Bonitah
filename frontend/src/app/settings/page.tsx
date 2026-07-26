@@ -176,7 +176,7 @@ export default function SettingsPage() {
                 <Label>Font Size: {settings.fontSize}px</Label>
                 <Slider
                   value={[settings.fontSize]}
-                  onValueChange={([value]) => updateSetting('fontSize', value)}
+                  onValueChange={([value]) => value !== undefined && updateSetting('fontSize', value)}
                   min={12}
                   max={20}
                   step={1}
