@@ -42,7 +42,7 @@ export function useRegistry(address?: string): RegistryData {
       },
     ] as const,
     functionName: 'isRegistered',
-    args: userAddress ? [userAddress as `0x${string}`] : undefined,
+    args: userAddress ? [userAddress as `0x${string}`] : [],
     enabled: Boolean(userAddress),
   });
 
