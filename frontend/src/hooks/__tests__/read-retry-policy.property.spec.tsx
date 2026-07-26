@@ -149,10 +149,10 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
       fc.asyncProperty(
         fc.record({
           contractAddress: fc
-            .string({ minLength: 42, maxLength: 42 })
+            .hexaString({ minLength: 40, maxLength: 40 })
             .map((s) => `0x${s}` as Address),
           userAddress: fc
-            .string({ minLength: 42, maxLength: 42 })
+            .hexaString({ minLength: 40, maxLength: 40 })
             .map((s) => `0x${s}` as Address),
           errorType: fc.constantFrom(
             'network error', // Should retry
