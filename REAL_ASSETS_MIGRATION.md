@@ -13,7 +13,7 @@ BFN has been updated to use **REAL financial assets** instead of mock tokens or 
 - **Token Validation**: Added validation to ensure USDC contract exists before deployment
 - **Deprecated Mock Token**: `MockERC20.sol` marked as deprecated to prevent accidental use
 
-### 📍 Address Configuration
+### Address Configuration
 
 - **Updated Shared Addresses**: `shared/src/addresses.ts` now references real USDC
 - **Network Configuration**: Base Sepolia (Chain ID 84532) with real token integration
