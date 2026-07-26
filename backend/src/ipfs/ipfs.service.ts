@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 interface MulterFile {
@@ -45,7 +50,7 @@ export class IpfsService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.pinataJwt}`,
+          Authorization: `Bearer ${this.pinataJwt}`,
         },
         body: JSON.stringify({
           pinataContent: metadata,
@@ -61,9 +66,9 @@ export class IpfsService {
         throw new InternalServerErrorException('IPFS storage failed');
       }
 
-      const result = await response.json() as { IpfsHash?: string };
+      const result = (await response.json()) as { IpfsHash?: string };
       const cid = result.IpfsHash;
-      
+
       if (!cid) {
         this.logger.error('No IPFS hash returned from Pinata');
         throw new InternalServerErrorException('IPFS storage failed - no hash returned');
@@ -75,7 +80,7 @@ export class IpfsService {
       if (error instanceof BadRequestException || error instanceof InternalServerErrorException) {
         throw error;
       }
-      
+
       this.logger.error('IPFS storage error:', error);
       throw new InternalServerErrorException('IPFS storage failed');
     }
@@ -112,16 +117,19 @@ export class IpfsService {
 
       try {
         const formData = new FormData();
-        const blob = new Blob([file.buffer], { type: file.mimetype });
+        const blob = new Blob([new Uint8Array(file.buffer)], { type: file.mimetype });
         formData.append('file', blob, file.originalname);
-        formData.append('pinataMetadata', JSON.stringify({
-          name: `BFN Profile Document - ${file.originalname}`,
-        }));
+        formData.append(
+          'pinataMetadata',
+          JSON.stringify({
+            name: `BFN Profile Document - ${file.originalname}`,
+          }),
+        );
 
         const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${this.pinataJwt}`,
+            Authorization: `Bearer ${this.pinataJwt}`,
           },
           body: formData,
         });
@@ -132,7 +140,7 @@ export class IpfsService {
           throw new InternalServerErrorException('IPFS storage failed');
         }
 
-        const result = await response.json() as { IpfsHash?: string };
+        const result = (await response.json()) as { IpfsHash?: string };
         const cid = result.IpfsHash;
 
         if (!cid) {
@@ -146,7 +154,7 @@ export class IpfsService {
         if (error instanceof BadRequestException || error instanceof InternalServerErrorException) {
           throw error;
         }
-        
+
         this.logger.error(`IPFS storage error for file ${file.originalname}:`, error);
         throw new InternalServerErrorException('IPFS storage failed');
       }
@@ -166,21 +174,36 @@ export class IpfsService {
       // Government ID numbers (SSN, passport, driver's license patterns)
       /\b\d{3}-\d{2}-\d{4}\b/, // SSN format
       /\b\d{9}\b/, // 9-digit numbers (could be SSN without dashes)
-      
+
       // Email addresses
       /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/,
-      
+
       // Phone numbers (various formats)
       /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/,
       /\b\(\d{3}\)\s?\d{3}[-.]?\d{4}\b/,
-      
+
       // Financial account patterns (credit card, bank account)
       /\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/, // Credit card format
     ];
 
     const piiKeywords = [
-      'ssn', 'social', 'passport', 'license', 'address', 'street', 'city', 'zip', 'postal',
-      'phone', 'email', 'account', 'routing', 'credit', 'debit', 'card', 'password'
+      'ssn',
+      'social',
+      'passport',
+      'license',
+      'address',
+      'street',
+      'city',
+      'zip',
+      'postal',
+      'phone',
+      'email',
+      'account',
+      'routing',
+      'credit',
+      'debit',
+      'card',
+      'password',
     ];
 
     const checkValue = (value: unknown, path: string = ''): void => {
@@ -191,12 +214,14 @@ export class IpfsService {
             throw new BadRequestException(`PII detected in metadata at ${path}: pattern match`);
           }
         }
-        
+
         // Check for PII keywords (case insensitive)
         const lowerValue = value.toLowerCase();
         for (const keyword of piiKeywords) {
           if (lowerValue.includes(keyword)) {
-            throw new BadRequestException(`PII detected in metadata at ${path}: keyword '${keyword}'`);
+            throw new BadRequestException(
+              `PII detected in metadata at ${path}: keyword '${keyword}'`,
+            );
           }
         }
       } else if (typeof value === 'object' && value !== null) {
@@ -230,7 +255,7 @@ export class IpfsService {
     // Check filename for PII keywords
     const filename = file.originalname.toLowerCase();
     const piiKeywords = ['ssn', 'passport', 'license', 'tax', 'bank', 'account'];
-    
+
     for (const keyword of piiKeywords) {
       if (filename.includes(keyword)) {
         throw new BadRequestException(`Potential PII detected in filename: '${file.originalname}'`);
