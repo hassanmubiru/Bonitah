@@ -68,7 +68,7 @@ export function ProfileSection({
       <div data-testid="profile-address">Profile for {userAddress}</div>
 
       {isEditing ? (
-        <ProfileEditor userAddress={userAddress} />
+        <ProfileEditor userAddress={userAddress as `0x${string}`} />
       ) : (
         <ProfileInfo userAddress={userAddress} />
       )}
