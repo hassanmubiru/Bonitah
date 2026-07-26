@@ -88,10 +88,10 @@ Create `docker/.env.production`:
 # Database
 POSTGRES_PASSWORD=your-secure-database-password
 
-# Backend
-BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
-JWT_SECRET=YOUR_SUPER_SECURE_JWT_SECRET_AT_LEAST_32_CHARACTERS_LONG
-OPENAI_API_KEY=sk-your-openai-api-key
+# OpenAI or DeepSeek - AI assistant
+OPENAI_API_KEY=sk-your-openai-api-key  
+DEEPSEEK_API_KEY=your-deepseek-api-key
+AI_PROVIDER=auto
 PINATA_JWT=your-pinata-jwt-token
 PINATA_GATEWAY=https://gateway.pinata.cloud
 ISSUER_PRIVATE_KEY=0x58E23D31B75027c8EaE075D144626cbFEA8E756D_PRIVATE_KEY
