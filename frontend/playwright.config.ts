@@ -24,7 +24,7 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/results.json' }],
-    ...(process.env['CI'] ? [['github' as const]] : [['list' as const]]),
+    ...(process.env['CI'] ? [['github', {}] as const] : [['list', {}] as const]),
   ],
 
   // Test output directory
