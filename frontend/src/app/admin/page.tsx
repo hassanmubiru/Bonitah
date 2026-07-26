@@ -264,7 +264,7 @@ export default function AdminPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users?.users.map((user) => (
+                    {users?.users.map((user: any) => (
                       <TableRow key={user.id}>
                         <TableCell className="font-medium">
                           {user.walletAddress.slice(0, 6)}...{user.walletAddress.slice(-4)}
@@ -344,7 +344,7 @@ export default function AdminPage() {
                   <div className="space-y-2">
                     <h4 className="font-semibold">User Growth</h4>
                     <div className="text-2xl font-bold">
-                      {analytics?.userGrowth.reduce((sum, day) => sum + day.count, 0) || 0}
+                      {analytics?.userGrowth.reduce((sum: number, day: any) => sum + day.count, 0) || 0}
                     </div>
                     <p className="text-sm text-muted-foreground">New users this period</p>
                   </div>
