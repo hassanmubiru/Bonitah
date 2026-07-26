@@ -258,18 +258,17 @@ export class EducationService {
       const educationContract = getContract({
         address: this.educationContractAddress as `0x${string}`,
         abi: getContractAbi('Education'),
-        client: walletClient,
+        client: {
+          public: undefined,
+          wallet: walletClient,
+        },
       });
 
-      if (!educationContract.write) {
+      if (!educationContract.write?.issueCertificate) {
         throw new InternalServerErrorException('Contract write methods not available');
       }
 
-      interface ContractWrite {
-        issueCertificate: (args: [string, string, string]) => Promise<string>;
-      }
-
-      const txHash = await (educationContract.write as unknown as ContractWrite).issueCertificate([
+      const txHash = await educationContract.write.issueCertificate([
         walletAddress as `0x${string}`,
         course.onChainId as `0x${string}`,
         cid,
