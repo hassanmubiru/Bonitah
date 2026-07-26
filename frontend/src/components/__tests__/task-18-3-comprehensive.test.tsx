@@ -466,7 +466,17 @@ describe('Task 18.3: Comprehensive Frontend Foundation Tests', () => {
     });
 
     it('should support assistive technology announcements', () => {
-      render(<ThemeToggle />);
+      render(
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          storageKey="bfn-theme-test"
+          disableTransitionOnChange={false}
+        >
+          <ThemeToggle />
+        </ThemeProvider>,
+      );
 
       const button = screen.getByRole('button');
 
