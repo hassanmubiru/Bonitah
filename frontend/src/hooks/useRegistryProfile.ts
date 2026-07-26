@@ -28,7 +28,7 @@ export interface RegistryProfile {
 
 /**
  * Registry profile management hook
- * 
+ *
  * Implements Task 21.9 requirements for Registry contract integration
  */
 export function useRegistryProfile() {
@@ -42,7 +42,11 @@ export function useRegistryProfile() {
 
   // Read profile from Registry contract (only when connected)
   const shouldReadProfile = !!address && isConnected;
-  const { data: profileData, isLoading: contractLoading, refetch } = useContractRead({
+  const {
+    data: profileData,
+    isLoading: contractLoading,
+    refetch,
+  } = useContractRead({
     address: process.env['NEXT_PUBLIC_REGISTRY_ADDRESS'] as `0x${string}`,
     abi: registryABI,
     functionName: 'getProfile',
@@ -51,19 +55,19 @@ export function useRegistryProfile() {
 
   // Read reputation from Registry contract
   const { data: reputation } = useContractRead({
-    address: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS as `0x${string}`,
+    address: process.env['NEXT_PUBLIC_REGISTRY_ADDRESS'] as `0x${string}`,
     abi: registryABI,
     functionName: 'getReputation',
-    args: address ? [address] : undefined,
+    args: address ? [address] : [],
     enabled: !!address && isConnected,
   });
 
   // Read verification status from Registry contract
   const { data: isVerified } = useContractRead({
-    address: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS as `0x${string}`,
+    address: process.env['NEXT_PUBLIC_REGISTRY_ADDRESS'] as `0x${string}`,
     abi: registryABI,
     functionName: 'isVerified',
-    args: address ? [address] : undefined,
+    args: address ? [address] : [],
     enabled: !!address && isConnected,
   });
 
@@ -78,7 +82,10 @@ export function useRegistryProfile() {
    * Fetch and parse profile metadata from IPFS
    */
   const fetchProfileMetadata = useCallback(async (metadataHash: string) => {
-    if (!metadataHash || metadataHash === '0x0000000000000000000000000000000000000000000000000000000000000000') {
+    if (
+      !metadataHash ||
+      metadataHash === '0x0000000000000000000000000000000000000000000000000000000000000000'
+    ) {
       return null;
     }
 
@@ -97,53 +104,57 @@ export function useRegistryProfile() {
   /**
    * Update profile information
    */
-  const updateProfile = useCallback(async (profileData: Partial<RegistryProfile>) => {
-    if (!address || !isConnected) {
-      throw new Error('Wallet not connected');
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Upload metadata to IPFS
-      const response = await fetch('/api/ipfs/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('bfn-auth-token')}`,
-        },
-        body: JSON.stringify({
-          documents: [{
-            name: 'profile-metadata.json',
-            content: JSON.stringify(profileData),
-          }],
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload metadata to IPFS');
+  const updateProfile = useCallback(
+    async (profileData: Partial<RegistryProfile>) => {
+      if (!address || !isConnected) {
+        throw new Error('Wallet not connected');
       }
 
-      const { cids } = await response.json();
-      const metadataHash = cids[0];
+      setIsLoading(true);
+      setError(null);
 
-      // Update Registry contract
-      await updateProfileContract({
-        args: [metadataHash],
-      });
+      try {
+        // Upload metadata to IPFS
+        const response = await fetch('/api/ipfs/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('bfn-auth-token')}`,
+          },
+          body: JSON.stringify({
+            documents: [
+              {
+                name: 'profile-metadata.json',
+                content: JSON.stringify(profileData),
+              },
+            ],
+          }),
+        });
 
-      // Refresh profile data
-      await refetch();
-      
-    } catch (error) {
-      console.error('Profile update failed:', error);
-      setError(error instanceof Error ? error.message : 'Profile update failed');
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [address, isConnected, updateProfileContract, refetch]);
+        if (!response.ok) {
+          throw new Error('Failed to upload metadata to IPFS');
+        }
+
+        const { cids } = await response.json();
+        const metadataHash = cids[0];
+
+        // Update Registry contract
+        await updateProfileContract({
+          args: [metadataHash],
+        });
+
+        // Refresh profile data
+        await refetch();
+      } catch (error) {
+        console.error('Profile update failed:', error);
+        setError(error instanceof Error ? error.message : 'Profile update failed');
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [address, isConnected, updateProfileContract, refetch],
+  );
 
   /**
    * Process profile data from contract and IPFS
@@ -174,7 +185,11 @@ export function useRegistryProfile() {
           processedProfile.metadataHash = profileData[1] as string;
 
           // Fetch metadata from IPFS if available
-          if (processedProfile.metadataHash && processedProfile.metadataHash !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
+          if (
+            processedProfile.metadataHash &&
+            processedProfile.metadataHash !==
+              '0x0000000000000000000000000000000000000000000000000000000000000000'
+          ) {
             const metadata = await fetchProfileMetadata(processedProfile.metadataHash);
             if (metadata) {
               processedProfile = {
