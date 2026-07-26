@@ -34,8 +34,8 @@ function updateAddress(network, contractName, address) {
   fs.writeFileSync(addressesPath, JSON.stringify(addresses, null, 2));
   console.log(`✅ Updated ${contractName} address to ${address} on ${network}`);
   
-  // Regenerate TypeScript files
-  require('./generate-abis.js');
+  // Note: generate-abis.js not found, skipping ABI generation
+  console.log('📝 Consider running ABI generation if needed');
 }
 
 function updateFullDeployment(chainId, registryAddr, vaultAddr, treasuryAddr, educationAddr, governanceAddr, tokenAddr, blockNumber) {
