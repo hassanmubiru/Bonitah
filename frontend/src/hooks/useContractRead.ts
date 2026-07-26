@@ -36,20 +36,17 @@ export interface ContractReadState<TData> {
 
 /**
  * Parameters for contract read operations.
+ * Simplified to avoid complex generic constraints.
  */
-export interface UseContractReadOptions<
-  TAbi extends Abi,
-  TFunctionName extends string,
-  TArgs extends readonly unknown[] = readonly []
-> {
+export interface UseContractReadOptions {
   /** Contract address on Base Sepolia */
   address: Address;
   /** Contract ABI */
-  abi: TAbi;
+  abi: Abi;
   /** Function name to call */
-  functionName: TFunctionName;
+  functionName: string;
   /** Function arguments */
-  args?: TArgs;
+  args?: readonly unknown[];
   /** Whether the query is enabled (defaults to true) */
   enabled?: boolean;
   /** Custom query key for caching (optional) */
