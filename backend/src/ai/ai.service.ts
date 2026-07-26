@@ -28,7 +28,6 @@ export class AiService {
   private readonly logger = new Logger(AiService.name);
 
   constructor(
-    private readonly env: EnvService,
     private readonly prisma: PrismaService,
     private readonly chainRead: ChainReadService,
     private readonly aiProviderFactory: AIProviderFactory,
