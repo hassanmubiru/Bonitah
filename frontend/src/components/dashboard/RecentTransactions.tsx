@@ -76,7 +76,7 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
       case 'WithdrawalMade':
         return {
           type: 'Withdrawal',  
-          description: `Withdrew ${formatAmount(payload.amount)}`,
+          description: `Withdrew ${formatAmount(payload.amount as string)}`,
           icon: '💸',
           color: 'text-red-600',
         };
@@ -97,7 +97,7 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
       case 'ContributionMade':
         return {
           type: 'Contribution',
-          description: `Contributed ${formatAmount(payload.amount)} to pool ${payload.poolId}`,
+          description: `Contributed ${formatAmount(payload.amount as string)} to pool ${payload.poolId}`,
           icon: '🤝',
           color: 'text-orange-600',
         };
