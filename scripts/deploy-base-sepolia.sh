@@ -117,9 +117,8 @@ prepare_environment() {
     # Navigate to contracts directory
     cd contracts
     
-    # Ensure we have the latest dependencies
-    log_info "Installing/updating Foundry dependencies..."
-    forge install
+    # Dependencies are already installed via git submodules
+    log_info "Using existing Foundry dependencies..."
     
     # Clean and build contracts
     log_info "Building contracts..."
