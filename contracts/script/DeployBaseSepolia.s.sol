@@ -218,51 +218,22 @@ contract DeployBaseSepolia is Script {
     }
     
     /**
-     * @dev Record deployment addresses to deployment/base-sepolia.json
+     * @dev Record deployment addresses
+     * Note: File writing disabled due to Foundry security restrictions
      */
-    function _recordDeployment() private {
-        console.log("Phase 5: Recording deployment addresses...");
+    function _recordDeployment() private view {
+        console.log("Phase 5: Deployment addresses recorded in logs...");
         
-        string memory deploymentJson = string(abi.encodePacked(
-            "{\n",
-            '  "chainId": ', Strings.toString(block.chainid), ",\n",
-            '  "network": "Base Sepolia",\n',
-            '  "deployedAt": {\n',
-            '    "block": ', Strings.toString(deploymentBlock), ",\n",
-            '    "timestamp": ', Strings.toString(block.timestamp), "\n",
-            "  },\n",
-            '  "deployer": "', Strings.toHexString(deployer), '",\n',
-            '  "contracts": {\n',
-            '    "Registry": {\n',
-            '      "proxy": "', Strings.toHexString(registryProxy), '",\n',
-            '      "implementation": "', Strings.toHexString(address(registryImpl)), '"\n',
-            "    },\n",
-            '    "SavingsVault": {\n',
-            '      "proxy": "', Strings.toHexString(savingsVaultProxy), '",\n',
-            '      "implementation": "', Strings.toHexString(address(savingsVaultImpl)), '"\n',
-            "    },\n",
-            '    "CommunityTreasury": {\n',
-            '      "proxy": "', Strings.toHexString(communityTreasuryProxy), '",\n',
-            '      "implementation": "', Strings.toHexString(address(communityTreasuryImpl)), '"\n',
-            "    },\n",
-            '    "Education": {\n',
-            '      "proxy": "', Strings.toHexString(educationProxy), '",\n',
-            '      "implementation": "', Strings.toHexString(address(educationImpl)), '"\n',
-            "    },\n",
-            '    "Governance": {\n',
-            '      "proxy": "', Strings.toHexString(governanceProxy), '",\n',
-            '      "implementation": "', Strings.toHexString(address(governanceImpl)), '"\n',
-            "    }\n",
-            "  },\n",
-            '  "token": "', Strings.toHexString(address(token)), '"\n',
-            "}"
-        ));
-        
-        // Write deployment record using vm.writeFile
-        string memory filePath = "./deployment/base-sepolia.json";
-        vm.writeFile(filePath, deploymentJson);
-        
-        console.log("  Deployment recorded to: %s", filePath);
+        // Just log the addresses for manual extraction
+        console.log("Chain ID: %d", block.chainid);
+        console.log("Block: %d", deploymentBlock);
+        console.log("Timestamp: %d", block.timestamp);
+        console.log("Registry: %s", registryProxy);
+        console.log("SavingsVault: %s", savingsVaultProxy);
+        console.log("CommunityTreasury: %s", communityTreasuryProxy);
+        console.log("Education: %s", educationProxy);
+        console.log("Governance: %s", governanceProxy);
+        console.log("Token: %s", address(token));
     }
     
     /**
