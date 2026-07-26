@@ -33,7 +33,7 @@ export function useProfileUpdate(): UseProfileUpdateResult {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const { address } = useAccount();
-  const { token } = useSiweAuth();
+  const { isAuthenticated } = useSiweAuth();
   const { writeContract } = useWriteContract();
 
   const updateProfile = async (profileData: IPFSProfileContent): Promise<void> => {
