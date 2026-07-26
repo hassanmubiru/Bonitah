@@ -12,39 +12,45 @@ import type { ContractName } from '@bfn/shared';
 import type { AIProvider, ChatMessage } from './providers/ai-provider.interface';
 
 /**
- * Enhanced AI Assistant service for BFN financial guidance.
+ * AI Assistant service for BFN financial guidance.
  *
- * Provides AI-powered financial assistance with multiple provider support:
- * - Supports OpenAI and DeepSeek APIs with automatic fallback
+ * Provides AI-powered financial assistance with strict constraints:
  * - Question length validation (≤2000 chars, Req 10.7)
  * - 30-second timeout enforcement (Req 10.8)
  * - On-chain data integration (read-only access, Req 10.3)
  * - Conversation history persistence (Req 10.4)
  * - Explicit "never sign transactions" instruction (Req 10.2)
+ * - Error handling for service unavailability (Req 10.8, 10.9)
  * - Scoped to budgeting/savings/investment education only (Req 10.1)
  */
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
+  private openai: OpenAI | null = null;
 
   constructor(
     private readonly env: EnvService,
     private readonly prisma: PrismaService,
     private readonly chainRead: ChainReadService,
-    private readonly aiProviderFactory: AIProviderFactory,
-  ) {}
+  ) {
+    // Initialize OpenAI client only if API key is provided
+    if (this.env.openaiApiKey) {
+      this.openai = new OpenAI({
+        apiKey: this.env.openaiApiKey,
+      });
+    }
+  }
 
   /**
    * Process a user question and return AI-generated financial guidance.
    *
    * Validates question length, reads user's on-chain financial data,
-   * calls the configured AI provider with scoped prompt, enforces timeout, 
-   * and persists history.
+   * calls OpenAI with scoped prompt, enforces timeout, and persists history.
    *
    * @param userId - User ID from JWT authentication
    * @param walletAddress - User's wallet address from JWT
    * @param question - User's question (≤2000 characters)
-   * @returns AI assistant response with provider information
+   * @returns AI assistant response
    * @throws BadRequestException if question exceeds 2000 characters (Req 10.7)
    * @throws ServiceUnavailableException if AI service unavailable or timeout (Req 10.8)
    */
@@ -52,7 +58,7 @@ export class AiService {
     userId: string,
     address: string,
     question: string,
-  ): Promise<{ answer: string; conversationId: string; provider?: string }> {
+  ): Promise<{ answer: string; conversationId: string }> {
     // Validate question length (Req 10.7)
     if (question.length > 2000) {
       throw new BadRequestException(
@@ -60,14 +66,10 @@ export class AiService {
       );
     }
 
-    // Get AI provider
-    let aiProvider: AIProvider;
-    try {
-      aiProvider = await this.aiProviderFactory.getProvider();
-    } catch (error) {
-      this.logger.error('Failed to initialize AI provider', error);
+    // Check if OpenAI is configured
+    if (!this.openai) {
       throw new ServiceUnavailableException(
-        'AI assistant is temporarily unavailable - no providers configured',
+        'AI assistant is temporarily unavailable - service not configured',
       );
     }
 
@@ -79,13 +81,13 @@ export class AiService {
       const financialContext = await this.getUserFinancialContext(address);
 
       // Build the system prompt with strict scoping and transaction prohibition (Req 10.1, 10.2)
-      const systemPrompt = this.buildSystemPrompt(financialContext, address, aiProvider.name);
+      const systemPrompt = this.buildSystemPrompt(financialContext, address);
 
       // Get recent conversation history for context (last 10 messages)
       const recentMessages = await this.getRecentConversationHistory(conversation.id, 10);
 
-      // Build messages array for AI provider
-      const messages: ChatMessage[] = [
+      // Build messages array for OpenAI
+      const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
         { role: 'system', content: systemPrompt },
         ...recentMessages.map((msg) => ({
           role: msg.role as 'user' | 'assistant',
@@ -94,24 +96,23 @@ export class AiService {
         { role: 'user', content: question },
       ];
 
-      // Call AI provider with 30-second timeout (Req 10.8)
-      const response = await this.callAIWithTimeout(aiProvider, messages, 30000);
+      // Call OpenAI with 30-second timeout (Req 10.8)
+      const response = await this.callOpenAIWithTimeout(messages, 30000);
 
       // Store the conversation turn (Req 10.4)
-      await this.storeConversationTurn(conversation.id, question, response.content);
+      await this.storeConversationTurn(conversation.id, question, response);
 
       this.logger.log(
-        `AI chat completed: user=${userId}, provider=${aiProvider.name}, question_length=${question.length}, response_length=${response.content.length}`,
+        `AI chat completed: user=${userId}, question_length=${question.length}, response_length=${response.length}`,
       );
 
       return {
-        answer: response.content,
+        answer: response,
         conversationId: conversation.id,
-        provider: aiProvider.name,
       };
     } catch (error) {
       // Log error but preserve conversation history (Req 10.8)
-      this.logger.error(`AI chat failed for user ${userId} with provider ${aiProvider.name}`, error);
+      this.logger.error(`AI chat failed for user ${userId}`, error);
 
       if (error instanceof BadRequestException) {
         throw error; // Re-throw validation errors
@@ -122,17 +123,6 @@ export class AiService {
         'AI assistant is temporarily unavailable. Please try again later.',
       );
     }
-  }
-
-  /**
-   * Get AI provider information for health checks and debugging.
-   */
-  async getProviderInfo(): Promise<{
-    selected: string;
-    available: string[];
-    configured: string[];
-  }> {
-    return await this.aiProviderFactory.getProviderInfo();
   }
 
   /**
@@ -285,8 +275,8 @@ export class AiService {
   /**
    * Build the system prompt with strict scope and transaction prohibition (Req 10.1, 10.2).
    */
-  private buildSystemPrompt(financialContext: string, address: string, providerName: string): string {
-    return `You are a financial assistant for Bonitah Financial Network (BFN), powered by ${providerName}, helping users with personal finance education and guidance.
+  private buildSystemPrompt(financialContext: string, address: string): string {
+    return `You are a financial assistant for Bonitah Financial Network (BFN), helping users with personal finance education and guidance.
 
 CRITICAL CONSTRAINTS:
 - You MUST NEVER initiate, sign, or submit blockchain transactions
@@ -302,7 +292,6 @@ SCOPE OF ASSISTANCE:
 - Portfolio diversification principles
 - Risk management education
 - Financial planning methodologies
-- BFN platform features and how to use them
 
 USER CONTEXT:
 Wallet Address: ${address}
@@ -315,9 +304,8 @@ RESPONSE GUIDELINES:
 - Focus on helping them understand their options and the principles behind financial decisions
 - Use their current financial data for context, but clearly indicate when data is unavailable
 - Be concise but helpful, aiming for 1-3 paragraphs unless more detail is specifically requested
-- Mention that you're powered by ${providerName} if asked about your capabilities
 
-Remember: You are an educational assistant powered by ${providerName}, not a transaction executor or investment advisor.`;
+Remember: You are an educational assistant, not a transaction executor or investment advisor.`;
   }
 
   /**
@@ -334,36 +322,37 @@ Remember: You are an educational assistant powered by ${providerName}, not a tra
   }
 
   /**
-   * Call AI provider with timeout enforcement (Req 10.8).
+   * Call OpenAI with timeout enforcement (Req 10.8).
    */
-  private async callAIWithTimeout(
-    provider: AIProvider,
-    messages: ChatMessage[],
+  private async callOpenAIWithTimeout(
+    messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
     timeoutMs: number,
-  ): Promise<{ content: string; tokensUsed?: number; model?: string }> {
+  ): Promise<string> {
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
-        reject(new Error(`AI provider ${provider.name} request timeout`));
+        reject(new Error('OpenAI request timeout'));
       }, timeoutMs);
     });
 
-    const aiPromise = provider.createChatCompletion({
+    const openaiPromise = this.openai!.chat.completions.create({
+      model: 'gpt-3.5-turbo',
       messages,
-      maxTokens: 500, // Reasonable limit for financial guidance
+      max_tokens: 500, // Reasonable limit for financial guidance
       temperature: 0.7,
     });
 
     try {
-      const result = await Promise.race([aiPromise, timeoutPromise]);
-      
-      if (!result.content) {
-        throw new Error(`Empty response from ${provider.name}`);
+      const result = await Promise.race([openaiPromise, timeoutPromise]);
+      const content = result.choices[0]?.message?.content;
+
+      if (!content) {
+        throw new Error('Empty response from OpenAI');
       }
 
-      return result;
+      return content;
     } catch (error) {
-      if (error instanceof Error && error.message.includes('timeout')) {
-        throw new ServiceUnavailableException(`AI assistant request timed out. Please try again.`);
+      if (error instanceof Error && error.message === 'OpenAI request timeout') {
+        throw new ServiceUnavailableException('AI assistant request timed out. Please try again.');
       }
       throw error;
     }
