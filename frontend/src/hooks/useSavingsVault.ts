@@ -6,7 +6,6 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
   useBalance,
-  useEstimateGas,
   useGasPrice,
 } from 'wagmi';
 import { parseUnits, formatUnits } from 'viem';
