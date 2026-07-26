@@ -3,7 +3,7 @@ import { HealthCheck, HealthCheckService, type HealthCheckResult } from '@nestjs
 
 import { Public } from '../auth/decorators/public.decorator';
 import { DatabaseHealthIndicator } from './indicators/database.health';
-import { RedisHealthIndicator } from './indicators/redis.health';
+// import { RedisHealthIndicator } from './indicators/redis.health'; // Temporarily disabled - Redis not installed
 import { RpcHealthIndicator } from './indicators/rpc.health';
 
 /**
