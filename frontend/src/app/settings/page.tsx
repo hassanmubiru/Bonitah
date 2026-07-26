@@ -160,7 +160,7 @@ export default function SettingsPage() {
                   {['default', 'blue', 'green', 'purple'].map((scheme) => (
                     <button
                       key={scheme}
-                      onClick={() => updateSetting('colorScheme', scheme)}
+                      onClick={() => updateSetting('colorScheme', scheme as 'default' | 'blue' | 'green' | 'purple')}
                       className={`p-3 border rounded-lg flex items-center justify-center ${
                         settings.colorScheme === scheme ? 'border-primary bg-primary/10' : 'border-border'
                       }`}
