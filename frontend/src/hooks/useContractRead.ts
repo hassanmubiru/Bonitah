@@ -176,7 +176,7 @@ export function useContractBalance(
     address: contractAddress,
     abi,
     functionName,
-    args: userAddress ? [userAddress] : undefined,
+    args: userAddress ? [userAddress] : [],
     enabled: enabled && !!userAddress,
     queryKey: ['balance', userAddress || ''],
   }) as ContractReadState<bigint>;
