@@ -1,4 +1,4 @@
-import { Page, BrowserContext } from '@playwright/test';
+import { Page } from '@playwright/test';
 
 /**
  * Mock wallet utility for deterministic E2E testing
