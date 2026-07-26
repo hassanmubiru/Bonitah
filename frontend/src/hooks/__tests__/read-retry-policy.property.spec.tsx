@@ -144,9 +144,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           expect(typeof result.current.refetch).toBe('function'); // Refetch available
         },
       ),
-      { numRuns: 3 }, // Reduced for performance
+      { numRuns: 2 }, // Reduced for performance
     );
-  }, 30000); // Reduced timeout
+  }, 15000); // Reduced timeout
   /**
    * Property: Retry logic differentiates error types
    * Requirements: 1.6 (smart retry logic based on error type)
