@@ -58,6 +58,9 @@ contract DeployBaseSepolia is Script {
     uint256 private deploymentBlock;
     
     function run() external {
+        console.log("Current chain ID:", block.chainid);
+        console.log("Expected chain ID:", BASE_SEPOLIA_CHAIN_ID);
+        
         // Validate chain
         require(block.chainid == BASE_SEPOLIA_CHAIN_ID, 
             "ERROR: Expected Base Sepolia (chain ID 84532)");
