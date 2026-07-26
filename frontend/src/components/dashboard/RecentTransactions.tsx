@@ -69,7 +69,7 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
       case 'DepositMade':
         return {
           type: 'Deposit',
-          description: `Deposited ${formatAmount(payload.amount as string)}`,
+          description: `Deposited ${formatAmount(payload['amount'] as string)}`,
           icon: '💰',
           color: 'text-green-600',
         };
