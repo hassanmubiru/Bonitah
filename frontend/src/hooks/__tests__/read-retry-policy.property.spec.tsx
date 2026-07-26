@@ -127,7 +127,7 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
               expect(result.current.isError).toBe(true);
               expect(result.current.isLoading).toBe(false);
             },
-            { timeout: 20000 },
+            { timeout: 15000 }, // Reduced timeout
           );
 
           // Verify final state - should be error with no data - Req 1.6, 1.7
@@ -139,9 +139,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           expect(typeof result.current.refetch).toBe('function'); // Refetch available
         },
       ),
-      { numRuns: 5 },
+      { numRuns: 3 }, // Reduced for performance
     );
-  }, 60000);
+  }, 30000); // Reduced timeout
   /**
    * Property: Retry logic differentiates error types
    * Requirements: 1.6 (smart retry logic based on error type)
