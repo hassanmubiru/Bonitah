@@ -48,7 +48,7 @@ contract ConversationManager is Initializable, BFNAccessUUPSUpgradeable {
     error ConversationNotFound(bytes32 conversationId);
     error UnauthorizedAccess(address user, bytes32 conversationId);
     error EmptyMessage();
-    error ConversationArchived();
+    error ConversationInactive();
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
