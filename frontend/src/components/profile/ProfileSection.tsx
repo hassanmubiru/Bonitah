@@ -70,7 +70,7 @@ export function ProfileSection({
       {isEditing ? (
         <ProfileEditor userAddress={userAddress as `0x${string}`} />
       ) : (
-        <ProfileInfo userAddress={userAddress} />
+        <ProfileInfo userAddress={userAddress as `0x${string}`} />
       )}
 
       <VerificationStatus userAddress={userAddress} />
