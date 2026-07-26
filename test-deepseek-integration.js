@@ -106,6 +106,9 @@ function simulateProviderSelection(config) {
   console.log('');
 }
 
+// Fix the mockConfigs reference first
+const mockConfigs = mockEnvConfigs;
+
 // Run simulations
 console.log('🧪 Testing different AI provider configurations:\n');
 
@@ -134,6 +137,3 @@ console.log('   • Perfect for scaling financial education globally');
 console.log('');
 
 console.log('🎉 BFN Platform ready for intelligent financial assistance!');
-
-// Fix the mockConfigs reference
-const mockConfigs = mockEnvConfigs;
