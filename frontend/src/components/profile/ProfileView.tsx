@@ -115,7 +115,7 @@ export function ProfileView({ userAddress }: ProfileViewProps) {
           {/* Document Management */}
           <ProfileDocuments
             userAddress={userAddress}
-            profileHash={profileData?.profileHash}
+            profileHash={profileData?.profileHash || ''}
           />
 
           {/* Wallet Information */}
