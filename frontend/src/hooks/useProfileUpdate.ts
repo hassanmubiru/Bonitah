@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
 import { type Address } from 'viem';
 import { useSiweAuth } from './useSiweAuth';
 import { type IPFSProfileContent } from '@/components/profile/ProfileInfo';
