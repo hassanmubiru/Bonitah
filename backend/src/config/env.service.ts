@@ -87,7 +87,17 @@ export class EnvService {
     return this.get('DEEPSEEK_BASE_URL');
   }
 
-  /** AI Provider selection: 'openai', 'deepseek', or 'auto' */
+  /** Ollama base URL for local AI models */
+  get ollamaBaseUrl(): string {
+    return this.get('OLLAMA_BASE_URL');
+  }
+
+  /** Ollama model name to use */
+  get ollamaModel(): string {
+    return this.get('OLLAMA_MODEL');
+  }
+
+  /** AI Provider selection: 'openai', 'deepseek', 'ollama', or 'auto' */
   get aiProvider(): string {
     return this.get('AI_PROVIDER');
   }
