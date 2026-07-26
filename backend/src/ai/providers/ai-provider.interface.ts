@@ -39,4 +39,4 @@ export interface AIProvider {
   getRecommendedModel(): string;
 }
 
-export type AIProviderType = 'openai' | 'deepseek' | 'auto';
+export type AIProviderType = 'openai' | 'deepseek' | 'ollama' | 'auto';
