@@ -49,9 +49,14 @@ contract Deploy is Script {
         
         vm.startBroadcast(deployerPrivateKey);
         
-        // 1. Deploy mock ERC20 token for testing
-        token = new MockERC20("Bonitah Test USD", "bUSD", 6);
-        console.log("MockERC20 deployed at:", address(token));
+        // NOTE: This script is deprecated. Use DeployBaseSepolia.s.sol for production deployment with real USDC
+        
+        // 1. Deploy mock ERC20 token for testing (DEPRECATED)
+        // token = new MockERC20("Bonitah Test USD", "bUSD", 6);
+        // console.log("MockERC20 deployed at:", address(token));
+        
+        console.log("ERROR: This script is deprecated. Use DeployBaseSepolia.s.sol for production deployment.");
+        revert("Use DeployBaseSepolia.s.sol for production deployment with real USDC");
         
         // 2. Deploy implementation contracts
         registry = new Registry();
