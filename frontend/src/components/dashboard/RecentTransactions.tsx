@@ -14,7 +14,7 @@ interface RecentTransactionsProps {
 
 /**
  * Recent transactions component showing the user's recent activity.
- * 
+ *
  * Requirements: 11.2, 11.4, 11.5, 11.6
  * - Recent transactions (≤50, most recent first) from backend API
  * - Proper loading/error/retry states
@@ -33,14 +33,14 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
     queryFn: async () => {
       // Get JWT token from localStorage or session storage
       const token = localStorage.getItem('bfn_jwt') || sessionStorage.getItem('bfn_jwt');
-      
+
       if (!token) {
         throw new Error('Authentication required');
       }
 
       const response = await fetch('/api/transactions?limit=50', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -61,10 +61,13 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
   });
 
   // Format transaction event for display
-  const formatTransactionEvent = (event: { eventName: string; payload: Record<string, unknown> }) => {
+  const formatTransactionEvent = (event: {
+    eventName: string;
+    payload: Record<string, unknown>;
+  }) => {
     const eventName = event.eventName;
     const payload = event.payload;
-    
+
     switch (eventName) {
       case 'DepositMade':
         return {
@@ -75,7 +78,7 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
         };
       case 'WithdrawalMade':
         return {
-          type: 'Withdrawal',  
+          type: 'Withdrawal',
           description: `Withdrew ${formatAmount(payload['amount'] as string)}`,
           icon: '💸',
           color: 'text-red-600',
@@ -83,14 +86,14 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
       case 'GoalCreated':
         return {
           type: 'Goal',
-          description: `Created goal ${payload.goalId} for ${formatAmount(payload.targetAmount)}`,
+          description: `Created goal ${payload['goalId']} for ${formatAmount(payload['targetAmount'] as string)}`,
           icon: '🎯',
           color: 'text-blue-600',
         };
       case 'GoalCompleted':
         return {
           type: 'Goal',
-          description: `Completed goal ${payload.goalId}`,
+          description: `Completed goal ${payload['goalId']}`,
           icon: '🏆',
           color: 'text-purple-600',
         };
@@ -104,14 +107,14 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
       case 'VoteCast':
         return {
           type: 'Vote',
-          description: `Voted on ${payload.proposalId || payload.actionId}`,
+          description: `Voted on ${payload['proposalId'] || payload['actionId']}`,
           icon: '🗳️',
           color: 'text-indigo-600',
         };
       case 'CertificateIssued':
         return {
           type: 'Certificate',
-          description: `Earned certificate ${payload.certificateId}`,
+          description: `Earned certificate ${payload['certificateId']}`,
           icon: '🎓',
           color: 'text-emerald-600',
         };
@@ -148,12 +151,7 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Recent Activity</h3>
           {isError && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => refetch()}
-              disabled={isLoading}
-            >
+            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
               Retry
             </Button>
           )}
@@ -162,9 +160,7 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
         {isError && (
           <Alert variant="destructive">
             <p className="text-sm">
-              {error instanceof Error 
-                ? error.message 
-                : 'Failed to load transaction history'}
+              {error instanceof Error ? error.message : 'Failed to load transaction history'}
             </p>
           </Alert>
         )}
@@ -189,7 +185,10 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
               transactions.events.map((event, index) => {
                 const formatted = formatTransactionEvent(event);
                 return (
-                  <div key={index} className="flex items-center space-x-3 p-3 rounded-lg bg-muted/30">
+                  <div
+                    key={index}
+                    className="flex items-center space-x-3 p-3 rounded-lg bg-muted/30"
+                  >
                     <div className="text-lg">{formatted.icon}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
@@ -222,12 +221,14 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
               <div className="text-center py-8 text-muted-foreground">
                 <div className="text-4xl mb-2">📊</div>
                 <p>No recent transactions</p>
-                <p className="text-xs">Your activity will appear here once you start using the platform</p>
+                <p className="text-xs">
+                  Your activity will appear here once you start using the platform
+                </p>
               </div>
             )}
           </div>
         )}
-        
+
         {transactions?.events && transactions.events.length >= 50 && (
           <div className="text-center pt-4 border-t">
             <Button variant="outline" size="sm">
