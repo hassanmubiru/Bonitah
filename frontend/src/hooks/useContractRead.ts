@@ -56,35 +56,20 @@ export interface UseContractReadOptions {
 /**
  * Custom hook for reading blockchain data with retry policy and timeout.
  * 
- * Implements Requirement 1.6:
- * - 10s timeout per attempt
- * - Up to 3 retries before treating as failed
- * - Proper exponential backoff strategy
- * - Error handling after all retries exhausted
- * - State management during retries
- *
- * Implements Requirements 1.7, 11.4, 11.5, 11.6:
- * - Never displays substituted, cached, or placeholder values on failure
- * - Displays loading state during reads
- * - Displays error state with retry action on failure
- * - Proper state machine: loading -> data | error
+ * Simplified generic approach to avoid complex TypeScript constraints.
  */
-export function useContractRead<
-  TAbi extends Abi,
-  TFunctionName extends string,
-  TArgs extends readonly unknown[] = readonly []
->({
+export function useContractRead({
   address,
   abi,
   functionName,
-  args = ([] as unknown) as TArgs,
+  args = [],
   enabled = true,
   queryKey = []
-}: UseContractReadOptions<TAbi, TFunctionName, TArgs>): ContractReadState<unknown> {
+}: UseContractReadOptions): ContractReadState<unknown> {
   const publicClient = usePublicClient();
 
   const query = useQuery({
-    queryKey: ['contract-read', address, functionName, ...((args as unknown) as unknown[]), ...queryKey],
+    queryKey: ['contract-read', address, functionName, ...(args as unknown[]), ...queryKey],
     queryFn: async () => {
       if (!publicClient) {
         throw new Error('Public client not available');
@@ -101,10 +86,10 @@ export function useContractRead<
       const readPromise = readContract(publicClient, {
         address,
         abi,
-        functionName,
-        args,
+        functionName: functionName as any,
+        args: args as any,
         chainId: BASE_SEPOLIA_CHAIN_ID,
-      });
+      } as any);
 
       try {
         // Race between read and timeout
