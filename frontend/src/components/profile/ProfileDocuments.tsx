@@ -78,7 +78,7 @@ export function ProfileDocuments({
       setDocuments((prev) =>
         prev.map((doc, index) => ({
           ...doc,
-          cid: cids[index],
+          cid: cids[index]?.cid,
         })),
       );
     } catch (err) {
