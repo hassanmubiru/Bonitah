@@ -138,6 +138,9 @@ export function useRegistryProfile() {
 
         // Update Registry contract
         await updateProfileContract({
+          address: process.env['NEXT_PUBLIC_REGISTRY_ADDRESS'] as `0x${string}`,
+          abi: registryABI,
+          functionName: 'updateProfile',
           args: [metadataHash],
         });
 
