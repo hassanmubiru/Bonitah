@@ -284,7 +284,7 @@ docker compose up -d frontend
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Contract Tests
 
