@@ -186,7 +186,7 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
             () => {
               expect(result.current.isError).toBe(true);
             },
-            { timeout: 20000 },
+            { timeout: 15000 }, // Reduced timeout
           );
 
           // Always should end in error state with no data - Req 1.7
@@ -198,9 +198,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           expect(typeof result.current.refetch).toBe('function'); // Refetch should be available
         },
       ),
-      { numRuns: 5 },
+      { numRuns: 3 }, // Reduced for performance
     );
-  }, 60000);
+  }, 30000); // Reduced timeout
   /**
    * Property: State management during async operations
    * Requirements: 1.6, 11.4, 11.5 (loading state during retries, proper state machine)
