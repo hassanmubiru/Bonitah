@@ -87,7 +87,7 @@ export function useContractRead<
   const publicClient = usePublicClient();
 
   const query = useQuery({
-    queryKey: ['contract-read', address, functionName, ...(args as unknown[]), ...queryKey],
+    queryKey: ['contract-read', address, functionName, ...((args as unknown) as unknown[]), ...queryKey],
     queryFn: async () => {
       if (!publicClient) {
         throw new Error('Public client not available');
