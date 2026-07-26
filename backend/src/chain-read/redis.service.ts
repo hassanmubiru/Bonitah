@@ -5,9 +5,9 @@ import { EnvService } from '../config/env.service';
 
 /**
  * Redis service for the ChainRead module (Req 1.4, 1.5).
- * 
+ *
  * Provides a connection-managed Redis client for caching financial values
- * with provenance metadata. Entries have a 30-second TTL to enforce 
+ * with provenance metadata. Entries have a 30-second TTL to enforce
  * staleness requirements.
  */
 @Injectable()
@@ -48,9 +48,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     if (!this.client) {
       throw new Error('Redis client not initialized');
     }
-    
-    const result = this.client.get(key);
-    return result as string | null;
+
+    const result = await this.client.get(key);
+    return result;
   }
 
   /**
@@ -60,7 +60,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     if (!this.client) {
       throw new Error('Redis client not initialized');
     }
-    
+
     // 30-second TTL to enforce staleness policy (Req 1.4, 1.5)
     await this.client.setEx(key, 30, value);
   }
@@ -72,7 +72,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     if (!this.client) {
       throw new Error('Redis client not initialized');
     }
-    
+
     await this.client.del(key);
   }
 
