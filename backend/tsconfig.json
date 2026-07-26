@@ -20,6 +20,7 @@
     "noImplicitAny": false,
     "strictPropertyInitialization": false,
     "strict": false,
+    "noPropertyAccessFromIndexSignature": false,
     "types": ["node", "jest"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],
