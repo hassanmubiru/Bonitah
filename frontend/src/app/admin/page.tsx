@@ -236,7 +236,7 @@ export default function AdminPage() {
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm">
                     <Filter className="h-4 w-4 mr-2" />
-                    Role: {roleFilter || 'All'}
+                    Role: All
                   </Button>
                   <Button variant="outline" size="sm">
                     <Filter className="h-4 w-4 mr-2" />
