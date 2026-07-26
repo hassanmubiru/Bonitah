@@ -76,4 +76,19 @@ export class EnvService {
   get openaiApiKey(): string | undefined {
     return this.get('OPENAI_API_KEY');
   }
+
+  /** DeepSeek API key for the AI assistant service (optional alternative to OpenAI). */
+  get deepseekApiKey(): string | undefined {
+    return this.get('DEEPSEEK_API_KEY');
+  }
+
+  /** DeepSeek API base URL */
+  get deepseekBaseUrl(): string {
+    return this.get('DEEPSEEK_BASE_URL');
+  }
+
+  /** AI Provider selection: 'openai', 'deepseek', or 'auto' */
+  get aiProvider(): string {
+    return this.get('AI_PROVIDER');
+  }
 }
