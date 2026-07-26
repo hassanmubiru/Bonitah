@@ -29,7 +29,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useAdminData } from '@/hooks/useAdminData';
 
 /**
