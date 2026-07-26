@@ -52,6 +52,7 @@ export function useRegistryProfile() {
     abi: registryABI,
     functionName: 'getProfile',
     args: shouldReadProfile ? [address] : [],
+    enabled: shouldReadProfile,
   });
 
   // Read reputation from Registry contract
