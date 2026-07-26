@@ -1,13 +1,13 @@
 /**
  * @jest-environment jsdom
- * 
+ *
  * Task 18.3: Comprehensive Component Tests for Theming, Responsiveness, and Accessibility
- * 
+ *
  * This file consolidates and validates all requirements for Task 18.3:
  * - Theme apply/persist (Requirements 19.1, 19.2, 19.3, 19.4)
- * - No horizontal scroll at breakpoints (Requirement 19.5) 
+ * - No horizontal scroll at breakpoints (Requirement 19.5)
  * - Keyboard traversal and axe checks (Requirements 19.6, 19.7)
- * 
+ *
  * Testing Strategy:
  * 1. Theming Tests: Theme application, persistence, switching performance
  * 2. Responsiveness Tests: Breakpoint testing (320-767, 768-1023, ≥1024)
@@ -28,55 +28,59 @@ expect.extend(toHaveNoViolations);
 // Mock next-themes with actual DOM manipulation
 jest.mock('next-themes', () => {
   const React = require('react');
-  
-  const mockThemeContext = {
-    theme: 'light',
-    setTheme: jest.fn(),
-    resolvedTheme: 'light',
-    systemTheme: 'light',
-  };
+
+  // Create a shared context instance that persists across all components
+  const ThemeContext = React.createContext(null);
 
   return {
-    ThemeProvider: ({ children, defaultTheme, storageKey }: any) => {
-      const [currentTheme, setCurrentTheme] = React.useState(defaultTheme || 'light');
-      
+    ThemeProvider: ({ children, defaultTheme = 'light', storageKey }: any) => {
+      const [currentTheme, setCurrentTheme] = React.useState(() => {
+        // Check localStorage first if storageKey is provided
+        if (storageKey && typeof window !== 'undefined') {
+          const stored = localStorage.getItem(storageKey);
+          return stored || defaultTheme;
+        }
+        return defaultTheme;
+      });
+
       // Apply theme class to document element
       React.useEffect(() => {
-        document.documentElement.className = currentTheme === 'dark' ? 'dark' : '';
-        
+        const className = currentTheme === 'dark' ? 'dark' : '';
+        document.documentElement.className = className;
+
         // Store in localStorage if storageKey is provided
-        if (storageKey) {
+        if (storageKey && typeof window !== 'undefined') {
           localStorage.setItem(storageKey, currentTheme);
         }
       }, [currentTheme, storageKey]);
 
-      const contextValue = {
-        ...mockThemeContext,
-        theme: currentTheme,
-        resolvedTheme: currentTheme,
-        setTheme: (theme: string) => {
-          setCurrentTheme(theme);
-          mockThemeContext.theme = theme;
-          mockThemeContext.resolvedTheme = theme;
-          // Apply class immediately for tests
-          document.documentElement.className = theme === 'dark' ? 'dark' : '';
-          
-          // Store in localStorage
-          if (storageKey) {
-            localStorage.setItem(storageKey, theme);
-          }
-        },
-      };
+      const contextValue = React.useMemo(
+        () => ({
+          theme: currentTheme,
+          resolvedTheme: currentTheme,
+          systemTheme: 'light',
+          setTheme: (theme: string) => {
+            setCurrentTheme(theme);
+            // Apply class immediately for synchronous DOM updates
+            document.documentElement.className = theme === 'dark' ? 'dark' : '';
 
-      return React.createElement(
-        React.createContext(contextValue).Provider,
-        { value: contextValue },
-        children
+            // Store in localStorage immediately
+            if (storageKey && typeof window !== 'undefined') {
+              localStorage.setItem(storageKey, theme);
+            }
+          },
+        }),
+        [currentTheme, storageKey],
       );
+
+      return React.createElement(ThemeContext.Provider, { value: contextValue }, children);
     },
     useTheme: () => {
-      const context = React.useContext(React.createContext(mockThemeContext));
-      return context || mockThemeContext;
+      const context = React.useContext(ThemeContext);
+      if (!context) {
+        throw new Error('useTheme must be used within a ThemeProvider');
+      }
+      return context;
     },
   };
 });
@@ -518,8 +522,9 @@ describe('Task 18.3: Comprehensive Frontend Foundation Tests', () => {
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
         value: jest.fn().mockImplementation((query) => ({
-          matches: query.includes('prefers-reduced-motion: reduce') || 
-                   query.includes('prefers-contrast: high'),
+          matches:
+            query.includes('prefers-reduced-motion: reduce') ||
+            query.includes('prefers-contrast: high'),
           media: query,
           onchange: null,
           addListener: jest.fn(),
@@ -539,7 +544,7 @@ describe('Task 18.3: Comprehensive Frontend Foundation Tests', () => {
   describe('4. INTEGRATION TESTS - All Requirements Combined', () => {
     it('should integrate theming, responsiveness, and accessibility seamlessly', async () => {
       const user = userEvent.setup();
-      
+
       // Test at mobile breakpoint with theming
       setViewportSize(375);
       const { container } = render(<TestApp />);
@@ -571,7 +576,7 @@ describe('Task 18.3: Comprehensive Frontend Foundation Tests', () => {
 
     it('should maintain performance requirements across all features', async () => {
       const user = userEvent.setup();
-      
+
       // Test theme switching performance at different breakpoints
       const breakpoints = [320, 768, 1024];
 
