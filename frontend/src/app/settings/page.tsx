@@ -361,7 +361,7 @@ export default function SettingsPage() {
                   onValueChange={(value) =>
                     updateSetting('notifications', {
                       ...settings.notifications,
-                      frequency: value
+                      frequency: value as 'immediate' | 'hourly' | 'daily' | 'weekly'
                     })
                   }
                 >
