@@ -15,7 +15,7 @@ export function useAdminData() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001';
 
   /**
    * Get authorization header with JWT token
