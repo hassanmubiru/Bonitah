@@ -49,7 +49,6 @@ export default function SettingsPage() {
     resetToDefaults,
     exportSettings,
     importSettings,
-    isLoading,
     hasUnsavedChanges
   } = useSettings();
 
