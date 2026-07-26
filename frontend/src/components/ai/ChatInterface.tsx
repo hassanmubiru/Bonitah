@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export interface Message {
   id: string;
@@ -147,11 +146,9 @@ export function ChatInterface({
                 }`}
               >
                 {message.role === 'assistant' && (
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarFallback>
-                      <Bot className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Bot className="h-4 w-4 text-primary" />
+                  </div>
                 )}
                 
                 <div
@@ -171,22 +168,18 @@ export function ChatInterface({
                 </div>
                 
                 {message.role === 'user' && (
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarFallback>
-                      <User className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                    <User className="h-4 w-4" />
+                  </div>
                 )}
               </div>
             ))}
             
             {isLoading && (
               <div className="flex gap-3 justify-start">
-                <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarFallback>
-                    <Bot className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Bot className="h-4 w-4 text-primary" />
+                </div>
                 <div className="bg-muted rounded-lg p-3">
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
