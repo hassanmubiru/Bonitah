@@ -150,10 +150,10 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
         fc.record({
           contractAddress: fc
             .string({ minLength: 42, maxLength: 42 })
-            .map((s) => `0x${s.slice(2).padStart(40, '0')}` as Address),
+            .map((s) => `0x${s}` as Address),
           userAddress: fc
             .string({ minLength: 42, maxLength: 42 })
-            .map((s) => `0x${s.slice(2).padStart(40, '0')}` as Address),
+            .map((s) => `0x${s}` as Address),
           errorType: fc.constantFrom(
             'network error', // Should retry
             'timeout error', // Should retry
@@ -207,10 +207,10 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
         fc.record({
           contractAddress: fc
             .string({ minLength: 42, maxLength: 42 })
-            .map((s) => `0x${s.slice(2).padStart(40, '0')}` as Address),
+            .map((s) => `0x${s}` as Address),
           userAddress: fc
             .string({ minLength: 42, maxLength: 42 })
-            .map((s) => `0x${s.slice(2).padStart(40, '0')}` as Address),
+            .map((s) => `0x${s}` as Address),
           shouldSucceed: fc.boolean(),
           successValue: fc.bigInt({ min: 0n, max: 1000000n }),
         }),
@@ -279,10 +279,10 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
         fc.record({
           contractAddress: fc
             .string({ minLength: 42, maxLength: 42 })
-            .map((s) => `0x${s.slice(2).padStart(40, '0')}` as Address),
+            .map((s) => `0x${s}` as Address),
           userAddress: fc
             .string({ minLength: 42, maxLength: 42 })
-            .map((s) => `0x${s.slice(2).padStart(40, '0')}` as Address),
+            .map((s) => `0x${s}` as Address),
           expectedValue: fc.bigInt({ min: 0n, max: 1000000n }),
         }),
         async ({ contractAddress, userAddress, expectedValue }) => {
@@ -330,10 +330,10 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
         fc.record({
           contractAddress: fc
             .string({ minLength: 42, maxLength: 42 })
-            .map((s) => `0x${s.slice(2).padStart(40, '0')}` as Address),
+            .map((s) => `0x${s}` as Address),
           userAddress: fc
             .string({ minLength: 42, maxLength: 42 })
-            .map((s) => `0x${s.slice(2).padStart(40, '0')}` as Address),
+            .map((s) => `0x${s}` as Address),
           enabled: fc.boolean(),
           expectedValue: fc.bigInt({ min: 0n, max: 1000000n }),
         }),
@@ -390,10 +390,10 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
         fc.record({
           contractAddress: fc
             .string({ minLength: 42, maxLength: 42 })
-            .map((s) => `0x${s.slice(2).padStart(40, '0')}` as Address),
+            .map((s) => `0x${s}` as Address),
           userAddress: fc
             .string({ minLength: 42, maxLength: 42 })
-            .map((s) => `0x${s.slice(2).padStart(40, '0')}` as Address),
+            .map((s) => `0x${s}` as Address),
         }),
         async ({ contractAddress, userAddress }) => {
           mockReadContractAttempts = 0;
