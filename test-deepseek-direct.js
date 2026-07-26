@@ -8,8 +8,24 @@
 console.log('🧪 Direct DeepSeek API Test');
 console.log('==========================');
 
-// Load environment
-require('dotenv').config({ path: './backend/.env' });
+// Load environment from the backend .env file manually
+const fs = require('fs');
+const path = require('path');
+
+try {
+  const envPath = path.join(__dirname, 'backend', '.env');
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  
+  // Parse env file
+  envContent.split('\n').forEach(line => {
+    if (line.trim() && !line.startsWith('#')) {
+      const [key, ...valueParts] = line.split('=');
+      process.env[key] = valueParts.join('=').trim();
+    }
+  });
+} catch (error) {
+  console.log('Error loading .env file:', error.message);
+}
 
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
