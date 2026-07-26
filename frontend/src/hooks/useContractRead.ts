@@ -196,7 +196,7 @@ export function usePortfolioValue(
     address: contractAddress,
     abi,
     functionName: 'portfolioValue',
-    args: userAddress ? [userAddress] : undefined,
+    args: userAddress ? [userAddress] : [],
     enabled: enabled && !!userAddress,
     queryKey: ['portfolio', userAddress || ''],
   }) as ContractReadState<bigint>;
@@ -215,7 +215,7 @@ export function useReputationScore(
     address: contractAddress,
     abi,
     functionName: 'getReputationScore',
-    args: userAddress ? [userAddress] : undefined,
+    args: userAddress ? [userAddress] : [],
     enabled: enabled && !!userAddress,
     queryKey: ['reputation', userAddress || ''],
   }) as ContractReadState<bigint>;
