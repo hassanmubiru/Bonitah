@@ -41,7 +41,7 @@ const USDC_TOKEN = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 ## What Makes This "Real"
 
-### ✅ Real Financial Operations
+### Real Financial Operations
 
 1. **Deposits**: Transfer real USDC from user wallet to SavingsVault contract
 2. **Withdrawals**: Transfer real USDC from contract back to user wallet
@@ -49,7 +49,7 @@ const USDC_TOKEN = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 4. **Community Pools**: Pool real USDC with other users in transparent contracts
 5. **Governance**: Use real on-chain reputation to vote on proposals
 
-### ✅ Real Blockchain Interactions
+### Real Blockchain Interactions
 
 1. **Wallet Connection**: RainbowKit connects to real Base Sepolia network
 2. **Transaction Signing**: All state changes require MetaMask/wallet signature
