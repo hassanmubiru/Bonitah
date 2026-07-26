@@ -48,7 +48,7 @@ import { useAdminData } from '@/hooks/useAdminData';
  */
 export default function AdminPage() {
   const { isAuthenticated, isLoading: authLoading, role } = useSiweAuth();
-  const { isOnCorrectNetwork, isConnected } = useAuthGuard();
+  const { isOnCorrectNetwork } = useAuthGuard();
   const {
     systemHealth,
     analytics,
