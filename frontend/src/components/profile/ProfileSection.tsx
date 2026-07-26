@@ -78,8 +78,8 @@ export function ProfileSection({
         <ProfileInfo userAddress={userAddress as `0x${string}`} profileData={null} />
       )}
 
-      <VerificationStatus userAddress={userAddress} />
-      <ReputationDisplay userAddress={userAddress} />
+      <VerificationStatus userAddress={userAddress as `0x${string}`} />
+      <ReputationDisplay userAddress={userAddress as `0x${string}`} />
 
       {onToggleEdit && (
         <button data-testid="profile-edit-toggle" onClick={onToggleEdit}>
