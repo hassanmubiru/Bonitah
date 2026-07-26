@@ -465,4 +465,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Next.js**: For the powerful React framework
 - **Foundry**: For the best-in-class Solidity tooling
 
-Built with ❤️ by the BFN team
+Built with care by the BFN team
