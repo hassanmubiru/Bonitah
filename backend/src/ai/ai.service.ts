@@ -338,7 +338,7 @@ Remember: You are an educational assistant powered by ${providerName}, not a tra
     provider: AIProvider,
     messages: ChatMessage[],
     timeoutMs: number,
-  ): Promise<{ content: string; tokensUsed?: number; model?: string }> {
+  ): Promise<{ content: string; tokensUsed?: number | undefined; model?: string }> {
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
         reject(new Error(`AI provider ${provider.name} request timeout`));
