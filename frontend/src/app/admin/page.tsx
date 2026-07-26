@@ -100,17 +100,6 @@ export default function AdminPage() {
       </div>
     );
   }
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Alert variant="destructive" className="max-w-md">
-          <Shield className="h-4 w-4" />
-          <AlertDescription>
-            Access Denied: Admin privileges required to access this page.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
 
   const handleUserAction = async (userId: string, action: string) => {
     try {
