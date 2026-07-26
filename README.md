@@ -450,13 +450,13 @@ forge build
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Base**: For providing the Layer 2 infrastructure
 - **OpenZeppelin**: For secure smart contract primitives
