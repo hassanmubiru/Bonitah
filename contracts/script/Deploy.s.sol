@@ -68,19 +68,10 @@ contract Deploy is Script {
         // Additional role configurations can be added here
     }
     
-    function _outputDeploymentInfo() internal view {
+    function _outputDeploymentInfo() internal pure {
         console.log("");
-        console.log("=== DEPLOYMENT SUMMARY ===");
-        console.log("Chain ID:", block.chainid);
-        console.log("Block number:", block.number);
-        console.log("Token address:", address(token));
-        console.log("");
-        console.log("Contract addresses:");
-        console.log("Registry:         ", registryProxy);
-        console.log("SavingsVault:     ", savingsVaultProxy);
-        console.log("CommunityTreasury:", communityTreasuryProxy);
-        console.log("Education:        ", educationProxy);
-        console.log("Governance:       ", governanceProxy);
+        console.log("=== DEPRECATED SCRIPT ===");
+        console.log("This script cannot be used. Use DeployBaseSepolia.s.sol instead.");
         console.log("");
     }
     
