@@ -11,7 +11,6 @@ import { parseUnits, formatUnits } from 'viem';
 import {
   getContractAddress,
   BASE_SEPOLIA_CHAIN_ID,
-  savingsVaultAbi,
 } from '@bfn/shared';
 
 import { useContractRead } from './useContractRead';
