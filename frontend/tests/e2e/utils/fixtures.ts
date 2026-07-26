@@ -36,7 +36,7 @@ type WorkerFixtures = {
  */
 export const test = base.extend<TestFixtures, WorkerFixtures>({
   // Mock wallet fixture - sets up a connected wallet by default
-  mockWallet: async ({ page }, use, testInfo) => {
+  mockWallet: async ({ page }, use, _testInfo) => {
     const mockWallet = new MockWallet(page, WALLET_CONFIGS.CONNECTED_BASE_SEPOLIA);
     await mockWallet.inject();
     await use(mockWallet);
