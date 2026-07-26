@@ -176,6 +176,13 @@ export class AIProviderFactory {
       }
     }
 
+    // Check Ollama
+    configured.push('Ollama'); // Always show as configured since it doesn't need API keys
+    const ollamaProvider = await this.createOllamaProvider();
+    if (ollamaProvider && await ollamaProvider.validateCredentials()) {
+      available.push('Ollama');
+    }
+
     let selected = 'None';
     try {
       const provider = await this.getProvider();
