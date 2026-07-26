@@ -240,7 +240,7 @@ export default function AdminPage() {
                   </Button>
                   <Button variant="outline" size="sm">
                     <Filter className="h-4 w-4 mr-2" />
-                    Status: {statusFilter || 'All'}
+                    Status: All
                   </Button>
                   <Button variant="outline" size="sm">
                     <Download className="h-4 w-4 mr-2" />
