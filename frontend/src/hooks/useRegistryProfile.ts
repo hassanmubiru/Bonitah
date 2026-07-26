@@ -42,15 +42,11 @@ export function useRegistryProfile() {
 
   // Read profile from Registry contract
   const { data: profileData, isLoading: contractLoading, refetch } = useContractRead({
-    address: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS as `0x${string}`,
+    address: process.env['NEXT_PUBLIC_REGISTRY_ADDRESS'] as `0x${string}`,
     abi: registryABI,
     functionName: 'getProfile',
-    args: address ? [address] : undefined,
+    args: address ? [address] : [],
     enabled: !!address && isConnected,
-    onError: (error) => {
-      console.error('Failed to read profile:', error);
-      setError('Failed to load profile data');
-    },
   });
 
   // Read reputation from Registry contract
