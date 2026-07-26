@@ -281,12 +281,12 @@ contract DeployFullOnChain is Script {
         console.log("USDC Token:         %s (REAL Circle USDC)", REAL_USDC_ADDRESS);
         console.log("");
         console.log("=== PLATFORM FEATURES ===");
-        console.log("✅ Fully decentralized backend");
-        console.log("✅ On-chain course management");
-        console.log("✅ On-chain chat history");
-        console.log("✅ On-chain event indexing");
-        console.log("✅ Real USDC integration");
-        console.log("✅ Zero off-chain dependencies");
+        console.log("- Fully decentralized backend");
+        console.log("- On-chain course management");
+        console.log("- On-chain chat history");
+        console.log("- On-chain event indexing");
+        console.log("- Real USDC integration");
+        console.log("- Zero off-chain dependencies");
         console.log("");
         
         // Update command for shared package
