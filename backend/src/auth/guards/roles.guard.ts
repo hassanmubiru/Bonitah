@@ -5,9 +5,8 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { Request } from 'express';
 
-import type { Role } from '../auth.types';
+import type { AuthenticatedRequest, Role } from '../auth.types';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
 /**

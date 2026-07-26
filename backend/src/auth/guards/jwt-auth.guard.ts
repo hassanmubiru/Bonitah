@@ -7,7 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 
-import type { AuthenticatedUser } from '../auth.types';
+import type { AuthenticatedUser, AuthenticatedRequest } from '../auth.types';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { TokenService } from '../token.service';
 
@@ -38,7 +38,7 @@ export class JwtAuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const token = extractBearerToken(request.headers.authorization);
     if (!token) {
       throw new UnauthorizedException('Valid authentication is required');
