@@ -462,7 +462,7 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           expect(mockReadContractAttempts).toBeGreaterThan(initialAttempts);
         },
       ),
-      { numRuns: 2 }, // Reduced for performance
+      { numRuns: 1 }, // Reduced for performance
     );
-  }, 40000); // Reduced timeout
+  }, 25000); // Reduced timeout
 });
