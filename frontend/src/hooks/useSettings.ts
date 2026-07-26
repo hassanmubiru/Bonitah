@@ -130,7 +130,7 @@ export function useSettings() {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [lastSavedSettings, setLastSavedSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  const [, setLastSavedSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
 
   /**
    * Load settings from localStorage on mount
