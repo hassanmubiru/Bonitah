@@ -62,8 +62,6 @@ export default function AdminPage() {
   } = useAdminData();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
 
   // Block unauthorized access
   if (authLoading) {
