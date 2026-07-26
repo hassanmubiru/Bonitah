@@ -54,7 +54,7 @@ contract Deploy is Script {
         revert("Use DeployBaseSepolia.s.sol for production deployment with real USDC");
     }
     
-    function _configurePermissions(address deployer) internal {
+    function _configurePermissions(address /* deployer */) internal {
         console.log("Configuring cross-contract permissions...");
         
         // Grant REPUTATION_ROLE to Education contract on Registry
