@@ -128,16 +128,20 @@ contract VerifyDeployment is Script {
     function _verifyToken() internal view {
         console.log("Verifying Token...");
         
-        MockERC20 token = MockERC20(TOKEN_ADDRESS);
+        // DEPRECATED: MockERC20 token verification - Use real USDC in production
+        // MockERC20 token = MockERC20(TOKEN_ADDRESS);
         
-        string memory name = token.name();
-        string memory symbol = token.symbol();
-        uint8 decimals = token.decimals();
+        // Use IERC20 interface for real tokens
+        IERC20 token = IERC20(TOKEN_ADDRESS);
+        
+        // string memory name = token.name();
+        // string memory symbol = token.symbol();
+        // uint8 decimals = token.decimals();
         uint256 totalSupply = token.totalSupply();
         
-        console.log("  Name:", name);
-        console.log("  Symbol:", symbol);
-        console.log("  Decimals:", decimals);
+        // console.log("  Name:", name);
+        // console.log("  Symbol:", symbol);
+        // console.log("  Decimals:", decimals);
         console.log("  Total supply:", totalSupply);
         
         require(decimals == 6, "Token: Invalid decimals");
