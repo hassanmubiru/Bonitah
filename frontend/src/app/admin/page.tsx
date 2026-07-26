@@ -54,7 +54,6 @@ export default function AdminPage() {
     analytics,
     users,
     auditLog,
-    isLoading,
     error,
     updateUser,
     deleteUser,
