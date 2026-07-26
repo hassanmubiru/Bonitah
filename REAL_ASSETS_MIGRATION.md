@@ -19,13 +19,13 @@ BFN has been updated to use **REAL financial assets** instead of mock tokens or 
 - **Network Configuration**: Base Sepolia (Chain ID 84532) with real token integration
 - **Address Validation**: Added safety checks to prevent zero address usage
 
-### 📚 Documentation Updates
+### Documentation Updates
 
 - **README Updated**: Added "Real Asset Integration" section explaining USDC usage
 - **Real Assets Guide**: New comprehensive guide at `docs/REAL_ASSETS_INTEGRATION.md`
 - **Migration Guide**: This document explaining changes made
 
-### 🧪 Test Preservation
+### Test Preservation
 
 - **Test Infrastructure Maintained**: All tests continue using appropriate mocking at the hook/service level
 - **No Placeholder Values**: Tests verify that no financial placeholders (`$0`, `0.00`, etc.) are ever shown
