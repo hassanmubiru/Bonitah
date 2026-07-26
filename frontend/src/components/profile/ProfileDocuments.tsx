@@ -67,7 +67,7 @@ export function ProfileDocuments({
 
     const files = documents.map((doc) => {
       // Convert document back to File object for upload
-      return new File([''], doc.name, { type: doc.type });
+      return new (globalThis as any).File([''], doc.name, { type: doc.type }) as File;
     });
 
     try {
