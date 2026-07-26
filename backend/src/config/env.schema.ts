@@ -55,8 +55,14 @@ export const envSchema = z.object({
   /** DeepSeek API base URL. */
   DEEPSEEK_BASE_URL: z.string().url().default('https://api.deepseek.com'),
 
-  /** AI Provider selection: 'openai', 'deepseek', or 'auto' */
-  AI_PROVIDER: z.enum(['openai', 'deepseek', 'auto']).default('auto'),
+  /** Ollama base URL for local AI models. */
+  OLLAMA_BASE_URL: z.string().url().default('http://localhost:11434'),
+
+  /** Ollama model name to use. */
+  OLLAMA_MODEL: z.string().default('llama3.1:8b'),
+
+  /** AI Provider selection: 'openai', 'deepseek', 'ollama', or 'auto' */
+  AI_PROVIDER: z.enum(['openai', 'deepseek', 'ollama', 'auto']).default('auto'),
 
   /** Pinata JWT for IPFS uploads (Req 3.5, 8.4). */
   PINATA_JWT: z.string().optional(),
