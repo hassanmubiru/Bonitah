@@ -128,8 +128,8 @@ contract VerifyDeployment is Script {
     function _verifyToken() internal view {
         console.log("Verifying Token...");
         
-        // DEPRECATED: MockERC20 token verification - Use real USDC in production
-        // MockERC20 token = MockERC20(TOKEN_ADDRESS);
+        // REMOVED: MockERC20 token verification - Using real USDC only
+        // Real USDC validation handled in deployment scripts
         
         // Use IERC20 interface for real tokens
         IERC20 token = IERC20(TOKEN_ADDRESS);
