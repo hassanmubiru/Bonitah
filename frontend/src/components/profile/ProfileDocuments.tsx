@@ -71,7 +71,8 @@ export function ProfileDocuments({
     });
 
     try {
-      const cids = await uploadDocuments(files);
+      // Upload files one by one since we only have uploadDocument (singular)
+      const cids = await Promise.all(files.map(file => uploadDocument(file)));
 
       // Update documents with CIDs
       setDocuments((prev) =>
