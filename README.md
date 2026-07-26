@@ -109,7 +109,7 @@ cd contracts && forge test --watch
 
 ---
 
-## 🛠️ Development Workflow
+## Development Workflow
 
 ### Workspace Scripts
 
