@@ -37,8 +37,13 @@ export function useProfileUpdate(): UseProfileUpdateResult {
   const { writeContract } = useWriteContract();
 
   const updateProfile = async (profileData: IPFSProfileContent): Promise<void> => {
-    if (!address || !token) {
+    if (!address || !isAuthenticated) {
       throw new Error('Wallet connection and authentication required');
+    }
+
+    const token = localStorage.getItem('bfn-auth-token');
+    if (!token) {
+      throw new Error('Authentication token not found');
     }
 
     setIsUpdating(true);
