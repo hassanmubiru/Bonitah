@@ -40,14 +40,14 @@ export const DEPLOYMENTS: Readonly<Record<SupportedChainId, NetworkDeployment>> 
   [BASE_SEPOLIA_CHAIN_ID]: {
     chainId: BASE_SEPOLIA_CHAIN_ID,
     contracts: {
-      Registry: '0xC37319a9ca70AA581b96b96ddb79eb19C2B391C5',
-      SavingsVault: '0x75517c778C77628a5c0D4BBA7398520Da8849eB0',
-      CommunityTreasury: '0x07E19c706cf7e77AFd215A6FEf136B3b8a62EEbe',
-      Education: '0x0806ebCbD047A9a264027C2a31693FF26a69b3ff',
-      Governance: '0xAB48386f4306b1E356d02456E9Ecf6e74CAfA76B',
+      Registry: '0xc37319a9ca70aa581b96b96ddb79eb19c2b391c5',
+      SavingsVault: '0x75517c778c77628a5c0d4bba7398520da8849eb0',
+      CommunityTreasury: '0x07e19c706cf7e77afd215a6fef136b3b8a62eebe',
+      Education: '0x0806ebcbd047a9a264027c2a31693ff26a69b3ff',
+      Governance: '0xab48386f4306b1e356d02456e9ecf6e74cafa76b',
     },
-    token: '0x4FD1403945341786DBa53e31156C2dEdee40Ef34',
-    deployedAtBlock: 44629013n,
+    token: '0x4fd1403945341786dba53e31156c2dedee40ef34',
+    deployedAtBlock: 44629468n,
   },
 } as const;
 

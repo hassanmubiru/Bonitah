@@ -2,31 +2,30 @@
   "chainId": 84532,
   "network": "Base Sepolia",
   "deployedAt": {
-    "block": 44629013,
-    "timestamp": 1785026314
+    "block": 44629468,
+    "timestamp": 1785027331
   },
-  "deployer": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
   "contracts": {
     "Registry": {
-      "proxy": "0xC37319a9ca70AA581b96b96ddb79eb19C2B391C5",
-      "implementation": "0x3CaC459c3b4013AEb64Cc60501498D441e025104"
+      "proxy": "0xc37319a9ca70aa581b96b96ddb79eb19c2b391c5",
+      "implementation": "recorded separately"
     },
     "SavingsVault": {
-      "proxy": "0x75517c778C77628a5c0D4BBA7398520Da8849eB0",
-      "implementation": "0x8d2f43c7D0ea45E6492eE075B2031AB28E83eCd1"
+      "proxy": "0x75517c778c77628a5c0d4bba7398520da8849eb0",
+      "implementation": "recorded separately"
     },
     "CommunityTreasury": {
-      "proxy": "0x07E19c706cf7e77AFd215A6FEf136B3b8a62EEbe",
-      "implementation": "0x4AAaCC58066Eb11E19E4B43C5c9ff6c1DD880D63"
+      "proxy": "0x07e19c706cf7e77afd215a6fef136b3b8a62eebe",
+      "implementation": "recorded separately"
     },
     "Education": {
-      "proxy": "0x0806ebCbD047A9a264027C2a31693FF26a69b3ff",
-      "implementation": "0xc7B76755d433D084a1d91312c6192Fb41e74F172"
+      "proxy": "0x0806ebcbd047a9a264027c2a31693ff26a69b3ff",
+      "implementation": "recorded separately"
     },
     "Governance": {
-      "proxy": "0xAB48386f4306b1E356d02456E9Ecf6e74CAfA76B",
-      "implementation": "0xd216a50F4DE6985F2759709E8d505Cff486c9474"
+      "proxy": "0xab48386f4306b1e356d02456e9ecf6e74cafa76b",
+      "implementation": "recorded separately"
     }
   },
-  "token": "0x4FD1403945341786DBa53e31156C2dEdee40Ef34"
+  "token": "0x4fd1403945341786dba53e31156c2dedee40ef34"
 }
