@@ -19,7 +19,7 @@ export class MockWallet {
         // Mock ethereum provider
         (window as any).ethereum = {
           isMetaMask: true,
-          request: async ({ method, params }: any) => {
+          request: async ({ method }: any) => {
             switch (method) {
               case 'eth_requestAccounts':
                 return [address];
