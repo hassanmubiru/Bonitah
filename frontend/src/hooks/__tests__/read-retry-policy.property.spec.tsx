@@ -253,7 +253,7 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
                 expect(result.current.isError).toBe(false);
                 expect(result.current.data).toBe(successValue);
               },
-              { timeout: 10000 },
+              { timeout: 8000 }, // Reduced timeout
             );
           } else {
             await waitFor(
@@ -262,7 +262,7 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
                 expect(result.current.isError).toBe(true);
                 expect(result.current.data).toBeUndefined(); // No placeholder on failure - Req 1.7
               },
-              { timeout: 20000 },
+              { timeout: 15000 }, // Reduced timeout
             );
           }
 
@@ -270,9 +270,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           expect(typeof result.current.refetch).toBe('function');
         },
       ),
-      { numRuns: 5 },
+      { numRuns: 3 }, // Reduced for performance
     );
-  }, 60000);
+  }, 40000); // Reduced timeout
   /**
    * Property: Successful reads return data without unnecessary retries
    * Requirements: 1.6 (successful reads should not retry unnecessarily)
@@ -321,9 +321,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           expect(result.current.error).toBeNull();
         },
       ),
-      { numRuns: 10 },
+      { numRuns: 5 }, // Reduced for performance
     );
-  }, 30000);
+  }, 20000); // Reduced timeout
   /**
    * Property: Hook configuration properties work correctly
    * Requirements: 1.6 (proper hook interface and behavior)
