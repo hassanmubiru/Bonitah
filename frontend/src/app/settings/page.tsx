@@ -141,7 +141,7 @@ export default function SettingsPage() {
               {/* Theme Selection */}
               <div className="space-y-2">
                 <Label htmlFor="theme-select">Theme Mode</Label>
-                <Select value={theme} onValueChange={setTheme}>
+                <Select value={theme || 'system'} onValueChange={setTheme}>
                   <SelectTrigger id="theme-select">
                     <SelectValue placeholder="Select theme" />
                   </SelectTrigger>
