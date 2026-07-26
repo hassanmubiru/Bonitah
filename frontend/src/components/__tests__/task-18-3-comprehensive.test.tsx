@@ -25,6 +25,62 @@ import { ThemeToggle } from '../theme-toggle';
 
 expect.extend(toHaveNoViolations);
 
+// Mock next-themes with actual DOM manipulation
+jest.mock('next-themes', () => {
+  const React = require('react');
+  
+  const mockThemeContext = {
+    theme: 'light',
+    setTheme: jest.fn(),
+    resolvedTheme: 'light',
+    systemTheme: 'light',
+  };
+
+  return {
+    ThemeProvider: ({ children, defaultTheme, storageKey }: any) => {
+      const [currentTheme, setCurrentTheme] = React.useState(defaultTheme || 'light');
+      
+      // Apply theme class to document element
+      React.useEffect(() => {
+        document.documentElement.className = currentTheme === 'dark' ? 'dark' : '';
+        
+        // Store in localStorage if storageKey is provided
+        if (storageKey) {
+          localStorage.setItem(storageKey, currentTheme);
+        }
+      }, [currentTheme, storageKey]);
+
+      const contextValue = {
+        ...mockThemeContext,
+        theme: currentTheme,
+        resolvedTheme: currentTheme,
+        setTheme: (theme: string) => {
+          setCurrentTheme(theme);
+          mockThemeContext.theme = theme;
+          mockThemeContext.resolvedTheme = theme;
+          // Apply class immediately for tests
+          document.documentElement.className = theme === 'dark' ? 'dark' : '';
+          
+          // Store in localStorage
+          if (storageKey) {
+            localStorage.setItem(storageKey, theme);
+          }
+        },
+      };
+
+      return React.createElement(
+        React.createContext(contextValue).Provider,
+        { value: contextValue },
+        children
+      );
+    },
+    useTheme: () => {
+      const context = React.useContext(React.createContext(mockThemeContext));
+      return context || mockThemeContext;
+    },
+  };
+});
+
 // Mock next/link
 jest.mock('next/link', () => {
   return function MockLink({
