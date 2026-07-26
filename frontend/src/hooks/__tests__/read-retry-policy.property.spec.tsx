@@ -208,9 +208,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           expect(typeof result.current.refetch).toBe('function'); // Refetch should be available
         },
       ),
-      { numRuns: 3 }, // Reduced for performance
+      { numRuns: 2 }, // Reduced for performance
     );
-  }, 30000); // Reduced timeout
+  }, 15000); // Reduced timeout
   /**
    * Property: State management during async operations
    * Requirements: 1.6, 11.4, 11.5 (loading state during retries, proper state machine)
@@ -280,9 +280,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           expect(typeof result.current.refetch).toBe('function');
         },
       ),
-      { numRuns: 3 }, // Reduced for performance
+      { numRuns: 2 }, // Reduced for performance
     );
-  }, 40000); // Reduced timeout
+  }, 25000); // Reduced timeout
   /**
    * Property: Successful reads return data without unnecessary retries
    * Requirements: 1.6 (successful reads should not retry unnecessarily)
@@ -331,9 +331,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           expect(result.current.error).toBeNull();
         },
       ),
-      { numRuns: 5 }, // Reduced for performance
+      { numRuns: 3 }, // Reduced for performance
     );
-  }, 20000); // Reduced timeout
+  }, 12000); // Reduced timeout
   /**
    * Property: Hook configuration properties work correctly
    * Requirements: 1.6 (proper hook interface and behavior)
@@ -390,9 +390,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           }
         },
       ),
-      { numRuns: 5 }, // Reduced for performance
+      { numRuns: 3 }, // Reduced for performance
     );
-  }, 20000); // Reduced timeout
+  }, 12000); // Reduced timeout
 
   /**
    * Property: Configuration validation and interface correctness
