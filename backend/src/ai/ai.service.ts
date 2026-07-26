@@ -4,11 +4,12 @@ import {
   BadRequestException,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { OpenAI } from 'openai';
 import { EnvService } from '../config/env.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChainReadService } from '../chain-read/chain-read.service';
+import { AIProviderFactory } from './providers/ai-provider.factory';
 import type { ContractName } from '@bfn/shared';
+import type { AIProvider, ChatMessage } from './providers/ai-provider.interface';
 
 /**
  * AI Assistant service for BFN financial guidance.
