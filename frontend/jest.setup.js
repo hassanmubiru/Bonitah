@@ -203,15 +203,7 @@ jest.mock('@/components/ui/tabs', () => ({
   ),
 }));
 
-// Mock settings hooks
-jest.mock('@/hooks/useSettingsManager', () => ({
-  useSettingsManager: jest.fn(() => ({
-    exportSettings: jest.fn(),
-    importSettings: jest.fn(),
-    resetSettings: jest.fn(),
-    isResetting: false,
-  })),
-}));
+// Settings hooks will use the real implementation to properly test localStorage integration
 
 // Mock settings sections
 jest.mock('@/components/settings/sections/ThemeSection', () => ({
