@@ -217,9 +217,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
       fc.asyncProperty(
         fc.record({
           contractAddress: fc
-            .string({ minLength: 42, maxLength: 42 })
+            .hexaString({ minLength: 40, maxLength: 40 })
             .map((s) => `0x${s}` as Address),
-          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map((s) => `0x${s}` as Address),
+          userAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}` as Address),
           errorType: fc.constantFrom(
             'network error', // Retryable
             'timeout error', // Retryable
@@ -271,9 +271,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
       fc.asyncProperty(
         fc.record({
           contractAddress: fc
-            .string({ minLength: 42, maxLength: 42 })
+            .hexaString({ minLength: 40, maxLength: 40 })
             .map((s) => `0x${s}` as Address),
-          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map((s) => `0x${s}` as Address),
+          userAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}` as Address),
           enabled: fc.boolean(),
           expectedValue: fc.bigInt({ min: 0n, max: 1000000n }),
         }),
@@ -328,9 +328,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
       fc.asyncProperty(
         fc.record({
           contractAddress: fc
-            .string({ minLength: 42, maxLength: 42 })
+            .hexaString({ minLength: 40, maxLength: 40 })
             .map((s) => `0x${s}` as Address),
-          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map((s) => `0x${s}` as Address),
+          userAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}` as Address),
           expectedValue: fc.bigInt({ min: 0n, max: 1000000n }),
         }),
         async ({ contractAddress, userAddress, expectedValue }) => {
@@ -373,9 +373,9 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
       fc.asyncProperty(
         fc.record({
           contractAddress: fc
-            .string({ minLength: 42, maxLength: 42 })
+            .hexaString({ minLength: 40, maxLength: 40 })
             .map((s) => `0x${s}` as Address),
-          userAddress: fc.string({ minLength: 42, maxLength: 42 }).map((s) => `0x${s}` as Address),
+          userAddress: fc.hexaString({ minLength: 40, maxLength: 40 }).map((s) => `0x${s}` as Address),
           recoveryValue: fc.bigInt({ min: 0n, max: 1000000n }),
         }),
         async ({ contractAddress, userAddress, recoveryValue }) => {
