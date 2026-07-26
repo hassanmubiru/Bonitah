@@ -195,7 +195,7 @@ pnpm watch                 # build in watch mode
 
 ---
 
-## 🌐 Environment Variables
+## Environment Variables
 
 ### Required Environment Variables
 
@@ -251,7 +251,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID="G-XXXXXXXXXX"
 
 ---
 
-## 🐳 Docker Development
+## Docker Development
 
 ### Full Stack with Docker Compose
 
