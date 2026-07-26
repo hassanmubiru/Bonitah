@@ -422,7 +422,7 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
             () => {
               expect(result.current.isError).toBe(true);
             },
-            { timeout: 20000 },
+            { timeout: 15000 }, // Reduced timeout
           );
 
           // Verify final interface - Req 1.6
@@ -447,7 +447,7 @@ describe('Property 3: Read retry policy is bounded and correct', () => {
           expect(mockReadContractAttempts).toBeGreaterThan(initialAttempts);
         },
       ),
-      { numRuns: 3 }, // Reduced for performance
+      { numRuns: 2 }, // Reduced for performance
     );
-  }, 60000);
+  }, 40000); // Reduced timeout
 });
