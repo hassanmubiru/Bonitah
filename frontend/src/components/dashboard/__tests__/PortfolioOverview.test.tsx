@@ -24,7 +24,7 @@ jest.mock('@/hooks/useContractRead', () => ({
 }));
 
 // Mock shared package
-jest.mock('@bfn/shared', () => ({
+jest.mock('@/lib/shared', () => ({
   getContractAddress: jest.fn().mockReturnValue('0x1234567890123456789012345678901234567890'),
   getContractAbi: jest.fn().mockReturnValue([]),
   BASE_SEPOLIA_CHAIN_ID: 84532,

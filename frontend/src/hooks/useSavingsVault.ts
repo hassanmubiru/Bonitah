@@ -11,7 +11,7 @@ import { parseUnits, formatUnits } from 'viem';
 import {
   getContractAddress,
   BASE_SEPOLIA_CHAIN_ID,
-} from '@bfn/shared';
+} from '@/lib/shared';
 
 import { useContractRead } from './useContractRead';
 

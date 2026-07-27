@@ -8,7 +8,7 @@ import { formatUnits } from 'viem';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
-import { PortfolioSeriesResponse } from '@bfn/shared';
+import { PortfolioSeriesResponse } from '@/lib/shared';
 
 interface PortfolioChartProps {
   userAddress: Address;

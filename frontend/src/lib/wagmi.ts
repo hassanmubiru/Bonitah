@@ -2,7 +2,7 @@ import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { http } from 'wagmi';
 import { baseSepolia } from 'wagmi/chains';
 
-import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
+import { BASE_SEPOLIA_CHAIN_ID } from '@/lib/shared';
 
 /**
  * wagmi + RainbowKit configuration for BFN.

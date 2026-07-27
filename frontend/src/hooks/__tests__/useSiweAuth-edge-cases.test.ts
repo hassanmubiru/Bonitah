@@ -12,7 +12,7 @@
 
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useSiweAuth, type AuthState } from '@/hooks/useSiweAuth';
-import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
+import { BASE_SEPOLIA_CHAIN_ID } from '@/lib/shared';
 
 // Mock wagmi hooks with controlled state
 interface MockWagmiAccount {

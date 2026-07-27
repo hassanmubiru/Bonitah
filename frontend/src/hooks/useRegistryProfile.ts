@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAccount, useContractWrite } from 'wagmi';
-import { getContractAbi } from '@bfn/shared';
+import { getContractAbi } from '@/lib/shared';
 import { useContractRead } from './useContractRead';
 
 /**

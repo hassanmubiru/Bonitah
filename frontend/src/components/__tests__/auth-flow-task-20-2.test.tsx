@@ -110,7 +110,7 @@ jest.mock('@rainbow-me/rainbowkit', () => ({
 
 // Mock BASE_SEPOLIA_CHAIN_ID
 const BASE_SEPOLIA_CHAIN_ID = 84532;
-jest.mock('@bfn/shared', () => ({
+jest.mock('@/lib/shared', () => ({
   BASE_SEPOLIA_CHAIN_ID: 84532,
   NETWORKS: {
     84532: {

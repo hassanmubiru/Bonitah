@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from 'react';
 import { useAccount, useSwitchChain } from 'wagmi';
 import { AlertCircle, Network } from 'lucide-react';
 
-import { BASE_SEPOLIA_CHAIN_ID, NETWORKS } from '@bfn/shared';
+import { BASE_SEPOLIA_CHAIN_ID, NETWORKS } from '@/lib/shared';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

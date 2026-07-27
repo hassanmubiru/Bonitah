@@ -14,7 +14,7 @@ import userEvent from '@testing-library/user-event';
 import { type Address } from 'viem';
 
 import { NetworkGuard } from '@/components/NetworkGuard';
-import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
+import { BASE_SEPOLIA_CHAIN_ID } from '@/lib/shared';
 
 // Mock wagmi hooks
 const mockSwitchChain = jest.fn();

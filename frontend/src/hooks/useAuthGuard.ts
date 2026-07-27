@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useAccount } from 'wagmi';
 
 import { useSiweAuth } from './useSiweAuth';
-import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
+import { BASE_SEPOLIA_CHAIN_ID } from '@/lib/shared';
 
 /**
  * Authentication guard hook that manages authentication state.

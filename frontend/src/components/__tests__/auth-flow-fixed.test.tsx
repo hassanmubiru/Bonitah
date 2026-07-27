@@ -14,7 +14,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
+import { BASE_SEPOLIA_CHAIN_ID } from '@/lib/shared';
 
 // Mock Next.js router
 const mockPush = jest.fn();

@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
-import { TransactionsResponse } from '@bfn/shared';
+import { TransactionsResponse } from '@/lib/shared';
 
 interface RecentTransactionsProps {
   userAddress: Address;
