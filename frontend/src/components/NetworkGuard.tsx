@@ -30,7 +30,7 @@ export function NetworkGuard({ children, onNetworkSwitched }: NetworkGuardProps)
   const { switchChain, isPending: isSwitching, error: switchError } = useSwitchChain();
 
   const isOnCorrectNetwork = chainId === BASE_SEPOLIA_CHAIN_ID;
-  const networkConfig = NETWORKS[BASE_SEPOLIA_CHAIN_ID];
+  const networkConfig = NETWORKS.baseSepolia;
 
   // Auto-switch to Base Sepolia when wallet connects on wrong network
   useEffect(() => {
