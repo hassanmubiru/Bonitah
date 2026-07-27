@@ -66,7 +66,7 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
   } = useContractRead({
     address: savingsVaultAddress,
     abi: savingsVaultAbi,
-    functionName: 'getLockedTotal',
+    functionName: 'lockedTotal',
     args: [userAddress],
     enabled: contractsDeployed,
   });
