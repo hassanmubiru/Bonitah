@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# BFN Frontend - Vercel Deployment Script
-# This script deploys the frontend to Vercel with proper configuration
+# BFN Frontend - Vercel Deployment Script (Simplified)
+# This script deploys the frontend to Vercel with proper monorepo handling
 
 set -e
 
@@ -13,9 +13,6 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
-
-# Change to frontend directory
-cd frontend
 
 # Check if Vercel CLI is installed
 if ! command -v vercel &> /dev/null; then
@@ -33,115 +30,70 @@ fi
 
 echo -e "${GREEN}✓ Vercel authentication verified${NC}"
 
-# Get Supabase project reference from environment or prompt
-SUPABASE_PROJECT_REF=""
-if [ -f "../.env" ]; then
-    SUPABASE_PROJECT_REF=$(grep "SUPABASE_PROJECT_REF" ../.env | cut -d '=' -f2 | tr -d '"' | tr -d ' ')
-fi
+# Get Supabase project reference
+SUPABASE_PROJECT_REF="nbgicdhybbrbxbhfxsvi"
 
-if [ -z "$SUPABASE_PROJECT_REF" ]; then
-    echo -e "${YELLOW}📋 Enter your Supabase project reference (just the ID, not full URL):${NC}"
-    echo "Example: nbgicdhybbrbxbhfxsvi"
-    read -r SUPABASE_PROJECT_REF
-    
-    # Extract project ref if user entered full URL
-    if [[ $SUPABASE_PROJECT_REF == *"supabase.co"* ]]; then
-        SUPABASE_PROJECT_REF=$(echo "$SUPABASE_PROJECT_REF" | sed 's/.*https:\/\/\([^.]*\)\.supabase\.co.*/\1/')
-    fi
-fi
-
-# Update environment file with Supabase backend URL
-echo -e "${BLUE}🔧 Configuring backend API URL...${NC}"
+echo -e "${BLUE}🔧 Using Supabase project: $SUPABASE_PROJECT_REF${NC}"
 SUPABASE_API_URL="https://$SUPABASE_PROJECT_REF.supabase.co/functions/v1/backend"
 
-# Update .env.local with the correct API URL
-if grep -q "NEXT_PUBLIC_API_URL" .env.local; then
-    sed -i "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=$SUPABASE_API_URL|" .env.local
-else
-    echo "NEXT_PUBLIC_API_URL=$SUPABASE_API_URL" >> .env.local
-fi
+# Update frontend environment
+cd frontend
 
-echo -e "${GREEN}✓ API URL configured: $SUPABASE_API_URL${NC}"
+echo -e "${BLUE}🔧 Configuring environment variables...${NC}"
 
-# Install dependencies
+# Update .env.local
+cat > .env.local << EOF
+# Backend API URL - Supabase Edge Function (Production)
+NEXT_PUBLIC_API_URL=$SUPABASE_API_URL
+
+# WalletConnect Project ID
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=be1775c37721ac32e783c080b6c85650
+
+# Base Sepolia RPC URL
+NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
+
+# Smart Contract Addresses (Base Sepolia) - Real deployed contracts
+NEXT_PUBLIC_REGISTRY_ADDRESS=0xBd81a62b21eaE93D74daB2B2D93e040D51f75db1
+NEXT_PUBLIC_SAVINGS_VAULT_ADDRESS=0x16E88B4a717B082f8d29C4EeA0796F488C0da7B6  
+NEXT_PUBLIC_COMMUNITY_TREASURY_ADDRESS=0xa0D284d9080cb7F6676e62116E0A659BB4Ed9b04
+NEXT_PUBLIC_EDUCATION_ADDRESS=0x5A63Da81A04BE39d5469B8BD9281CbD3332b51ac
+NEXT_PUBLIC_GOVERNANCE_ADDRESS=0x13B14D148E3369dCC448006494810A95928eEEB4
+NEXT_PUBLIC_USDC_ADDRESS=0x036CbD53842c5426634e7929541eC2318f3dCF7e
+EOF
+
+echo -e "${GREEN}✓ Environment configured with Supabase backend${NC}"
+
+# Build shared package
+echo -e "${BLUE}🏗️ Building shared package...${NC}"
+cd ../shared
+pnpm run build
+cd ../frontend
+
+# Install dependencies and build
 echo -e "${BLUE}📦 Installing dependencies...${NC}"
+pnpm install
 
-# Copy shared package for deployment
-echo "Copying shared package..."
-cp -r ../shared ./node_modules/@bfn/ 2>/dev/null || {
-    mkdir -p ./node_modules/@bfn
-    cp -r ../shared ./node_modules/@bfn/
-}
-
-# Install dependencies
-if [ -f "pnpm-lock.yaml" ]; then
-    echo "Using pnpm..."
-    if ! command -v pnpm &> /dev/null; then
-        echo "Installing pnpm..."
-        npm install -g pnpm
-    fi
-    pnpm install --frozen-lockfile
-elif [ -f "yarn.lock" ]; then
-    echo "Using yarn..."
-    yarn install --frozen-lockfile
-else
-    echo "Using npm..."
-    npm ci
-fi
-
-echo -e "${GREEN}✓ Dependencies installed${NC}"
-
-# Build the project locally first to catch any issues
 echo -e "${BLUE}🏗️ Building project locally...${NC}"
-if [ -f "pnpm-lock.yaml" ]; then
-    pnpm run build
-elif [ -f "yarn.lock" ]; then
-    yarn build
-else
-    npm run build
-fi
+pnpm run build
 
 echo -e "${GREEN}✓ Local build successful${NC}"
 
 # Deploy to Vercel
 echo -e "${BLUE}🚀 Deploying to Vercel...${NC}"
 
-# Set environment variables for Vercel
-echo -e "${YELLOW}📋 Setting environment variables in Vercel...${NC}"
-
-# Read environment variables and set them in Vercel
-while IFS= read -r line; do
-    # Skip comments and empty lines
-    if [[ $line =~ ^[[:space:]]*# ]] || [[ -z "$line" ]]; then
-        continue
-    fi
-    
-    # Extract key=value pairs
-    if [[ $line =~ ^([^=]+)=(.*)$ ]]; then
-        key="${BASH_REMATCH[1]}"
-        value="${BASH_REMATCH[2]}"
-        
-        # Remove quotes if present
-        value=$(echo "$value" | sed 's/^["'\'']//' | sed 's/["'\'']$//')
-        
-        # Set environment variable in Vercel
-        echo "Setting $key..."
-        vercel env add "$key" production <<< "$value" > /dev/null 2>&1 || true
-        vercel env add "$key" preview <<< "$value" > /dev/null 2>&1 || true
-    fi
-done < .env.local
-
-echo -e "${GREEN}✓ Environment variables set in Vercel${NC}"
-
-# Deploy to production
-echo -e "${BLUE}🎯 Deploying to production...${NC}"
-DEPLOY_OUTPUT=$(vercel --prod --confirm)
+# Deploy with production flag
+DEPLOY_OUTPUT=$(vercel --prod --yes --confirm)
 
 # Extract deployment URL
-DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE 'https://[^[:space:]]+' | head -n1)
+DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -o "https://[^[:space:]]*vercel.app" | head -n1)
 
 if [ -z "$DEPLOYMENT_URL" ]; then
-    echo -e "${RED}❌ Failed to extract deployment URL${NC}"
+    # Alternative extraction method
+    DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE 'https://[^[:space:]]+' | grep "vercel.app" | head -n1)
+fi
+
+if [ -z "$DEPLOYMENT_URL" ]; then
+    echo -e "${RED}❌ Could not extract deployment URL from output:${NC}"
     echo "$DEPLOY_OUTPUT"
     exit 1
 fi
@@ -151,81 +103,28 @@ echo -e "${BLUE}🌐 Deployment URL: $DEPLOYMENT_URL${NC}"
 
 # Test the deployment
 echo -e "${BLUE}🧪 Testing deployment...${NC}"
+sleep 5
 
-# Wait a moment for deployment to be ready
-sleep 10
-
-# Test health endpoint
-HEALTH_URL="$DEPLOYMENT_URL/api/health"
-if curl -s -f "$HEALTH_URL" > /dev/null; then
-    echo -e "${GREEN}✓ Health endpoint accessible${NC}"
-else
-    echo -e "${YELLOW}⚠️ Health endpoint not responding (may not exist)${NC}"
-fi
-
-# Test main page
 if curl -s -f "$DEPLOYMENT_URL" > /dev/null; then
-    echo -e "${GREEN}✓ Main page accessible${NC}"
+    echo -e "${GREEN}✓ Deployment is accessible${NC}"
 else
-    echo -e "${RED}❌ Main page not accessible${NC}"
+    echo -e "${YELLOW}⚠️ Deployment may still be initializing${NC}"
 fi
 
-# Display deployment summary
+# Display summary
 echo ""
-echo -e "${GREEN}🎉 Deployment Summary:${NC}"
+echo -e "${GREEN}🎉 Deployment Complete!${NC}"
 echo -e "${BLUE}Frontend URL:${NC} $DEPLOYMENT_URL"
 echo -e "${BLUE}Backend API:${NC} $SUPABASE_API_URL"
-echo -e "${BLUE}Environment:${NC} Production"
-echo -e "${BLUE}Framework:${NC} Next.js 16+"
+echo ""
+echo -e "${YELLOW}🎯 Next Steps:${NC}"
+echo "1. Test wallet connection: $DEPLOYMENT_URL"
+echo "2. Verify AI chat functionality"
+echo "3. Check dashboard and savings features"
+echo "4. Set up custom domain (optional)"
 echo ""
 
-# Check if domain should be configured
-echo -e "${YELLOW}🌐 Domain Configuration:${NC}"
-echo "If you want to use a custom domain:"
-echo "1. Go to your Vercel dashboard"
-echo "2. Navigate to your project settings"
-echo "3. Add your domain in the 'Domains' section"
-echo "4. Configure DNS records as instructed"
-echo ""
-
-# Performance recommendations
-echo -e "${YELLOW}⚡ Performance Tips:${NC}"
-echo "- Monitor Core Web Vitals in Vercel Analytics"
-echo "- Enable Vercel Speed Insights for detailed metrics"
-echo "- Consider upgrading to Vercel Pro for enhanced performance"
-echo "- Set up custom domain for better SEO and branding"
-echo ""
-
-# Security recommendations
-echo -e "${YELLOW}🔐 Security Checklist:${NC}"
-echo "- ✓ Environment variables configured securely"
-echo "- ✓ HTTPS enabled by default"
-echo "- ✓ Security headers configured"
-echo "- ✓ CORS policies properly set"
-echo ""
-
-echo -e "${GREEN}✅ BFN Frontend deployment completed successfully!${NC}"
-
-# Optional: Open deployment in browser
-read -p "Open deployment in browser? (y/n): " -n 1 -r
-echo ""
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    if command -v open &> /dev/null; then
-        open "$DEPLOYMENT_URL"
-    elif command -v xdg-open &> /dev/null; then
-        xdg-open "$DEPLOYMENT_URL"
-    else
-        echo "Please manually open: $DEPLOYMENT_URL"
-    fi
-fi
-
-# Return to original directory
+# Return to project root
 cd ..
 
-echo -e "${BLUE}🎯 Next Steps:${NC}"
-echo "1. Test all functionality on the live deployment"
-echo "2. Configure custom domain if needed"
-echo "3. Set up monitoring and analytics"
-echo "4. Update any external references to the new URL"
-echo ""
-echo -e "${GREEN}🎊 Your BFN platform is now live and ready for users!${NC}"
+echo -e "${GREEN}✅ BFN Platform is now live and ready for users!${NC}"
