@@ -37,7 +37,7 @@ interface SavingsSummaryProps {
  * - Locked savings details with time remaining
  * - Proper loading/error/retry states
  */
-export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
+export function SavingsSummary({ userAddress: _userAddress }: SavingsSummaryProps) {
   const [mounted, setMounted] = useState(false);
   let savingsVaultAddress: Address;
   let savingsVaultAbi;
