@@ -123,7 +123,11 @@ export class AIProviderFactory {
    * Create Ollama provider if available.
    */
   private async createOllamaProvider(): Promise<AIProvider | null> {
-    const provider = new OllamaProvider(this.env.ollamaBaseUrl, this.env.ollamaModel);
+    const provider = new OllamaProvider(
+      this.env.ollamaBaseUrl, 
+      this.env.ollamaModel, 
+      this.env.ollamaApiKey
+    );
     
     if (!provider.isAvailable()) {
       this.logger.debug('Ollama not configured');

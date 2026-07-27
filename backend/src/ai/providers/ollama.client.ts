@@ -4,7 +4,7 @@ import { Logger } from '@nestjs/common';
  * Ollama API client for BFN AI assistant.
  * 
  * Provides a simple interface to Ollama's chat completions API
- * for local AI model inference.
+ * for local or cloud AI model inference.
  */
 export class OllamaClient {
   private readonly logger = new Logger(OllamaClient.name);
@@ -12,6 +12,7 @@ export class OllamaClient {
   constructor(
     private readonly baseUrl: string = 'http://localhost:11434',
     private readonly model: string = 'llama3.1:8b',
+    private readonly apiKey?: string,
   ) {}
 
   /**
@@ -48,14 +49,21 @@ export class OllamaClient {
       },
     };
 
+    // Build headers with optional API key for cloud service
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (this.apiKey) {
+      headers['Authorization'] = `Bearer ${this.apiKey}`;
+    }
+
     this.logger.debug(`Making Ollama API request to ${url}`);
 
     try {
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(requestBody),
       });
 
@@ -90,9 +98,16 @@ export class OllamaClient {
    */
   async validateAvailability(): Promise<boolean> {
     try {
+      // Build headers with optional API key
+      const headers: Record<string, string> = {};
+      if (this.apiKey) {
+        headers['Authorization'] = `Bearer ${this.apiKey}`;
+      }
+
       // First check if Ollama server is running
       const healthResponse = await fetch(`${this.baseUrl}/api/tags`, {
         method: 'GET',
+        headers,
       });
 
       if (!healthResponse.ok) {
@@ -131,7 +146,13 @@ export class OllamaClient {
    */
   async getAvailableModels(): Promise<string[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/tags`);
+      // Build headers with optional API key
+      const headers: Record<string, string> = {};
+      if (this.apiKey) {
+        headers['Authorization'] = `Bearer ${this.apiKey}`;
+      }
+
+      const response = await fetch(`${this.baseUrl}/api/tags`, { headers });
       if (!response.ok) {
         return [];
       }

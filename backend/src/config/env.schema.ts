@@ -58,6 +58,9 @@ export const envSchema = z.object({
   /** Ollama base URL for local AI models. */
   OLLAMA_BASE_URL: z.string().url().default('http://localhost:11434'),
 
+  /** Ollama API key for cloud service (optional). */
+  OLLAMA_API_KEY: z.string().optional(),
+
   /** Ollama model name to use. */
   OLLAMA_MODEL: z.string().default('llama3.1:8b'),
 

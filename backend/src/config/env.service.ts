@@ -92,6 +92,11 @@ export class EnvService {
     return this.get('OLLAMA_BASE_URL');
   }
 
+  /** Ollama API key for cloud service (optional) */
+  get ollamaApiKey(): string | undefined {
+    return this.get('OLLAMA_API_KEY');
+  }
+
   /** Ollama model name to use */
   get ollamaModel(): string {
     return this.get('OLLAMA_MODEL');

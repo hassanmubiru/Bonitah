@@ -9,8 +9,8 @@ import type {
 /**
  * Ollama provider implementation for BFN AI assistant.
  * 
- * Provides access to local Ollama models for financial guidance
- * with complete privacy and zero API costs.
+ * Provides access to Ollama models (local or cloud) for financial guidance
+ * with complete privacy and potentially zero API costs.
  */
 @Injectable()
 export class OllamaProvider implements AIProvider {
@@ -22,8 +22,9 @@ export class OllamaProvider implements AIProvider {
   constructor(
     private readonly baseUrl: string = 'http://localhost:11434',
     private readonly model: string = 'llama3.1:8b',
+    private readonly apiKey?: string,
   ) {
-    this.ollama = new OllamaClient(this.baseUrl, this.model);
+    this.ollama = new OllamaClient(this.baseUrl, this.model, this.apiKey);
   }
 
   isAvailable(): boolean {
