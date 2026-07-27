@@ -5,7 +5,7 @@ import { type Address } from 'viem';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
-import { useContractRead, useReputationScore } from '@/hooks/useContractRead';
+import { useContractRead } from '@/hooks/useContractRead';
 import { getContractAddress, getContractAbi } from '@bfn/shared';
 import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
 
