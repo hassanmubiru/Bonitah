@@ -69,11 +69,11 @@ pnpm install
 
 # Build shared package first
 echo -e "${BLUE}🏗️ Building shared package...${NC}"
-pnpm run build --filter=shared
+pnpm --filter=shared run build
 
 # Build frontend
 echo -e "${BLUE}🏗️ Building frontend locally...${NC}"
-pnpm run build --filter=frontend
+pnpm --filter=frontend run build
 
 echo -e "${GREEN}✓ Local build successful${NC}"
 
