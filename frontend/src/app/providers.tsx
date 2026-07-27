@@ -27,6 +27,8 @@ function RainbowKit({ children }: { children: ReactNode }) {
   // Prevent hydration mismatch by only applying theme after mount
   useEffect(() => {
     setMounted(true);
+    // Preload critical resources when component mounts
+    preloadCriticalResources();
   }, []);
 
   // During SSR and initial hydration, use light theme to prevent mismatch
@@ -64,20 +66,9 @@ function RainbowKit({ children }: { children: ReactNode }) {
  * - ThemeProvider applies a light default and persists the selection (Req 19).
  */
 export function Providers({ children }: { children: ReactNode }) {
-  // Create the QueryClient once per browser session to avoid re-instantiation
-  // on re-render (which would drop the cache).
+  // Create the QueryClient once per browser session with performance optimizations
   const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            // Financial values are read on-chain with an explicit staleness policy;
-            // conservative defaults here, per-hook policy is added in task 19.
-            staleTime: 30_000,
-            retry: 3,
-          },
-        },
-      }),
+    () => new QueryClient(optimizedQueryClientConfig),
   );
 
   return (
