@@ -96,11 +96,7 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
 
   const isLoading = reputationLoading || certificatesLoading || achievementsLoading;
   const hasError = reputationError || certificatesError || achievementsError;
-  const errorMessage =
-    reputationError?.message ||
-    certificatesError?.message ||
-    achievementsError?.message ||
-    'Failed to load achievements data';
+  const errorMessage = hasError ? 'Failed to load achievements data' : null;
 
   const handleRetry = () => {
     if (reputationError) refetchReputation();
