@@ -158,11 +158,11 @@ cat > vercel.json << EOF
 }
 EOF
 
-# Deploy from root directory with frontend as root
-echo -e "${BLUE}🚀 Deploying to Vercel from project root...${NC}"
+# Deploy from root directory with frontend service
+echo -e "${BLUE}🚀 Deploying frontend service to Vercel...${NC}"
 
-# Deploy with production flag
-DEPLOY_OUTPUT=$(vercel --prod --yes --confirm)
+# Deploy with production flag, targeting the frontend service
+DEPLOY_OUTPUT=$(vercel --prod --yes deploy frontend)
 
 # Extract deployment URL
 DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | grep -o "https://[^[:space:]]*vercel.app" | head -n1)
