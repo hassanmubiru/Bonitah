@@ -58,35 +58,21 @@ export function SavingsSummary({ userAddress }: SavingsSummaryProps) {
     savingsVaultAbi = [];
   }
 
-  // Fetch user's active goals - always call hooks
-  const {
-    data: activeGoals,
-    isLoading: goalsLoading,
-    isError: goalsError,
-    error: goalsErrorMessage,
-    refetch: refetchGoals,
-  } = useContractRead({
-    address: savingsVaultAddress,
-    abi: savingsVaultAbi,
-    functionName: 'getActiveGoals',
-    args: [userAddress],
-    enabled: contractsDeployed,
-  });
+  // For now, since getActiveGoals doesn't exist in the ABI, we'll show a placeholder
+  // TODO: Implement proper goal reading from the goals mapping
+  const activeGoals = null;
+  const goalsLoading = false;
+  const goalsError = false;
+  const goalsErrorMessage = null;
+  const refetchGoals = () => {};
 
-  // Fetch user's active locks
-  const {
-    data: activeLocks,
-    isLoading: locksLoading,
-    isError: locksError,
-    error: locksErrorMessage,
-    refetch: refetchLocks,
-  } = useContractRead({
-    address: savingsVaultAddress,
-    abi: savingsVaultAbi,
-    functionName: 'getActiveLocks',
-    args: [userAddress],
-    enabled: contractsDeployed,
-  });
+  // For now, since getActiveLocks doesn't exist in the ABI, we'll show a placeholder  
+  // TODO: Implement proper lock reading from the locks mapping
+  const activeLocks = null;
+  const locksLoading = false;
+  const locksError = false;
+  const locksErrorMessage = null;
+  const refetchLocks = () => {};
 
   // Handle case where contracts aren't deployed yet
   if (!contractsDeployed) {
