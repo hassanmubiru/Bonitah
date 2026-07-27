@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { type Address } from 'viem';
 import { useQuery } from '@tanstack/react-query';
 import { formatUnits } from 'viem';
@@ -15,6 +16,7 @@ interface PortfolioChartProps {
 
 /**
  * Portfolio chart component showing portfolio growth over time using real data only.
+ * Optimized with React.memo to prevent unnecessary re-renders.
  *
  * Requirements: 11.1, 11.4, 11.5, 11.6
  * - Charts from real data only (no mock data)
@@ -22,7 +24,7 @@ interface PortfolioChartProps {
  * - Proper loading/error/retry states
  * - Responsive design
  */
-export function PortfolioChart({ userAddress }: PortfolioChartProps) {
+export const PortfolioChart = React.memo(function PortfolioChart({ userAddress }: PortfolioChartProps) {
   // Fetch portfolio series data from backend analytics API
   const {
     data: portfolioSeries,
