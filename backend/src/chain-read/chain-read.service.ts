@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { createPublicClient, http, type Address } from 'viem';
 import { baseSepolia } from 'viem/chains';
 
@@ -30,6 +31,7 @@ export class ChainReadService {
     private readonly env: EnvService,
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    private readonly configService: ConfigService,
   ) {
     this.publicClient = createPublicClient({
       chain: baseSepolia,
