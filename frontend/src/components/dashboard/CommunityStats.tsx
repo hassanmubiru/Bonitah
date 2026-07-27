@@ -28,16 +28,16 @@ interface CommunityStatsProps {
 
 /**
  * Community stats showing circle memberships, pool contributions, and voting activity.
- * 
+ *
  * Requirements: 11.1, 11.3, 11.4, 11.5, 11.6
  * - Circle memberships from CommunityTreasury contract
  * - Pool contributions and ownership shares
  * - Voting activity from recent proposals
  * - Proper loading/error/retry states
  */
-export function CommunityStats({ userAddress }: CommunityStatsProps) {
+export function CommunityStats({ userAddress: _userAddress }: CommunityStatsProps) {
   let contractsDeployed = true;
-  
+
   try {
     // Contract references removed for now - placeholder implementation
     contractsDeployed = true;
@@ -99,10 +99,11 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
 
   const isLoading = circlesLoading || poolsLoading || votingLoading;
   const hasError = circlesError || poolsError || votingError;
-  const errorMessage = circlesErrorMessage?.message || 
-                      poolsErrorMessage?.message ||
-                      votingErrorMessage?.message ||
-                      'Failed to load community data';
+  const errorMessage =
+    circlesErrorMessage?.message ||
+    poolsErrorMessage?.message ||
+    votingErrorMessage?.message ||
+    'Failed to load community data';
 
   const handleRetry = () => {
     if (circlesError) refetchCircles();
@@ -125,12 +126,7 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Community Activity</h3>
           {hasError && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleRetry}
-              disabled={isLoading}
-            >
+            <Button variant="outline" size="sm" onClick={handleRetry} disabled={isLoading}>
               Retry
             </Button>
           )}
@@ -159,21 +155,26 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium">Savings Circles</h4>
                 <span className="text-sm text-muted-foreground">
-                  {circleMemberships && Array.isArray(circleMemberships) 
-                    ? (circleMemberships as Circle[]).length 
-                    : 0} joined
+                  {circleMemberships && Array.isArray(circleMemberships)
+                    ? (circleMemberships as Circle[]).length
+                    : 0}{' '}
+                  joined
                 </span>
               </div>
-              {circleMemberships && Array.isArray(circleMemberships) && circleMemberships.length > 0 ? (
+              {circleMemberships &&
+              Array.isArray(circleMemberships) &&
+              circleMemberships.length > 0 ? (
                 <div className="space-y-2">
-                  {(circleMemberships as Circle[]).slice(0, 2).map((circle: Circle, index: number) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span>Circle #{Number(circle.id)}</span>
-                      <span className="text-muted-foreground">
-                        {Number(circle.memberCount)}/{Number(circle.maxMembers)} members
-                      </span>
-                    </div>
-                  ))}
+                  {(circleMemberships as Circle[])
+                    .slice(0, 2)
+                    .map((circle: Circle, index: number) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <span>Circle #{Number(circle.id)}</span>
+                        <span className="text-muted-foreground">
+                          {Number(circle.memberCount)}/{Number(circle.maxMembers)} members
+                        </span>
+                      </div>
+                    ))}
                   {(circleMemberships as Circle[]).length > 2 && (
                     <p className="text-xs text-muted-foreground">
                       +{(circleMemberships as Circle[]).length - 2} more circles
@@ -191,22 +192,32 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
                 <h4 className="font-medium">Pool Contributions</h4>
                 <span className="text-sm text-muted-foreground">
                   {poolContributions && Array.isArray(poolContributions)
-                    ? (poolContributions as PoolContribution[]).reduce((total: number, pool: PoolContribution) => 
-                        total + parseFloat(formatValue(pool.amount)), 0).toLocaleString('en-US', {
+                    ? (poolContributions as PoolContribution[])
+                        .reduce(
+                          (total: number, pool: PoolContribution) =>
+                            total + parseFloat(formatValue(pool.amount)),
+                          0,
+                        )
+                        .toLocaleString('en-US', {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })
-                    : '0.00'} total
+                    : '0.00'}{' '}
+                  total
                 </span>
               </div>
-              {poolContributions && Array.isArray(poolContributions) && poolContributions.length > 0 ? (
+              {poolContributions &&
+              Array.isArray(poolContributions) &&
+              poolContributions.length > 0 ? (
                 <div className="space-y-2">
-                  {(poolContributions as PoolContribution[]).slice(0, 2).map((pool: PoolContribution, index: number) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span>Pool #{Number(pool.poolId)}</span>
-                      <span>${formatValue(pool.amount)}</span>
-                    </div>
-                  ))}
+                  {(poolContributions as PoolContribution[])
+                    .slice(0, 2)
+                    .map((pool: PoolContribution, index: number) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <span>Pool #{Number(pool.poolId)}</span>
+                        <span>${formatValue(pool.amount)}</span>
+                      </div>
+                    ))}
                   {(poolContributions as PoolContribution[]).length > 2 && (
                     <p className="text-xs text-muted-foreground">
                       +{(poolContributions as PoolContribution[]).length - 2} more pools
