@@ -219,13 +219,13 @@ export class ChainReadService {
    * In a real implementation, this would read from the deployment registry.
    */
   private getContractAddress(contract: ContractName): Address {
-    // Placeholder addresses - in real implementation would read from deployment
+    // Read deployed contract addresses from environment variables
     const addresses: Record<ContractName, Address> = {
-      Registry: '0x1234567890123456789012345678901234567890',
-      SavingsVault: '0x2345678901234567890123456789012345678901',
-      CommunityTreasury: '0x3456789012345678901234567890123456789012',
-      Education: '0x4567890123456789012345678901234567890123',
-      Governance: '0x5678901234567890123456789012345678901234',
+      Registry: this.configService.getOrThrow<Address>('REGISTRY_CONTRACT_ADDRESS'),
+      SavingsVault: this.configService.getOrThrow<Address>('SAVINGS_VAULT_CONTRACT_ADDRESS'),
+      CommunityTreasury: this.configService.getOrThrow<Address>('COMMUNITY_TREASURY_CONTRACT_ADDRESS'),
+      Education: this.configService.getOrThrow<Address>('EDUCATION_CONTRACT_ADDRESS'),
+      Governance: this.configService.getOrThrow<Address>('GOVERNANCE_CONTRACT_ADDRESS'),
     };
     
     return addresses[contract] as `0x${string}`;
