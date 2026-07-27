@@ -91,9 +91,7 @@ export function SavingsSummary({ userAddress: _userAddress }: SavingsSummaryProp
 
   const isLoading = goalsLoading || locksLoading;
   const hasError = goalsError || locksError;
-  const errorMessage = goalsErrorMessage?.message || 
-                      locksErrorMessage?.message ||
-                      'Failed to load savings data';
+  const errorMessage = hasError ? 'Failed to load savings data' : null;
 
   const handleRetry = () => {
     if (goalsError) refetchGoals();
