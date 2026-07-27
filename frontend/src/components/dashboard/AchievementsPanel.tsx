@@ -120,7 +120,7 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
     return { level: 'Newcomer', progress: scoreNum, next: 100 };
   };
 
-  const achievementLevel = getAchievementLevel(reputationScore);
+  const achievementLevel = getAchievementLevel(reputationScore as bigint);
 
   return (
     <Card className="p-6 h-full">
