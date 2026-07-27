@@ -39,8 +39,9 @@ interface SavingsSummaryProps {
  */
 export function SavingsSummary({ userAddress: _userAddress }: SavingsSummaryProps) {
   const [mounted, setMounted] = useState(false);
-  let savingsVaultAddress: Address;
-  let savingsVaultAbi;
+  // Contract variables commented out as they're not currently used
+  // let savingsVaultAddress: Address;
+  // let savingsVaultAbi;
   let contractsDeployed = true;
   
   // Prevent hydration mismatch with time-based calculations
@@ -48,6 +49,7 @@ export function SavingsSummary({ userAddress: _userAddress }: SavingsSummaryProp
     setMounted(true);
   }, []);
   
+  /*
   try {
     savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
     savingsVaultAbi = getContractAbi('SavingsVault');
@@ -56,6 +58,7 @@ export function SavingsSummary({ userAddress: _userAddress }: SavingsSummaryProp
     savingsVaultAddress = '0x0000000000000000000000000000000000000000' as Address;
     savingsVaultAbi = [];
   }
+  */
 
   // For now, since getActiveGoals doesn't exist in the ABI, we'll show a placeholder
   // TODO: Implement proper goal reading from the goals mapping
