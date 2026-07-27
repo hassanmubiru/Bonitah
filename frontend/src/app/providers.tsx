@@ -8,7 +8,6 @@ import { WagmiProvider } from 'wagmi';
 
 import { ThemeProvider } from '@/components/theme-provider';
 import { wagmiConfig } from '@/lib/wagmi';
-import { optimizedQueryClientConfig, preloadCriticalResources } from '@/lib/performance';
 
 import '@rainbow-me/rainbowkit/styles.css';
 
