@@ -44,7 +44,7 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
   let contractsDeployed = true;
 
   try {
-    registryAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Registry');
+    registryAddress = getContractAddress('Registry', BASE_SEPOLIA_CHAIN_ID) as `0x${string}`;
     registryAbi = getContractAbi('Registry');
   } catch {
     contractsDeployed = false;
