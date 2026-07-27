@@ -99,11 +99,7 @@ export function CommunityStats({ userAddress: _userAddress }: CommunityStatsProp
 
   const isLoading = circlesLoading || poolsLoading || votingLoading;
   const hasError = circlesError || poolsError || votingError;
-  const errorMessage =
-    circlesErrorMessage?.message ||
-    poolsErrorMessage?.message ||
-    votingErrorMessage?.message ||
-    'Failed to load community data';
+  const errorMessage = hasError ? 'Failed to load community data' : null;
 
   const handleRetry = () => {
     if (circlesError) refetchCircles();
