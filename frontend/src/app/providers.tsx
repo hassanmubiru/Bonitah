@@ -26,8 +26,6 @@ function RainbowKit({ children }: { children: ReactNode }) {
   // Prevent hydration mismatch by only applying theme after mount
   useEffect(() => {
     setMounted(true);
-    // Preload critical resources when component mounts
-    preloadCriticalResources();
   }, []);
 
   // During SSR and initial hydration, use light theme to prevent mismatch
