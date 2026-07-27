@@ -68,12 +68,12 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
 
   // For now, these functions don't exist in the current ABI, so we'll show placeholders
   // TODO: Implement proper certificate and achievement reading when available
-  const certificates = null;
+  const certificates: any[] = [];
   const certificatesLoading = false;
   const certificatesError = false;
   const refetchCertificates = () => {};
 
-  const achievements = null;
+  const achievements: any[] = [];
   const achievementsLoading = false;
   const achievementsError = false;
   const refetchAchievements = () => {};

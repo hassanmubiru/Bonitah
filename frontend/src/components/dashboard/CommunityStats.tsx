@@ -39,10 +39,6 @@ interface CommunityStatsProps {
  * - Proper loading/error/retry states
  */
 export function CommunityStats({ userAddress }: CommunityStatsProps) {
-  let communityTreasuryAddress: Address;
-  let communityTreasuryAbi;
-  let governanceAddress: Address;
-  let governanceAbi;
   let contractsDeployed = true;
   
   try {
