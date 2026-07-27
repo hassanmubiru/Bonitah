@@ -99,9 +99,9 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
 
   const isLoading = reputationLoading || certificatesLoading || achievementsLoading;
   const hasError = reputationError || certificatesError || achievementsError;
-  const errorMessage = reputationErrorMessage?.message || 
-                      certificatesErrorMessage?.message ||
-                      achievementsErrorMessage?.message ||
+  const errorMessage = reputationError?.message || 
+                      certificatesError?.message ||
+                      achievementsError?.message ||
                       'Failed to load achievements data';
 
   const handleRetry = () => {
