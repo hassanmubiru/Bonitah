@@ -3,7 +3,7 @@
   "devCommand": "pnpm run dev",
   "installCommand": "pnpm install",
   "framework": "nextjs",
-  "regions": ["iad1", "sfo1", "fra1"],
+  "regions": ["iad1"],
   "functions": {
     "src/pages/api/**/*.ts": {
       "maxDuration": 30
