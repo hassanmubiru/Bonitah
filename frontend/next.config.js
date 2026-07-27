@@ -36,9 +36,10 @@ const nextConfig = {
     ],
     // Enable modern bundling optimizations
     esmExternals: true,
-    // Optimize server components compilation
-    serverComponentsExternalPackages: ['viem', 'wagmi'],
   },
+
+  // Move server external packages to the correct location
+  serverExternalPackages: ['viem', 'wagmi'],
 
   // Optimize images and static assets
   images: {
