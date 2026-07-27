@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { type Address } from 'viem';
 import { useQuery } from '@tanstack/react-query';
 
@@ -14,13 +15,14 @@ interface RecentTransactionsProps {
 
 /**
  * Recent transactions component showing the user's recent activity.
+ * Optimized with React.memo to prevent unnecessary re-renders.
  *
  * Requirements: 11.2, 11.4, 11.5, 11.6
  * - Recent transactions (≤50, most recent first) from backend API
  * - Proper loading/error/retry states
  * - Transaction details with proper formatting
  */
-export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
+export const RecentTransactions = React.memo(function RecentTransactions({ userAddress }: RecentTransactionsProps) {
   // Fetch recent transactions from backend API
   const {
     data: transactions,
