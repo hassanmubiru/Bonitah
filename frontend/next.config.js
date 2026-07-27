@@ -24,7 +24,39 @@ const nextConfig = {
 
   // Experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-progress',
+      '@radix-ui/react-scroll-area',
+      '@radix-ui/react-select',
+      '@radix-ui/react-slider',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-tabs',
+    ],
+    // Enable modern bundling optimizations
+    esmExternals: true,
+    // Optimize server components compilation
+    serverComponentsExternalPackages: ['viem', 'wagmi'],
+  },
+
+  // Optimize images and static assets
+  images: {
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60,
+  },
+
+  // Enable compression
+  compress: true,
+
+  // Optimize build output
+  output: 'standalone',
+  
+  // Reduce bundle size
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{member}}',
+    },
   },
 
   // Turbopack configuration (Next.js 16+ default in dev mode)
@@ -42,8 +74,18 @@ const nextConfig = {
     },
   },
 
-  // Webpack configuration for better tree-shaking
-  webpack: (config, { isServer }) => {
+  // Webpack configuration for better tree-shaking and performance
+  webpack: (config, { isServer, dev }) => {
+    // Production optimizations
+    if (!dev) {
+      config.optimization = {
+        ...config.optimization,
+        usedExports: true,
+        sideEffects: false,
+        minimize: true,
+      };
+    }
+
     if (!isServer && config.optimization?.splitChunks) {
       // Ensure splitChunks is properly configured
       if (typeof config.optimization.splitChunks === 'boolean') {
@@ -53,17 +95,51 @@ const nextConfig = {
         };
       }
 
-      // Optimize client bundle
+      // Optimize client bundle with better chunk splitting
       config.optimization.splitChunks.cacheGroups = {
         ...config.optimization.splitChunks.cacheGroups,
+        // Separate wagmi/viem bundle for better caching
         wagmi: {
           name: 'wagmi',
           test: /[\\/]node_modules[\\/](wagmi|@wagmi|viem|@rainbow-me)[\\/]/,
           chunks: 'all',
+          priority: 30,
+          enforce: true,
+        },
+        // Separate Radix UI components
+        radix: {
+          name: 'radix',
+          test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+          chunks: 'all',
+          priority: 25,
+          enforce: true,
+        },
+        // React Query bundle
+        reactQuery: {
+          name: 'react-query',
+          test: /[\\/]node_modules[\\/]@tanstack[\\/]/,
+          chunks: 'all',
           priority: 20,
+          enforce: true,
+        },
+        // Common vendor libraries
+        vendor: {
+          name: 'vendor',
+          test: /[\\/]node_modules[\\/]/,
+          chunks: 'all',
+          priority: 10,
+          minChunks: 2,
         },
       };
     }
+
+    // Optimize module resolution
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Dedupe React to prevent multiple versions
+      'react': require.resolve('react'),
+      'react-dom': require.resolve('react-dom'),
+    };
 
     // Provide fallbacks for missing @x402 dependencies that are required by @coinbase/cdp-sdk
     // and React Native dependencies that MetaMask SDK tries to import
