@@ -2,13 +2,19 @@
 export const BASE_SEPOLIA_CHAIN_ID = 84532;
 
 export const NETWORKS = {
+  [84532]: {
+    id: 84532,
+    name: 'Base Sepolia',
+    rpcUrl: 'https://sepolia.base.org',
+    blockExplorer: 'https://sepolia.basescan.org',
+  },
   baseSepolia: {
     id: 84532,
     name: 'Base Sepolia',
     rpcUrl: 'https://sepolia.base.org',
     blockExplorer: 'https://sepolia.basescan.org',
   },
-};
+} as const;
 
 // Contract addresses
 const contractAddresses = {
