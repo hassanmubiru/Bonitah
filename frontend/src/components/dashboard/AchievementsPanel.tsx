@@ -46,14 +46,10 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
   try {
     registryAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Registry');
     registryAbi = getContractAbi('Registry');
-    educationAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Education');
-    educationAbi = getContractAbi('Education');
   } catch {
     contractsDeployed = false;
     registryAddress = '0x0000000000000000000000000000000000000000' as Address;
     registryAbi = [];
-    educationAddress = '0x0000000000000000000000000000000000000000' as Address;
-    educationAbi = [];
   }
 
   // Fetch reputation score from Registry using correct function name
