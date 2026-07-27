@@ -33,8 +33,8 @@ export function PortfolioChart({ userAddress }: PortfolioChartProps) {
   } = useQuery<PortfolioSeriesResponse>({
     queryKey: ['portfolio-series', userAddress],
     queryFn: async () => {
-      // Get JWT token from localStorage or session storage
-      const token = localStorage.getItem('bfn_jwt') || sessionStorage.getItem('bfn_jwt');
+      // Get JWT token from localStorage with correct key
+      const token = localStorage.getItem('bfn-auth-token');
 
       if (!token) {
         throw new Error('Authentication required');
