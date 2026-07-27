@@ -67,70 +67,8 @@ const nextConfig = {
     },
   },
 
-  // Webpack configuration for better tree-shaking and performance
-  webpack: (config, { isServer, dev }) => {
-    // Production optimizations
-    if (!dev) {
-      config.optimization = {
-        ...config.optimization,
-        usedExports: true,
-        sideEffects: false,
-        minimize: true,
-      };
-    }
-
-    if (!isServer && config.optimization?.splitChunks) {
-      // Ensure splitChunks is properly configured
-      if (typeof config.optimization.splitChunks === 'boolean') {
-        config.optimization.splitChunks = {
-          chunks: 'all',
-          cacheGroups: {},
-        };
-      }
-
-      // Optimize client bundle with better chunk splitting
-      config.optimization.splitChunks.cacheGroups = {
-        ...config.optimization.splitChunks.cacheGroups,
-        // Separate wagmi/viem bundle for better caching
-        wagmi: {
-          name: 'wagmi',
-          test: /[\\/]node_modules[\\/](wagmi|@wagmi|viem|@rainbow-me)[\\/]/,
-          chunks: 'all',
-          priority: 30,
-          enforce: true,
-        },
-        // Separate Radix UI components
-        radix: {
-          name: 'radix',
-          test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
-          chunks: 'all',
-          priority: 25,
-          enforce: true,
-        },
-        // React Query bundle
-        reactQuery: {
-          name: 'react-query',
-          test: /[\\/]node_modules[\\/]@tanstack[\\/]/,
-          chunks: 'all',
-          priority: 20,
-          enforce: true,
-        },
-        // Common vendor libraries
-        vendor: {
-          name: 'vendor',
-          test: /[\\/]node_modules[\\/]/,
-          chunks: 'all',
-          priority: 10,
-          minChunks: 2,
-        },
-      };
-    }
-
-    // Optimize module resolution
-    config.resolve.alias = {
-      ...config.resolve.alias,
-    };
-
+  // Simplified webpack configuration for stability
+  webpack: (config, { isServer }) => {
     // Provide fallbacks for missing @x402 dependencies that are required by @coinbase/cdp-sdk
     // and React Native dependencies that MetaMask SDK tries to import
     config.resolve = config.resolve || {};
