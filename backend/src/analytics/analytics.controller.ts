@@ -1,7 +1,9 @@
-import { Controller, Get, Request } from '@nestjs/common';
+import { Controller, Get, Request, UseGuards } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
 import { PortfolioSeriesResponse } from '@bfn/shared';
 import { AuthenticatedRequest } from '../auth/auth.types';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 /**
  * Analytics endpoints for portfolio and financial metrics (Requirement 11.1).
@@ -9,6 +11,7 @@ import { AuthenticatedRequest } from '../auth/auth.types';
  * Provides provenanced analytics data for authenticated users.
  */
 @Controller('analytics')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
