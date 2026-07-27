@@ -37,12 +37,12 @@ export class EducationService {
     const privateKey = this.configService.getOrThrow<string>('ISSUER_PRIVATE_KEY');
     this.issuerAccount = privateKeyToAccount(privateKey as `0x${string}`);
 
-    // Get Education contract address (would be loaded from shared package after deployment)
-    this.educationContractAddress = this.configService.getOrThrow<string>(
-      'EDUCATION_CONTRACT_ADDRESS',
-    );
+    // Get Education contract address from shared deployed addresses
+    const { getContractAddress, BASE_SEPOLIA_CHAIN_ID } = require('@bfn/shared');
+    this.educationContractAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Education');
 
     this.logger.log(`Education service initialized with issuer: ${this.issuerAccount.address}`);
+    this.logger.log(`Education contract address: ${this.educationContractAddress}`);
   }
 
   /**

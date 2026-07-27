@@ -221,16 +221,15 @@ export class ChainReadService {
    * In a real implementation, this would read from the deployment registry.
    */
   private getContractAddress(contract: ContractName): Address {
-    // Read deployed contract addresses from environment variables
-    const addresses: Record<ContractName, Address> = {
-      Registry: this.configService.getOrThrow<Address>('REGISTRY_CONTRACT_ADDRESS'),
-      SavingsVault: this.configService.getOrThrow<Address>('SAVINGS_VAULT_CONTRACT_ADDRESS'),
-      CommunityTreasury: this.configService.getOrThrow<Address>('COMMUNITY_TREASURY_CONTRACT_ADDRESS'),
-      Education: this.configService.getOrThrow<Address>('EDUCATION_CONTRACT_ADDRESS'),
-      Governance: this.configService.getOrThrow<Address>('GOVERNANCE_CONTRACT_ADDRESS'),
-    };
+    // Use the shared deployed contract addresses from @bfn/shared
+    const { getContractAddress, BASE_SEPOLIA_CHAIN_ID } = require('@bfn/shared');
     
-    return addresses[contract] as `0x${string}`;
+    try {
+      return getContractAddress(BASE_SEPOLIA_CHAIN_ID, contract);
+    } catch (error) {
+      this.logger.error(`Contract ${contract} not deployed on Base Sepolia`, error);
+      throw new Error(`Contract ${contract} is not deployed. Please deploy contracts first.`);
+    }
   }
 
   /**
