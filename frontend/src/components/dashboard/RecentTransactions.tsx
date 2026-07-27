@@ -38,7 +38,8 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch('/api/transactions?limit=50', {
+      const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
+      const response = await fetch(`${apiUrl}/transactions?limit=50`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
