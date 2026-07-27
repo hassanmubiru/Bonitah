@@ -102,19 +102,23 @@ export function createLazyComponent<T extends React.ComponentType<any>>(
 ) {
   const LazyComponent = React.lazy(importFunc);
   
-  return React.forwardRef<any, React.ComponentProps<T>>((props, ref) => (
-    <React.Suspense 
-      fallback={
-        fallback ? React.createElement(fallback) : (
-          <div className="flex items-center justify-center p-4">
-            <div className="animate-pulse text-muted-foreground">Loading...</div>
-          </div>
-        )
-      }
-    >
-      <LazyComponent ref={ref} {...props} />
-    </React.Suspense>
-  ));
+  return React.forwardRef<any, React.ComponentProps<T>>((props, ref) => 
+    React.createElement(
+      React.Suspense,
+      {
+        fallback: fallback 
+          ? React.createElement(fallback)
+          : React.createElement('div', 
+              { className: 'flex items-center justify-center p-4' },
+              React.createElement('div', 
+                { className: 'animate-pulse text-muted-foreground' },
+                'Loading...'
+              )
+            )
+      },
+      React.createElement(LazyComponent, { ref, ...props })
+    )
+  );
 }
 
 /**
