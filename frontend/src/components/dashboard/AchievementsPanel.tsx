@@ -41,8 +41,6 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
   // Get contract addresses and ABIs - handle deployment check
   let registryAddress: Address;
   let registryAbi;
-  let educationAddress: Address;
-  let educationAbi;
   let contractsDeployed = true;
   
   try {
