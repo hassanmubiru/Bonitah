@@ -40,7 +40,8 @@ export function PortfolioChart({ userAddress }: PortfolioChartProps) {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch('/api/analytics/portfolio', {
+      const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
+      const response = await fetch(`${apiUrl}/analytics/portfolio`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
