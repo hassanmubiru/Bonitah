@@ -38,9 +38,8 @@ export class EducationService {
     this.issuerAccount = privateKeyToAccount(privateKey as `0x${string}`);
 
     // Get Education contract address (would be loaded from shared package after deployment)
-    this.educationContractAddress = this.configService.get<string>(
+    this.educationContractAddress = this.configService.getOrThrow<string>(
       'EDUCATION_CONTRACT_ADDRESS',
-      '0x0000000000000000000000000000000000000000', // Placeholder until deployed
     );
 
     this.logger.log(`Education service initialized with issuer: ${this.issuerAccount.address}`);
@@ -243,18 +242,7 @@ export class EducationService {
         transport: http(this.configService.getOrThrow<string>('BASE_SEPOLIA_RPC_URL')),
       });
 
-      // For now, skip the actual on-chain call if contract address is not set
-      if (this.educationContractAddress === '0x0000000000000000000000000000000000000000') {
-        this.logger.warn(
-          `Education contract not deployed, skipping on-chain issuance for user=${userId}, course=${courseId}`,
-        );
-        return {
-          transactionHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-          ipfsCid: cid,
-          metadata,
-        };
-      }
-
+      // Issue certificate on-chain using the deployed Education contract
       const educationContract = getContract({
         address: this.educationContractAddress as `0x${string}`,
         abi: getContractAbi('Education'),
