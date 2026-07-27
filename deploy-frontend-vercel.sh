@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# BFN Frontend - Vercel Deployment Script (Simplified)
+# BFN Frontend - Vercel Deployment Script (Monorepo)
 # This script deploys the frontend to Vercel with proper monorepo handling
 
 set -e
@@ -36,13 +36,13 @@ SUPABASE_PROJECT_REF="nbgicdhybbrbxbhfxsvi"
 echo -e "${BLUE}🔧 Using Supabase project: $SUPABASE_PROJECT_REF${NC}"
 SUPABASE_API_URL="https://$SUPABASE_PROJECT_REF.supabase.co/functions/v1/backend"
 
-# Update frontend environment
-cd frontend
+# Make sure we're in the project root
+cd "$(dirname "$0")"
 
 echo -e "${BLUE}🔧 Configuring environment variables...${NC}"
 
-# Update .env.local
-cat > .env.local << EOF
+# Update frontend .env.local
+cat > frontend/.env.local << EOF
 # Backend API URL - Supabase Edge Function (Production)
 NEXT_PUBLIC_API_URL=$SUPABASE_API_URL
 
@@ -63,23 +63,99 @@ EOF
 
 echo -e "${GREEN}✓ Environment configured with Supabase backend${NC}"
 
-# Build shared package
-echo -e "${BLUE}🏗️ Building shared package...${NC}"
-cd ../shared
-pnpm run build
-cd ../frontend
-
-# Install dependencies and build
-echo -e "${BLUE}📦 Installing dependencies...${NC}"
+# Install all dependencies from root (monorepo)
+echo -e "${BLUE}📦 Installing monorepo dependencies...${NC}"
 pnpm install
 
-echo -e "${BLUE}🏗️ Building project locally...${NC}"
-pnpm run build
+# Build shared package first
+echo -e "${BLUE}🏗️ Building shared package...${NC}"
+pnpm run build --filter=shared
+
+# Build frontend
+echo -e "${BLUE}🏗️ Building frontend locally...${NC}"
+pnpm run build --filter=frontend
 
 echo -e "${GREEN}✓ Local build successful${NC}"
 
-# Deploy to Vercel
-echo -e "${BLUE}🚀 Deploying to Vercel...${NC}"
+# Create vercel configuration for monorepo deployment
+echo -e "${BLUE}📝 Creating Vercel configuration for monorepo...${NC}"
+
+# Create vercel.json in root for monorepo deployment
+cat > vercel.json << EOF
+{
+  "buildCommand": "pnpm run build --filter=frontend",
+  "devCommand": "cd frontend && pnpm run dev",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "rootDirectory": "frontend",
+  "regions": ["iad1"],
+  "functions": {
+    "frontend/src/pages/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy", 
+          "value": "unsafe-none"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Authorization"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/app/(.*)",
+      "destination": "/\$1",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/health",
+      "destination": "/api/health"
+    }
+  ]
+}
+EOF
+
+# Deploy from root directory with frontend as root
+echo -e "${BLUE}🚀 Deploying to Vercel from project root...${NC}"
 
 # Deploy with production flag
 DEPLOY_OUTPUT=$(vercel --prod --yes --confirm)
@@ -123,8 +199,5 @@ echo "2. Verify AI chat functionality"
 echo "3. Check dashboard and savings features"
 echo "4. Set up custom domain (optional)"
 echo ""
-
-# Return to project root
-cd ..
 
 echo -e "${GREEN}✅ BFN Platform is now live and ready for users!${NC}"
