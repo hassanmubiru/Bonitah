@@ -1,8 +1,9 @@
 {
-  "buildCommand": "pnpm run build",
+  "buildCommand": "cd .. && pnpm run build --filter=frontend",
   "devCommand": "pnpm run dev",
-  "installCommand": "pnpm install",
+  "installCommand": "cd .. && pnpm install",
   "framework": "nextjs",
+  "rootDirectory": "frontend",
   "regions": ["iad1"],
   "functions": {
     "src/pages/api/**/*.ts": {
