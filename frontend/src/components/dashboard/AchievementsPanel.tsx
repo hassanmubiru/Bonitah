@@ -57,7 +57,6 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
     data: reputationScore,
     isLoading: reputationLoading,
     isError: reputationError,
-    error: reputationErrorMessage,
     refetch: refetchReputation,
   } = useContractRead({
     address: registryAddress,
