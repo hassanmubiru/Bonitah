@@ -65,8 +65,8 @@ export const RecentTransactions = React.memo(function RecentTransactions({ userA
     refetchOnReconnect: true,
   });
 
-  // Format transaction event for display
-  const formatTransactionEvent = (event: {
+  // Format transaction event for display - memoized for performance
+  const formatTransactionEvent = React.useCallback((event: {
     eventName: string;
     payload: Record<string, unknown>;
   }) => {
@@ -131,24 +131,24 @@ export const RecentTransactions = React.memo(function RecentTransactions({ userA
           color: 'text-gray-600',
         };
     }
-  };
+  }, []); // No dependencies needed for this formatter
 
-  // Format amount values (assuming 18 decimals)
-  const formatAmount = (amount: string | undefined) => {
+  // Format amount values (assuming 18 decimals) - memoized for performance
+  const formatAmount = React.useCallback((amount: string | undefined) => {
     if (!amount) return '0.00';
     const numValue = parseFloat(amount) / Math.pow(10, 18);
     return numValue.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-  };
+  }, []);
 
-  // Format timestamp
-  const formatTimestamp = (blockNumber: string) => {
+  // Format timestamp - memoized for performance
+  const formatTimestamp = React.useCallback((blockNumber: string) => {
     // Since we don't have exact timestamp, use block number as relative indicator
     const blockNum = parseInt(blockNumber);
     return `Block ${blockNum.toLocaleString()}`;
-  };
+  }, []);
 
   return (
     <Card className="p-6 h-full">
@@ -244,4 +244,4 @@ export const RecentTransactions = React.memo(function RecentTransactions({ userA
       </div>
     </Card>
   );
-}
+});
