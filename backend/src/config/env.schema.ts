@@ -75,31 +75,6 @@ export const envSchema = z.object({
     .string()
     .regex(/^0x[a-fA-F0-9]{64}$/)
     .optional(),
-
-  /** Smart Contract Addresses on Base Sepolia */
-  REGISTRY_CONTRACT_ADDRESS: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'Registry contract address must be a valid Ethereum address'),
-
-  SAVINGS_VAULT_CONTRACT_ADDRESS: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'SavingsVault contract address must be a valid Ethereum address'),
-
-  COMMUNITY_TREASURY_CONTRACT_ADDRESS: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'CommunityTreasury contract address must be a valid Ethereum address'),
-
-  EDUCATION_CONTRACT_ADDRESS: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'Education contract address must be a valid Ethereum address'),
-
-  GOVERNANCE_CONTRACT_ADDRESS: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'Governance contract address must be a valid Ethereum address'),
-
-  USDC_CONTRACT_ADDRESS: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'USDC contract address must be a valid Ethereum address'),
 });
 
 /** Fully-typed, validated environment shape. */
