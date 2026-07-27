@@ -1,0 +1,17 @@
+# Include necessary files for workspace dependencies
+!../shared
+!../pnpm-workspace.yaml
+!../package.json
+!../pnpm-lock.yaml
+
+# Exclude unnecessary files
+../backend
+../tests
+../contracts
+../.git
+../docs
+../coverage
+../node_modules
+../.kiro
+../.vscode
+../.husky
