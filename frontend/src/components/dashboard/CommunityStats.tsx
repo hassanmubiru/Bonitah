@@ -42,16 +42,10 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
   let contractsDeployed = true;
   
   try {
-    communityTreasuryAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'CommunityTreasury');
-    communityTreasuryAbi = getContractAbi('CommunityTreasury');
-    governanceAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Governance');
-    governanceAbi = getContractAbi('Governance');
+    // Contract references removed for now - placeholder implementation
+    contractsDeployed = true;
   } catch {
     contractsDeployed = false;
-    communityTreasuryAddress = '0x0000000000000000000000000000000000000000' as Address;
-    communityTreasuryAbi = [];
-    governanceAddress = '0x0000000000000000000000000000000000000000' as Address;
-    governanceAbi = [];
   }
 
   // For now, these functions don't exist in the current ABI, so we'll show placeholders
@@ -59,7 +53,6 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
   const circleMemberships = null;
   const circlesLoading = false;
   const circlesError = false;
-  const circlesErrorMessage = null;
   const refetchCircles = () => {};
 
   const poolContributions = null;
