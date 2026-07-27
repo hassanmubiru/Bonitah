@@ -45,13 +45,6 @@ const nextConfig = {
   // Enable compression
   compress: true,
 
-  // Reduce bundle size
-  modularizeImports: {
-    'lucide-react': {
-      transform: 'lucide-react/dist/esm/icons/{{member}}',
-    },
-  },
-
   // Turbopack configuration (Next.js 16+ default in dev mode)
   turbopack: {
     root: '/home/error51/project/Bonitah',
