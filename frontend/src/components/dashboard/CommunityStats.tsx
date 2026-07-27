@@ -59,6 +59,13 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
   const poolsErrorMessage = null;
   const refetchPools = () => {};
 
+  // Contract reads disabled for now - placeholder implementation
+  const votingPower = BigInt(0);
+  const votingLoading = false;
+  const votingError = false;
+  const refetchVoting = () => {};
+
+  /*
   // Fetch user's voting power in governance (this function exists in the ABI)
   const {
     data: votingPower,
@@ -73,6 +80,7 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
     args: [userAddress],
     enabled: contractsDeployed,
   });
+  */
 
   // Handle case where contracts aren't deployed yet
   if (!contractsDeployed) {
