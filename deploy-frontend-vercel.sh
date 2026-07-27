@@ -40,9 +40,14 @@ if [ -f "../.env" ]; then
 fi
 
 if [ -z "$SUPABASE_PROJECT_REF" ]; then
-    echo -e "${YELLOW}📋 Enter your Supabase project reference:${NC}"
-    echo "You can find this in your Supabase dashboard URL or .env file"
+    echo -e "${YELLOW}📋 Enter your Supabase project reference (just the ID, not full URL):${NC}"
+    echo "Example: nbgicdhybbrbxbhfxsvi"
     read -r SUPABASE_PROJECT_REF
+    
+    # Extract project ref if user entered full URL
+    if [[ $SUPABASE_PROJECT_REF == *"supabase.co"* ]]; then
+        SUPABASE_PROJECT_REF=$(echo "$SUPABASE_PROJECT_REF" | sed 's/.*https:\/\/\([^.]*\)\.supabase\.co.*/\1/')
+    fi
 fi
 
 # Update environment file with Supabase backend URL
@@ -61,10 +66,22 @@ echo -e "${GREEN}✓ API URL configured: $SUPABASE_API_URL${NC}"
 # Install dependencies
 echo -e "${BLUE}📦 Installing dependencies...${NC}"
 if [ -f "pnpm-lock.yaml" ]; then
+    echo "Using pnpm..."
+    if ! command -v pnpm &> /dev/null; then
+        echo "Installing pnpm..."
+        npm install -g pnpm
+    fi
     pnpm install
 elif [ -f "yarn.lock" ]; then
+    echo "Using yarn..."
     yarn install
 else
+    echo "Using npm..."
+    # Remove workspace dependencies for npm
+    if grep -q "workspace:" package.json; then
+        echo "Converting workspace dependencies for npm..."
+        sed -i 's/"workspace:\*"/"*"/g' package.json
+    fi
     npm install
 fi
 
