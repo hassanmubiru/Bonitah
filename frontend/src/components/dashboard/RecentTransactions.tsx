@@ -31,8 +31,8 @@ export function RecentTransactions({ userAddress }: RecentTransactionsProps) {
   } = useQuery<TransactionsResponse>({
     queryKey: ['transactions', userAddress],
     queryFn: async () => {
-      // Get JWT token from localStorage or session storage
-      const token = localStorage.getItem('bfn_jwt') || sessionStorage.getItem('bfn_jwt');
+      // Get JWT token from localStorage with correct key
+      const token = localStorage.getItem('bfn-auth-token');
 
       if (!token) {
         throw new Error('Authentication required');
