@@ -58,44 +58,34 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
     educationAbi = [];
   }
 
-  // Fetch reputation score from Registry - always call hooks
+  // Fetch reputation score from Registry using correct function name
   const {
     data: reputationScore,
     isLoading: reputationLoading,
     isError: reputationError,
     error: reputationErrorMessage,
     refetch: refetchReputation,
-  } = useReputationScore(registryAddress, registryAbi, userAddress, contractsDeployed);
-
-  // Fetch user's certificates from Education contract
-  const {
-    data: certificates,
-    isLoading: certificatesLoading,
-    isError: certificatesError,
-    error: certificatesErrorMessage,
-    refetch: refetchCertificates,
   } = useContractRead({
-    address: educationAddress,
-    abi: educationAbi,
-    functionName: 'getUserCertificates',
+    address: registryAddress,
+    abi: registryAbi,
+    functionName: 'reputationOf',
     args: [userAddress],
     enabled: contractsDeployed,
   });
 
-  // Fetch user's badges/achievements
-  const {
-    data: achievements,
-    isLoading: achievementsLoading,
-    isError: achievementsError,
-    error: achievementsErrorMessage,
-    refetch: refetchAchievements,
-  } = useContractRead({
-    address: educationAddress,
-    abi: educationAbi,
-    functionName: 'getUserAchievements',
-    args: [userAddress],
-    enabled: contractsDeployed,
-  });
+  // For now, these functions don't exist in the current ABI, so we'll show placeholders
+  // TODO: Implement proper certificate and achievement reading when available
+  const certificates = null;
+  const certificatesLoading = false;
+  const certificatesError = false;
+  const certificatesErrorMessage = null;
+  const refetchCertificates = () => {};
+
+  const achievements = null;
+  const achievementsLoading = false;
+  const achievementsError = false;
+  const achievementsErrorMessage = null;
+  const refetchAchievements = () => {};
 
   // Handle case where contracts aren't deployed yet
   if (!contractsDeployed) {
