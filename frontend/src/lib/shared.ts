@@ -7,6 +7,7 @@ export const NETWORKS = {
     name: 'Base Sepolia',
     rpcUrl: 'https://sepolia.base.org',
     blockExplorer: 'https://sepolia.basescan.org',
+    nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   },
 };
 
