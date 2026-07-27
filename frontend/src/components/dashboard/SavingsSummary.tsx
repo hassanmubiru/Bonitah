@@ -1,14 +1,11 @@
 'use client';
 
-import { type Address } from 'viem';
 import { formatUnits } from 'viem';
 import { useEffect, useState } from 'react';
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
-import { getContractAddress, getContractAbi } from '@bfn/shared';
-import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
 
 // Define types for contract return values
 interface Goal {
@@ -65,7 +62,6 @@ export function SavingsSummary({ userAddress: _userAddress }: SavingsSummaryProp
   const activeGoals = null;
   const goalsLoading = false;
   const goalsError = false;
-  const goalsErrorMessage = null;
   const refetchGoals = () => {};
 
   // For now, since getActiveLocks doesn't exist in the ABI, we'll show a placeholder  
