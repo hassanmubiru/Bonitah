@@ -83,7 +83,7 @@ echo -e "${BLUE}📝 Creating Vercel configuration for monorepo...${NC}"
 # Create vercel.json in root for monorepo deployment
 cat > vercel.json << EOF
 {
-  "buildCommand": "pnpm run build --filter=frontend",
+  "buildCommand": "pnpm --filter=frontend run build",
   "devCommand": "cd frontend && pnpm run dev",
   "installCommand": "pnpm install",
   "framework": "nextjs",
