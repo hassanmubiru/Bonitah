@@ -67,17 +67,17 @@ export const PortfolioChart = React.memo(function PortfolioChart({ userAddress }
     refetchOnReconnect: true,
   });
 
-  // Format portfolio values for display
-  const formatPortfolioValue = (value: string) => {
+  // Format portfolio values for display - memoized for performance
+  const formatPortfolioValue = React.useCallback((value: string) => {
     const numValue = parseFloat(formatUnits(BigInt(value), 18));
     return numValue.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-  };
+  }, []);
 
   // Simple line chart using CSS and divs (since we don't have a charting library)
-  const renderSimpleChart = () => {
+  const renderSimpleChart = React.useMemo(() => {
     if (!portfolioSeries?.series || portfolioSeries.series.length === 0) {
       return (
         <div className="flex items-center justify-center h-32 text-muted-foreground">
@@ -139,7 +139,7 @@ export const PortfolioChart = React.memo(function PortfolioChart({ userAddress }
         </div>
       </div>
     );
-  };
+  }, [portfolioSeries, formatPortfolioValue]);
 
   return (
     <Card className="p-6">
@@ -174,8 +174,8 @@ export const PortfolioChart = React.memo(function PortfolioChart({ userAddress }
           </div>
         )}
 
-        {!isLoading && !isError && renderSimpleChart()}
+        {!isLoading && !isError && renderSimpleChart}
       </div>
     </Card>
   );
-}
+});
