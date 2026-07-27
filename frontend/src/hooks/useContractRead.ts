@@ -75,11 +75,11 @@ export function useContractRead({
         throw new Error('Public client not available');
       }
 
-      // Create timeout promise (10s per attempt - Req 1.6)
+      // Create timeout promise (5s per attempt - reduced for faster feedback)
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
-          reject(new Error('Contract read timeout after 10 seconds'));
-        }, 10_000);
+          reject(new Error('Contract read timeout after 5 seconds'));
+        }, 5_000);
       });
 
       // Perform the contract read with timeout
@@ -107,12 +107,12 @@ export function useContractRead({
     },
     enabled: enabled && !!publicClient,
     
-    // Retry policy (Req 1.6):
-    // - Up to 3 retries (4 total attempts: initial + 3 retries)
-    // - Exponential backoff: 1s, 2s, 4s delays between retries
+    // Retry policy (optimized for faster feedback):
+    // - Up to 2 retries (3 total attempts: initial + 2 retries)
+    // - Faster backoff: 500ms, 1s delays between retries
     retry: (failureCount, error) => {
-      // Stop retrying after 3 attempts (Req 1.6: max 3 retries)
-      if (failureCount >= 3) {
+      // Stop retrying after 2 attempts (reduced for faster feedback)
+      if (failureCount >= 2) {
         return false;
       }
 
@@ -134,14 +134,14 @@ export function useContractRead({
       return false;
     },
     
-    // Exponential backoff delay: 1000ms, 2000ms, 4000ms
-    retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 4000),
+    // Faster backoff delay: 500ms, 1000ms
+    retryDelay: (attemptIndex) => Math.min(500 * (2 ** attemptIndex), 1000),
     
-    // Cache for 30 seconds (financial data staleness policy)
-    staleTime: 30_000,
+    // Cache for 60 seconds (longer cache for better performance)
+    staleTime: 60_000,
     
-    // Keep in cache for 5 minutes after going stale
-    gcTime: 5 * 60 * 1000,
+    // Keep in cache for 10 minutes after going stale
+    gcTime: 10 * 60 * 1000,
     
     // Don't refetch on window focus (explicit user action only)
     refetchOnWindowFocus: false,

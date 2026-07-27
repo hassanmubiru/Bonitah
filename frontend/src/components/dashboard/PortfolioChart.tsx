@@ -55,12 +55,14 @@ export function PortfolioChart({ userAddress }: PortfolioChartProps) {
 
       return response.json();
     },
-    // Cache for 30 seconds to match financial data staleness policy
+    // Cache for 30 seconds to match dashboard performance expectations
     staleTime: 30_000,
     // Keep in cache for 5 minutes
     gcTime: 5 * 60 * 1000,
     // Don't refetch on window focus
     refetchOnWindowFocus: false,
+    // Enable background refetch for better UX
+    refetchOnReconnect: true,
   });
 
   // Format portfolio values for display
