@@ -70,7 +70,6 @@ export function SavingsSummary({ userAddress: _userAddress }: SavingsSummaryProp
   const activeLocks = null;
   const locksLoading = false;
   const locksError = false;
-  const locksErrorMessage = null;
   const refetchLocks = () => {};
 
   // Handle case where contracts aren't deployed yet
