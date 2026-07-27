@@ -1,1 +1,0 @@
-{"version":3,"file":"localhost.js","sourceRoot":"","sources":["../../../src/contracts/addresses/localhost.ts"],"names":[],"mappings":"AAAA,qCAAqC;AACrC,uDAAuD;AAEvD,MAAM,CAAC,MAAM,kBAAkB,GAAG;IAChC,cAAc,EAAE,4CAA4C;IAC5D,mBAAmB,EAAE,4CAA4C;IACjE,WAAW,EAAE,4CAA4C;IACzD,UAAU,EAAE,4CAA4C;IACxD,YAAY,EAAE,4CAA4C;CAClD,CAAC"}
