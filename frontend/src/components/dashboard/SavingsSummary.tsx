@@ -60,14 +60,14 @@ export function SavingsSummary({ userAddress: _userAddress }: SavingsSummaryProp
 
   // For now, since getActiveGoals doesn't exist in the ABI, we'll show a placeholder
   // TODO: Implement proper goal reading from the goals mapping
-  const activeGoals = null;
+  const activeGoals: any[] = [];
   const goalsLoading = false;
   const goalsError = false;
   const refetchGoals = () => {};
 
   // For now, since getActiveLocks doesn't exist in the ABI, we'll show a placeholder  
   // TODO: Implement proper lock reading from the locks mapping
-  const activeLocks = null;
+  const activeLocks: any[] = [];
   const locksLoading = false;
   const locksError = false;
   const refetchLocks = () => {};
