@@ -58,37 +58,21 @@ export function CommunityStats({ userAddress }: CommunityStatsProps) {
     governanceAbi = [];
   }
 
-  // Fetch user's circle memberships - always call hooks
-  const {
-    data: circleMemberships,
-    isLoading: circlesLoading,
-    isError: circlesError,
-    error: circlesErrorMessage,
-    refetch: refetchCircles,
-  } = useContractRead({
-    address: communityTreasuryAddress,
-    abi: communityTreasuryAbi,
-    functionName: 'getUserCircles',
-    args: [userAddress],
-    enabled: contractsDeployed,
-  });
+  // For now, these functions don't exist in the current ABI, so we'll show placeholders
+  // TODO: Implement proper data reading from contract mappings when available
+  const circleMemberships = null;
+  const circlesLoading = false;
+  const circlesError = false;
+  const circlesErrorMessage = null;
+  const refetchCircles = () => {};
 
-  // Fetch user's pool contributions
-  const {
-    data: poolContributions,
-    isLoading: poolsLoading,
-    isError: poolsError,
-    error: poolsErrorMessage,
-    refetch: refetchPools,
-  } = useContractRead({
-    address: communityTreasuryAddress,
-    abi: communityTreasuryAbi,
-    functionName: 'getUserPoolContributions',
-    args: [userAddress],
-    enabled: contractsDeployed,
-  });
+  const poolContributions = null;
+  const poolsLoading = false;
+  const poolsError = false;
+  const poolsErrorMessage = null;
+  const refetchPools = () => {};
 
-  // Fetch user's voting power in governance
+  // Fetch user's voting power in governance (this function exists in the ABI)
   const {
     data: votingPower,
     isLoading: votingLoading,
