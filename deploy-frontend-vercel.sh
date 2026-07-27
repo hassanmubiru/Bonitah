@@ -65,24 +65,28 @@ echo -e "${GREEN}✓ API URL configured: $SUPABASE_API_URL${NC}"
 
 # Install dependencies
 echo -e "${BLUE}📦 Installing dependencies...${NC}"
+
+# Copy shared package for deployment
+echo "Copying shared package..."
+cp -r ../shared ./node_modules/@bfn/ 2>/dev/null || {
+    mkdir -p ./node_modules/@bfn
+    cp -r ../shared ./node_modules/@bfn/
+}
+
+# Install dependencies
 if [ -f "pnpm-lock.yaml" ]; then
     echo "Using pnpm..."
     if ! command -v pnpm &> /dev/null; then
         echo "Installing pnpm..."
         npm install -g pnpm
     fi
-    pnpm install
+    pnpm install --frozen-lockfile
 elif [ -f "yarn.lock" ]; then
     echo "Using yarn..."
-    yarn install
+    yarn install --frozen-lockfile
 else
     echo "Using npm..."
-    # Remove workspace dependencies for npm
-    if grep -q "workspace:" package.json; then
-        echo "Converting workspace dependencies for npm..."
-        sed -i 's/"workspace:\*"/"*"/g' package.json
-    fi
-    npm install
+    npm ci
 fi
 
 echo -e "${GREEN}✓ Dependencies installed${NC}"
