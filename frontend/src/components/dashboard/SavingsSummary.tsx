@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
-import { useContractRead } from '@/hooks/useContractRead';
 import { getContractAddress, getContractAbi } from '@bfn/shared';
 import { BASE_SEPOLIA_CHAIN_ID } from '@bfn/shared';
 
