@@ -29,7 +29,23 @@ function RainbowKit({ children }: { children: ReactNode }) {
   }, []);
 
   // During SSR and initial hydration, use light theme to prevent mismatch
-  const theme = mounted && resolvedTheme === 'dark' ? darkTheme() : lightTheme();
+  // Create theme with safe CSS properties to avoid border=0 error
+  let theme;
+  try {
+    theme = mounted && resolvedTheme === 'dark' 
+      ? darkTheme({
+          borderRadius: 'medium',
+          accentColor: 'blue',
+        })
+      : lightTheme({
+          borderRadius: 'medium',
+          accentColor: 'blue',
+        });
+  } catch (error) {
+    // Fallback to basic light theme if theme creation fails
+    console.warn('RainbowKit theme creation failed, using fallback:', error);
+    theme = lightTheme();
+  }
 
   return (
     <RainbowKitProvider theme={theme}>
