@@ -63,9 +63,20 @@ function RainbowKit({ children }: { children: ReactNode }) {
  * - ThemeProvider applies a light default and persists the selection (Req 19).
  */
 export function Providers({ children }: { children: ReactNode }) {
-  // Create the QueryClient once per browser session with performance optimizations
+  // Create optimized QueryClient for better performance
   const [queryClient] = useState(
-    () => new QueryClient(optimizedQueryClientConfig),
+    () => new QueryClient({
+      defaultOptions: {
+        queries: {
+          // Optimized cache settings for better performance
+          staleTime: 60_000,        // 60s (longer than default)
+          gcTime: 10 * 60 * 1000,   // 10min garbage collection
+          retry: 2,                 // Reduced retries for faster failure
+          retryDelay: (attemptIndex) => Math.min(500 * (2 ** attemptIndex), 1000),
+          refetchOnWindowFocus: false, // Disable auto-refetch
+        },
+      },
+    }),
   );
 
   return (

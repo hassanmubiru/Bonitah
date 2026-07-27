@@ -34,12 +34,7 @@ const nextConfig = {
       '@radix-ui/react-switch',
       '@radix-ui/react-tabs',
     ],
-    // Enable modern bundling optimizations
-    esmExternals: true,
   },
-
-  // Move server external packages to the correct location
-  serverExternalPackages: ['viem', 'wagmi'],
 
   // Optimize images and static assets
   images: {
@@ -50,9 +45,6 @@ const nextConfig = {
   // Enable compression
   compress: true,
 
-  // Optimize build output
-  output: 'standalone',
-  
   // Reduce bundle size
   modularizeImports: {
     'lucide-react': {
