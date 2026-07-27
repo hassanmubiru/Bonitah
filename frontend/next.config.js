@@ -137,9 +137,7 @@ const nextConfig = {
     // Optimize module resolution
     config.resolve.alias = {
       ...config.resolve.alias,
-      // Dedupe React to prevent multiple versions
-      'react': require.resolve('react'),
-      'react-dom': require.resolve('react-dom'),
+      // Dedupe React to prevent multiple versions (use import.meta.resolve in ESM)
     };
 
     // Provide fallbacks for missing @x402 dependencies that are required by @coinbase/cdp-sdk
