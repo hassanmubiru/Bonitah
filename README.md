@@ -1,468 +1,179 @@
-# Bonitah Financial Network (BFN)
+# 🏦 Bonitah Financial Network (BFN)
 
-A production-quality Web3 platform for financial education, decentralized savings, and community investing on the Base Sepolia network (chain ID `84532`). The blockchain is the single source of truth for all financial state.
+**Democratizing financial education through blockchain technology and AI-powered guidance**
 
-**BFN empowers users to:**
+A decentralized platform combining real smart contracts, AI financial assistance, and educational resources to make financial literacy accessible globally.
 
-- **Save & Earn**: Deposit funds in decentralized savings vaults with transparent yield using real USDC
-- **Set Goals**: Create and track financial goals with milestone rewards
-- **Learn Together**: Access financial education with certificates and achievements
-- **Invest as Community**: Join investment circles and collaborative funding pools
-- **Govern Collectively**: Participate in protocol governance with reputation-weighted voting
+---
 
-## Real Asset Integration
-
-**BFN uses REAL financial assets - no mock data or test tokens:**
-
-- **Token**: Circle's official USDC on Base Sepolia (`0x036CbD53842c5426634e7929541eC2318f3dCF7e`)
-- **Network**: Base Sepolia testnet (Chain ID: 84532)
-- **Data**: All financial values read directly from deployed smart contracts
-- **Transactions**: All state changes require real wallet signatures
-
-_Note: While Base Sepolia is a testnet, the USDC tokens and smart contracts function identically to mainnet with real transaction signing and on-chain state._
-
-## Quick Start
-
-### Prerequisites
-
-- **Node.js** `>=20.0.0` ([Download](https://nodejs.org/))
-- **pnpm** `>=9.0.0` ([Install](https://pnpm.io/installation))
-- **Foundry** (for contract development) ([Install](https://getfoundry.sh/))
-- **Docker** & **Docker Compose** (for full-stack development)
-- **Git** with submodules support
-
-### 1. Clone and Setup
+## 🚀 **Quick Start**
 
 ```bash
-# Clone the repository with submodules
-git clone --recurse-submodules https://github.com/your-org/bonitah-financial-network.git
-cd bonitah-financial-network
-
-# Install all workspace dependencies
+# Clone and install
+git clone <repo-url>
+cd Bonitah
 pnpm install
 
-# Build shared package first (required by all other packages)
-pnpm --filter shared build
+# Start development environment
+pnpm dev        # Frontend: http://localhost:3000
+pnpm start:dev  # Backend:  http://localhost:3002
 ```
 
-### 2. Environment Configuration
+## ⚡ **Key Features**
 
-Each service requires environment variables. Copy example files and configure:
+- 🔗 **Real Smart Contracts** - Base Sepolia integration with USDC
+- 🤖 **AI Financial Assistant** - Ollama Cloud (Qwen 2.5 72B) + DeepSeek fallback  
+- 💰 **DeFi Savings** - Smart contract-based savings vault
+- 🎓 **Financial Education** - Interactive courses with on-chain certificates
+- 🌍 **Global Access** - Wallet-based authentication, works anywhere
+
+## 🏗️ **Architecture**
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────────┐
+│   Frontend  │───▶│   Backend    │───▶│ Smart Contracts │
+│  (Next.js)  │    │  (NestJS)    │    │  (Base Sepolia) │
+└─────────────┘    └──────────────┘    └─────────────────┘
+       │                   │                      │
+       │                   ▼                      │
+       │            ┌──────────────┐              │
+       │            │      AI      │              │
+       └────────────│  (Ollama)    │──────────────┘
+                    └──────────────┘
+```
+
+## 📁 **Project Structure**
+
+```
+Bonitah/
+├── frontend/          # Next.js 16 + React 19 + RainbowKit
+├── backend/           # NestJS + Prisma + Redis
+├── contracts/         # Foundry smart contracts
+├── shared/            # TypeScript shared types/utils
+├── docs/              # All documentation (organized!)
+│   ├── deployment/    # Deployment guides
+│   ├── integration/   # Integration docs  
+│   ├── performance/   # Performance optimization
+│   └── testing/       # Test documentation
+└── scripts/           # Deployment and utility scripts
+```
+
+## 🛠️ **Technology Stack**
+
+### **Frontend**
+- **Next.js 16** - React framework with App Router
+- **React 19** - Latest React with concurrent features
+- **RainbowKit** - Wallet connection and Web3 UI
+- **TailwindCSS** - Utility-first styling
+- **Wagmi + Viem** - Type-safe Ethereum interactions
+
+### **Backend**  
+- **NestJS** - Scalable Node.js framework
+- **Prisma** - Type-safe database ORM
+- **Redis** - High-performance caching
+- **JWT** - Secure authentication
+- **AI Integration** - Multiple provider support
+
+### **Blockchain**
+- **Base Sepolia** - Layer 2 testnet
+- **Foundry** - Smart contract development
+- **Real USDC** - Circle's official stablecoin
+- **Viem** - Type-safe contract interactions
+
+### **AI & Education**
+- **Ollama Cloud** - Qwen 2.5 72B model
+- **DeepSeek** - Cost-effective fallback
+- **Financial Guidance** - Contextual AI assistance
+- **On-chain Certificates** - Verifiable achievements
+
+## 🌟 **Current Status**
+
+- ✅ **Smart Contracts**: Deployed on Base Sepolia with real USDC
+- ✅ **Frontend**: Production-ready with wallet integration  
+- ✅ **Backend**: Full API with authentication and AI
+- ✅ **AI Integration**: Ollama Cloud + DeepSeek working
+- ✅ **Performance**: Optimized (63% faster loading)
+- ✅ **Documentation**: Comprehensive guides available
+
+## 📚 **Documentation**
+
+- **[Deployment Guide](docs/deployment/production-deployment-guide.md)** - Production deployment
+- **[AI Integration](docs/integration/ollama-cloud-integration.md)** - Ollama Cloud setup
+- **[Performance Optimization](docs/performance/performance-optimization.md)** - Speed improvements  
+- **[Real Contracts Integration](docs/integration/REAL_CONTRACTS_INTEGRATION_COMPLETE.md)** - Blockchain setup
+
+## 💡 **Development**
 
 ```bash
-# Backend environment
+# Install dependencies
+pnpm install
+
+# Environment setup
 cp backend/.env.example backend/.env
-# Configure: DATABASE_URL, REDIS_URL, JWT_SECRET, BASE_SEPOLIA_RPC_URL
-
-# Contracts environment
-cp contracts/.env.example contracts/.env
-# Configure: PRIVATE_KEY, BASE_SEPOLIA_RPC_URL, BASESCAN_API_KEY
-
-# Frontend environment
 cp frontend/.env.example frontend/.env.local
-# Configure: NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
+# Configure your environment variables
+
+# Database setup
+cd backend && pnpm db:migrate && pnpm db:seed
+
+# Start development
+pnpm dev          # Frontend development server
+pnpm start:dev    # Backend development server
 ```
 
-### 3. Database Setup
+## 🧪 **Testing**
 
 ```bash
-# Start PostgreSQL and Redis
-docker compose up -d postgres redis
+# Frontend tests
+cd frontend && pnpm test
 
-# Initialize database
-cd backend
-pnpm prisma migrate dev
-pnpm prisma db seed
+# Backend tests  
+cd backend && pnpm test
+
+# Smart contract tests
+cd contracts && forge test
+
+# E2E tests
+cd frontend && pnpm test:e2e
 ```
 
-### 4. Smart Contract Deployment
+## 🚀 **Deployment**
 
 ```bash
-cd contracts
-
-# Compile and test contracts
-forge build
-forge test
-
-# Deploy to Base Sepolia (requires funded wallet)
-pnpm deploy:sepolia
-```
-
-### 5. Start Development Services
-
-```bash
-# Terminal 1: Backend API
-cd backend && pnpm dev
-
-# Terminal 2: Frontend
-cd frontend && pnpm dev
-
-# Terminal 3: Contract development (optional)
-cd contracts && forge test --watch
-```
-
-**Access the application:**
-
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:3001
-- API Documentation: http://localhost:3001/docs
-
----
-
-## Development Workflow
-
-### Workspace Scripts
-
-Run from the repository root:
-
-```bash
-pnpm install        # install workspace dependencies
-pnpm lint           # ESLint + Prettier check across the monorepo
-pnpm lint:fix       # auto-fix lint and formatting issues
-pnpm format         # write Prettier formatting
-pnpm typecheck      # type-check all workspace packages
-pnpm test           # run tests across all workspace packages
-pnpm build          # build all workspace packages
-pnpm clean          # clean build artifacts across all packages
-```
-
-### Per-Service Commands
-
-#### Contracts (`contracts/`)
-
-```bash
-cd contracts
-
-# Development
-forge build                 # compile contracts
-forge test                  # run all tests
-forge test --gas-report     # test with gas usage
-forge coverage              # generate coverage report
-
-# Deployment
-pnpm deploy:sepolia         # deploy to Base Sepolia
-pnpm verify:deployment      # verify deployed contracts
-```
-
-#### Backend (`backend/`)
-
-```bash
-cd backend
-
-# Development
-pnpm dev                    # start development server
-pnpm test                   # run unit tests
-pnpm test:e2e              # run end-to-end tests
-pnpm test:cov              # test with coverage
-
-# Database
-pnpm prisma:generate       # generate Prisma client
-pnpm prisma:migrate        # run migrations
-pnpm prisma:seed           # seed database
-pnpm prisma:studio         # open Prisma Studio
-
-# Production
-pnpm build                 # build for production
-pnpm start                 # start production server
-```
-
-#### Frontend (`frontend/`)
-
-```bash
-cd frontend
-
-# Development
-pnpm dev                   # start development server
-pnpm test                  # run unit tests
-pnpm test:e2e              # run Playwright e2e tests
-pnpm storybook             # start Storybook
-
-# Production
-pnpm build                 # build for production
-pnpm start                 # start production server
-pnpm analyze               # analyze bundle size
-```
-
-#### Shared (`shared/`)
-
-```bash
-cd shared
-
-# Build (required before using in other packages)
-pnpm build                 # generate types and build
-pnpm watch                 # build in watch mode
-```
-
----
-
-## Environment Variables
-
-### Required Environment Variables
-
-#### Backend (`.env`)
-
-```bash
-# Database
-DATABASE_URL="postgresql://user:pass@localhost:5432/bfn_dev"
-REDIS_URL="redis://localhost:6379"
-
-# Authentication
-JWT_SECRET="your-super-secret-jwt-key"
-SIWE_DOMAIN="localhost"
-
-# Blockchain
-BASE_SEPOLIA_RPC_URL="https://sepolia.base.org"
-INDEXER_START_BLOCK="12345678"
-
-# External Services
-OPENAI_API_KEY="sk-..."
-PINATA_JWT="eyJ..."
-
-# Server
-PORT="3001"
-NODE_ENV="development"
-```
-
-#### Contracts (`.env`)
-
-```bash
-# Deployment
-PRIVATE_KEY="0x..."
-BASE_SEPOLIA_RPC_URL="https://sepolia.base.org"
-BASESCAN_API_KEY="your-basescan-api-key"
-
-# Optional: Tenderly for debugging
-TENDERLY_PROJECT="your-project"
-TENDERLY_USERNAME="your-username"
-```
-
-#### Frontend (`.env.local`)
-
-```bash
-# WalletConnect
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID="your-project-id"
-
-# Backend API
-NEXT_PUBLIC_API_URL="http://localhost:3001"
-
-# Analytics (optional)
-NEXT_PUBLIC_GA_MEASUREMENT_ID="G-XXXXXXXXXX"
-```
-
----
-
-## Docker Development
-
-### Full Stack with Docker Compose
-
-```bash
-# Start all services
-docker compose up -d
-
-# View logs
-docker compose logs -f
-
-# Stop all services
-docker compose down
-
-# Rebuild and restart
-docker compose up -d --build
-```
-
-### Individual Services
-
-```bash
-# Database services only
-docker compose up -d postgres redis
-
-# Backend only
-docker compose up -d backend
-
-# Frontend only
-docker compose up -d frontend
-```
-
----
-
-## Testing
-
-### Contract Tests
-
-```bash
-cd contracts
-forge test -vv                    # run with verbosity
-forge test --gas-report           # include gas usage
-forge test --match-contract Registry  # test specific contract
-```
-
-### Backend Tests
-
-```bash
-cd backend
-pnpm test                         # unit tests
-pnpm test:e2e                     # end-to-end tests
-pnpm test:cov                     # with coverage report
-```
-
-### Frontend Tests
-
-```bash
-cd frontend
-pnpm test                         # unit & component tests
-pnpm test:e2e                     # Playwright e2e tests
-pnpm test:e2e --ui                # with Playwright UI
-```
-
-### Cross-Package Tests
-
-```bash
-# From repo root
-pnpm test                         # run all test suites
-pnpm test:ci                      # CI-optimized test run
-```
-
----
-
-## Building & Deployment
-
-### Local Build
-
-```bash
-# Build all packages
+# Build for production
 pnpm build
 
-# Build specific packages
-pnpm --filter contracts build
-pnpm --filter shared build
-pnpm --filter backend build
-pnpm --filter frontend build
+# Deploy smart contracts (Base Sepolia)
+cd contracts && ./scripts/deploy-base-sepolia.sh
+
+# Deploy backend (Docker + Railway)
+docker build -t bfn-backend ./backend
+# See deployment docs for full guide
+
+# Deploy frontend (Vercel)
+vercel deploy
 ```
 
-### Production Deployment
-
-1. **Deploy Smart Contracts**
-
-   ```bash
-   cd contracts
-   pnpm deploy:sepolia
-   ```
-
-2. **Build & Deploy Backend**
-
-   ```bash
-   cd backend
-   pnpm build
-   # Deploy to your preferred platform (AWS, Railway, etc.)
-   ```
-
-3. **Build & Deploy Frontend**
-   ```bash
-   cd frontend
-   pnpm build
-   # Deploy to Vercel, Netlify, or CDN
-   ```
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-#### Build Failures
-
-```bash
-# Clear all node_modules and reinstall
-rm -rf node_modules */node_modules
-pnpm install
-
-# Clear build caches
-pnpm clean
-pnpm build
-```
-
-#### Database Issues
-
-```bash
-# Reset database
-cd backend
-pnpm prisma migrate reset
-pnpm prisma db seed
-```
-
-#### Contract Deployment Issues
-
-```bash
-# Check network connection and gas
-cast client $BASE_SEPOLIA_RPC_URL
-cast balance $YOUR_ADDRESS --rpc-url $BASE_SEPOLIA_RPC_URL
-
-# Clean and rebuild
-cd contracts
-forge clean
-forge build
-```
-
-#### Frontend Connection Issues
-
-- Ensure wallet is connected to Base Sepolia (Chain ID: 84532)
-- Check that contract addresses are updated in `shared/src/addresses.ts`
-- Verify RPC endpoint is accessible
-
-### Getting Help
-
-- **Documentation**: Check the `docs/` directory for detailed guides
-- **Issues**: Open an issue on GitHub with reproduction steps
-- **Community**: Join our Discord for community support
-- **Email**: For private inquiries, contact support@bonitah.finance
-
----
-
-## Project Status
-
-| Component       | Status      | Test Coverage | Notes                     |
-| --------------- | ----------- | ------------- | ------------------------- |
-| Smart Contracts | ✅ Complete | >90%          | All 5 contracts deployed  |
-| Backend API     | ✅ Complete | >80%          | Full SIWE auth & indexing |
-| Frontend App    | ✅ Complete | >80%          | All pages implemented     |
-| Documentation   | ✅ Complete | N/A           | API & contract docs       |
-| CI/CD Pipeline  | ✅ Complete | N/A           | GitHub Actions            |
-| Docker Setup    | ✅ Complete | N/A           | Multi-stage builds        |
-
----
-
-## Contributing
+## 🤝 **Contributing**
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and add tests
-4. Run the full test suite: `pnpm test`
-5. Commit with conventional commit messages: `git commit -m 'feat: add amazing feature'`
-6. Push to your branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-### Development Guidelines
+## 📄 **License**
 
-- Follow the existing code style and conventions
-- Add tests for new functionality
-- Update documentation as needed
-- Ensure all CI checks pass
-- Keep commits focused and atomic
+MIT License - see [LICENSE](LICENSE) file for details.
 
----
+## 🌍 **Mission**
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Democratizing financial education by combining:
+- **Blockchain transparency** for trust and verification
+- **AI guidance** for personalized learning  
+- **Real assets** for practical experience
+- **Global accessibility** for universal impact
 
 ---
 
-## Acknowledgments
-
-- **Base**: For providing the Layer 2 infrastructure
-- **OpenZeppelin**: For secure smart contract primitives
-- **RainbowKit**: For excellent wallet connection UX
-- **NestJS**: For the robust backend framework
-- **Next.js**: For the powerful React framework
-- **Foundry**: For the best-in-class Solidity tooling
-
-Built with care by the BFN team
+**Built with ❤️ for global financial literacy**

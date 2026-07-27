@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "supabase": "https://esm.sh/@supabase/supabase-js@2.45.4",
+    "viem": "https://esm.sh/viem@2.21.19",
+    "viem/chains": "https://esm.sh/viem@2.21.19/chains",
+    "siwe": "https://esm.sh/siwe@2.3.2",
+    "crypto": "https://deno.land/std@0.208.0/crypto/mod.ts"
+  }
+}
