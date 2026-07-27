@@ -47,12 +47,12 @@ export function CommunityStats({ userAddress: _userAddress }: CommunityStatsProp
 
   // For now, these functions don't exist in the current ABI, so we'll show placeholders
   // TODO: Implement proper data reading from contract mappings when available
-  const circleMemberships = null;
+  const circleMemberships: any[] = [];
   const circlesLoading = false;
   const circlesError = false;
   const refetchCircles = () => {};
 
-  const poolContributions = null;
+  const poolContributions: any[] = [];
   const poolsLoading = false;
   const poolsError = false;
   const refetchPools = () => {};
