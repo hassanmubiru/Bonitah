@@ -1,5 +1,6 @@
 'use client';
 
+import { type Address } from 'viem';
 import { formatUnits } from 'viem';
 import { useEffect, useState } from 'react';
 
