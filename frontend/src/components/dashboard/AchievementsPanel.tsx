@@ -30,7 +30,7 @@ interface AchievementsPanelProps {
 
 /**
  * Achievements panel showing certificates earned, reputation score, and badges.
- * 
+ *
  * Requirements: 11.1, 11.3, 11.4, 11.5, 11.6
  * - Certificates from Education contract
  * - Reputation score from Registry contract  
@@ -42,7 +42,7 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
   let registryAddress: Address;
   let registryAbi;
   let contractsDeployed = true;
-  
+
   try {
     registryAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'Registry');
     registryAbi = getContractAbi('Registry');
@@ -71,13 +71,11 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
   const certificates = null;
   const certificatesLoading = false;
   const certificatesError = false;
-  const certificatesErrorMessage = null;
   const refetchCertificates = () => {};
 
   const achievements = null;
   const achievementsLoading = false;
   const achievementsError = false;
-  const achievementsErrorMessage = null;
   const refetchAchievements = () => {};
 
   // Handle case where contracts aren't deployed yet
@@ -98,10 +96,11 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
 
   const isLoading = reputationLoading || certificatesLoading || achievementsLoading;
   const hasError = reputationError || certificatesError || achievementsError;
-  const errorMessage = reputationError?.message || 
-                      certificatesError?.message ||
-                      achievementsError?.message ||
-                      'Failed to load achievements data';
+  const errorMessage =
+    reputationError?.message ||
+    certificatesError?.message ||
+    achievementsError?.message ||
+    'Failed to load achievements data';
 
   const handleRetry = () => {
     if (reputationError) refetchReputation();
@@ -112,13 +111,16 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
   // Calculate achievement level based on reputation score
   const getAchievementLevel = (score: bigint | undefined) => {
     if (!score) return { level: 'Newcomer', progress: 0, next: 100 };
-    
+
     const scoreNum = Number(score);
     if (scoreNum >= 1000) return { level: 'Expert', progress: 100, next: null };
-    if (scoreNum >= 500) return { level: 'Advanced', progress: ((scoreNum - 500) / 500) * 100, next: 1000 };
-    if (scoreNum >= 200) return { level: 'Intermediate', progress: ((scoreNum - 200) / 300) * 100, next: 500 };
-    if (scoreNum >= 100) return { level: 'Beginner', progress: ((scoreNum - 100) / 100) * 100, next: 200 };
-    
+    if (scoreNum >= 500)
+      return { level: 'Advanced', progress: ((scoreNum - 500) / 500) * 100, next: 1000 };
+    if (scoreNum >= 200)
+      return { level: 'Intermediate', progress: ((scoreNum - 200) / 300) * 100, next: 500 };
+    if (scoreNum >= 100)
+      return { level: 'Beginner', progress: ((scoreNum - 100) / 100) * 100, next: 200 };
+
     return { level: 'Newcomer', progress: scoreNum, next: 100 };
   };
 
@@ -130,12 +132,7 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Achievements</h3>
           {hasError && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleRetry}
-              disabled={isLoading}
-            >
+            <Button variant="outline" size="sm" onClick={handleRetry} disabled={isLoading}>
               Retry
             </Button>
           )}
@@ -178,8 +175,8 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
                 </div>
                 {achievementLevel.next && (
                   <div className="w-full bg-muted rounded-full h-2">
-                    <div 
-                      className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                    <div
+                      className="bg-purple-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${Math.min(achievementLevel.progress, 100)}%` }}
                     />
                   </div>
@@ -192,21 +189,24 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium">Certificates</h4>
                 <span className="text-sm text-muted-foreground">
-                  {certificates && Array.isArray(certificates) 
-                    ? (certificates as Certificate[]).length 
-                    : 0} earned
+                  {certificates && Array.isArray(certificates)
+                    ? (certificates as Certificate[]).length
+                    : 0}{' '}
+                  earned
                 </span>
               </div>
               {certificates && Array.isArray(certificates) && certificates.length > 0 ? (
                 <div className="space-y-2">
-                  {(certificates as Certificate[]).slice(0, 3).map((cert: Certificate, index: number) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span>Certificate #{Number(cert.id)}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(Number(cert.issuedAt) * 1000).toLocaleDateString()}
-                      </span>
-                    </div>
-                  ))}
+                  {(certificates as Certificate[])
+                    .slice(0, 3)
+                    .map((cert: Certificate, index: number) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <span>Certificate #{Number(cert.id)}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(Number(cert.issuedAt) * 1000).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ))}
                   {(certificates as Certificate[]).length > 3 && (
                     <p className="text-xs text-muted-foreground">
                       +{(certificates as Certificate[]).length - 3} more certificates
@@ -223,21 +223,24 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium">Badges</h4>
                 <span className="text-sm text-muted-foreground">
-                  {achievements && Array.isArray(achievements) 
-                    ? (achievements as Achievement[]).length 
-                    : 0} unlocked
+                  {achievements && Array.isArray(achievements)
+                    ? (achievements as Achievement[]).length
+                    : 0}{' '}
+                  unlocked
                 </span>
               </div>
               {achievements && Array.isArray(achievements) && achievements.length > 0 ? (
                 <div className="grid grid-cols-3 gap-2">
-                  {(achievements as Achievement[]).slice(0, 6).map((achievement: Achievement, index: number) => (
-                    <div key={index} className="text-center p-2 rounded bg-muted/50">
-                      <div className="text-lg">🏆</div>
-                      <div className="text-xs font-medium truncate">
-                        {achievement.title || `Achievement ${index + 1}`}
+                  {(achievements as Achievement[])
+                    .slice(0, 6)
+                    .map((achievement: Achievement, index: number) => (
+                      <div key={index} className="text-center p-2 rounded bg-muted/50">
+                        <div className="text-lg">🏆</div>
+                        <div className="text-xs font-medium truncate">
+                          {achievement.title || `Achievement ${index + 1}`}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               ) : (
                 <div className="grid grid-cols-3 gap-2">
