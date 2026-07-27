@@ -55,7 +55,6 @@ export function CommunityStats({ userAddress: _userAddress }: CommunityStatsProp
   const poolContributions = null;
   const poolsLoading = false;
   const poolsError = false;
-  const poolsErrorMessage = null;
   const refetchPools = () => {};
 
   // Contract reads disabled for now - placeholder implementation
