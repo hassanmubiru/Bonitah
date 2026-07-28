@@ -118,10 +118,10 @@ export function useSiweAuth() {
   const signIn = useCallback(async () => {
     const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
 
-    if (!address || !isConnected || chainId !== BASE_SEPOLIA_CHAIN_ID) {
+    if (!address || !isConnected) {
       setAuthState((prev) => ({
         ...prev,
-        error: 'Please connect your wallet to Base Sepolia network',
+        error: 'Please connect your wallet first',
       }));
       return;
     }
