@@ -215,7 +215,7 @@ export const RecentTransactions = React.memo(function RecentTransactions({
           </div>
         )}
 
-        {transactions?.events && transactions?.data?.transactions.length >= 50 && (
+        {transactions?.data?.transactions && transactions?.data?.transactions.length >= 50 && (
           <div className="text-center pt-4 border-t">
             <Button variant="outline" size="sm">
               View All Transactions

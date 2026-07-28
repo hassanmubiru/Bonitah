@@ -12,7 +12,7 @@ export const NETWORKS = {
 };
 
 // Contract addresses
-const contractAddresses = {
+const contractAddresses: Record<number, Record<string, string>> = {
   84532: {
     Registry: '0xBd81a62b21eaE93D74daB2B2D93e040D51f75db1',
     SavingsVault: '0x16E88B4a717B082f8d29C4EeA0796F488C0da7B6',
@@ -29,7 +29,7 @@ export function getContractAddress(contractName: string, chainId = BASE_SEPOLIA_
 
 export function getContractAbi(contractName: string): any[] {
   // Simplified ABIs - in a real deployment these would be the full ABIs
-  const abis = {
+  const abis: Record<string, any[]> = {
     Registry: [
       {
         inputs: [{ name: 'user', type: 'address' }],
