@@ -1,0 +1,16 @@
+{
+  "projectId": "prj_g3KsJJBJvoBhmeqLD5sHvdQbXKMI",
+  "orgId": "team_na5gYS9E9CvsAPzFrvKW4WeE",
+  "projectName": "bonitah",
+  "settings": {
+    "createdAt": 1785212177373,
+    "framework": "nextjs",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}

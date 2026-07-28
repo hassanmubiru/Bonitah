@@ -1,0 +1,29 @@
+{
+  "type": "Prerender",
+  "expiration": false,
+  "isDynamicRoute": false,
+  "group": 5,
+  "bypassToken": "8039044efacb7c1754eae1689c7edc85",
+  "experimentalBypassFor": [
+    {
+      "type": "header",
+      "key": "Next-Action"
+    },
+    {
+      "type": "header",
+      "key": "content-type",
+      "value": "multipart/form-data;.*"
+    }
+  ],
+  "fallback": {
+    "type": "FileFsRef",
+    "mode": 33188,
+    "fsPath": "savings.rsc.prerender-fallback.rsc"
+  },
+  "initialHeaders": {
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/savings/layout,_N_T_/savings/page,_N_T_/savings",
+    "vary": "RSC, Next-Router-State-Tree, Next-Router-Prefetch",
+    "content-type": "text/x-component"
+  },
+  "allowQuery": []
+}
