@@ -1,15 +1,20 @@
 {
-  "buildCommand": "pnpm run build --filter=frontend",
-  "devCommand": "cd frontend && pnpm run dev",
-  "installCommand": "pnpm install --frozen-lockfile",
-  "framework": "nextjs",
-  "rootDirectory": "frontend",
-  "regions": ["iad1"],
-  "functions": {
-    "frontend/src/pages/api/**/*.ts": {
-      "maxDuration": 30
+  "services": [
+    {
+      "name": "frontend",
+      "buildCommand": "pnpm run build",
+      "devCommand": "pnpm run dev",
+      "installCommand": "pnpm install --frozen-lockfile",
+      "framework": "nextjs",
+      "rootDirectory": "frontend",
+      "functions": {
+        "src/pages/api/**/*.ts": {
+          "maxDuration": 30
+        }
+      }
     }
-  },
+  ],
+  "regions": ["iad1"],
   "headers": [
     {
       "source": "/(.*)",
@@ -19,7 +24,7 @@
           "value": "same-origin-allow-popups"
         },
         {
-          "key": "Cross-Origin-Embedder-Policy", 
+          "key": "Cross-Origin-Embedder-Policy",
           "value": "unsafe-none"
         },
         {
