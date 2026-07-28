@@ -198,6 +198,22 @@ async function handleAuth(req: Request, path: string, corsHeaders: Record<string
     return jsonResponse({ nonce }, corsHeaders)
   }
 
+  if (path === '/auth/me' && req.method === 'GET') {
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return jsonResponse({ error: 'Unauthorized' }, corsHeaders, 401)
+    }
+    try {
+      const payload = await verifyJWT(authHeader.slice(7))
+      if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+        return jsonResponse({ error: 'Token expired' }, corsHeaders, 401)
+      }
+      return jsonResponse({ address: payload.address, role: payload.role || 'user' }, corsHeaders)
+    } catch {
+      return jsonResponse({ error: 'Invalid token' }, corsHeaders, 401)
+    }
+  }
+
   if (path === '/auth/verify' && req.method === 'POST') {
     const { message, signature } = await req.json()
     
