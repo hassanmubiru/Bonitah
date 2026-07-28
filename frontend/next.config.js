@@ -45,25 +45,9 @@ const nextConfig = {
   // Enable compression
   compress: true,
 
-  // Turbopack configuration (Next.js 16+ default in dev mode)
-  turbopack: {
-    root: '/home/error51/project/Bonitah',
-    resolveAlias: {
-      '@x402/evm/upto/client': './public/x402-fallback.js',
-      '@x402/evm/exact/client': './public/x402-fallback.js',
-      '@x402/core/client': './public/x402-fallback.js',
-      '@x402/svm/exact/client': './public/x402-fallback.js',
-      '@x402/evm': './public/x402-fallback.js',
-      '@x402/svm': './public/x402-fallback.js',
-      '@x402/core': './public/x402-fallback.js',
-      '@react-native-async-storage/async-storage': './public/x402-fallback.js',
-    },
-  },
-
   // Simplified webpack configuration for stability
   webpack: (config, { isServer }) => {
-    // Provide fallbacks for missing @x402 dependencies that are required by @coinbase/cdp-sdk
-    // and React Native dependencies that MetaMask SDK tries to import
+    // Provide fallbacks for missing @x402 dependencies
     config.resolve = config.resolve || {};
     config.resolve.fallback = {
       ...config.resolve.fallback,
