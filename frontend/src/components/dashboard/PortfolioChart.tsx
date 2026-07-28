@@ -24,7 +24,9 @@ interface PortfolioChartProps {
  * - Proper loading/error/retry states
  * - Responsive design
  */
-export const PortfolioChart = React.memo(function PortfolioChart({ userAddress }: PortfolioChartProps) {
+export const PortfolioChart = React.memo(function PortfolioChart({
+  userAddress,
+}: PortfolioChartProps) {
   // Fetch portfolio series data from backend analytics API
   const {
     data: portfolioSeries,
@@ -78,7 +80,7 @@ export const PortfolioChart = React.memo(function PortfolioChart({ userAddress }
 
   // Simple line chart using CSS and divs (since we don't have a charting library)
   const renderSimpleChart = React.useMemo(() => {
-    if (!portfolioSeries?.series || portfolioSeries.series.length === 0) {
+    if (!portfolioSeries?.data?.series || portfolioSeries.data.series.length === 0) {
       return (
         <div className="flex items-center justify-center h-32 text-muted-foreground">
           No portfolio data available yet
@@ -86,7 +88,7 @@ export const PortfolioChart = React.memo(function PortfolioChart({ userAddress }
       );
     }
 
-    const series = portfolioSeries.series;
+    const series = portfolioSeries.data.series;
     const values = series.map((point) => parseFloat(formatUnits(BigInt(point.value), 18)));
     const maxValue = Math.max(...values);
     const minValue = Math.min(...values);
