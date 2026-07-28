@@ -30,7 +30,7 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
   let contractsDeployed = true;
   
   try {
-    savingsVaultAddress = getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+    savingsVaultAddress = getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID);
     savingsVaultAbi = getContractAbi('SavingsVault');
   } catch {
     contractsDeployed = false;
