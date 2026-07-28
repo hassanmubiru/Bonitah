@@ -79,7 +79,7 @@ export function useSavingsVaultBalances() {
   // Safely get contract address - return empty state if not deployed
   const contractAddress = useMemo(() => {
     try {
-      return getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+      return getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID);
     } catch (error) {
       console.warn('SavingsVault not deployed, using mock state:', error);
       return null;
@@ -147,7 +147,7 @@ export function useSavingsVaultBalances() {
 export function useSavingsVaultDeposit() {
   const contractAddress = useMemo(() => {
     try {
-      return getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+      return getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID);
     } catch (error) {
       console.warn('SavingsVault not deployed, deposit unavailable:', error);
       return null;
@@ -210,7 +210,7 @@ export function useSavingsVaultDeposit() {
 export function useSavingsVaultWithdraw() {
   const contractAddress = useMemo(() => {
     try {
-      return getContractAddress(BASE_SEPOLIA_CHAIN_ID, 'SavingsVault');
+      return getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID);
     } catch (error) {
       console.warn('SavingsVault not deployed, withdraw unavailable:', error);
       return null;
