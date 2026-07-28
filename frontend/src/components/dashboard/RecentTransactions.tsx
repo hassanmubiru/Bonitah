@@ -121,16 +121,6 @@ export const RecentTransactions = React.memo(function RecentTransactions({
     [],
   ); // No dependencies needed for this formatter
 
-  // Format amount values (assuming 18 decimals) - memoized for performance
-  const formatAmount = React.useCallback((amount: string | undefined) => {
-    if (!amount) return '0.00';
-    const numValue = parseFloat(amount) / Math.pow(10, 18);
-    return numValue.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  }, []);
-
   // Format timestamp - memoized for performance
   const formatTimestamp = React.useCallback((timestamp?: string) => {
     if (!timestamp) return 'Recent';
@@ -185,12 +175,7 @@ export const RecentTransactions = React.memo(function RecentTransactions({
           <div className="space-y-3 max-h-80 overflow-y-auto">
             {transactions?.data?.transactions && transactions?.data?.transactions.length > 0 ? (
               transactions.data.transactions.map((transaction, index) => {
-                const formatted = {
-                  type: transaction.type,
-                  description: `${transaction.type}: ${transaction.amount}`,
-                  icon: '💰',
-                  color: 'text-green-600',
-                };
+                const formatted = formatTransaction(transaction);
                 return (
                   <div
                     key={index}
@@ -203,7 +188,7 @@ export const RecentTransactions = React.memo(function RecentTransactions({
                           {formatted.type}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {formatTimestamp(event.blockNumber)}
+                          {formatTimestamp(transaction.timestamp)}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground truncate">
@@ -211,15 +196,9 @@ export const RecentTransactions = React.memo(function RecentTransactions({
                       </p>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      <a
-                        href={`https://sepolia.basescan.org/tx/${event.transactionHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-blue-600 transition-colors"
-                        title="View on BaseScan"
-                      >
-                        View →
-                      </a>
+                      <span className="hover:text-blue-600 transition-colors" title="Transaction ID">
+                        #{index + 1}
+                      </span>
                     </div>
                   </div>
                 );
