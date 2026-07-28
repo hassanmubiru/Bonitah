@@ -3,7 +3,7 @@
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
-import { createPublicClient, http, formatUnits, parseAbiItem, verifyMessage } from 'https://esm.sh/viem@2.21.19'
+import { createPublicClient, http, formatUnits, parseAbiItem, recoverMessageAddress } from 'https://esm.sh/viem@2.21.19'
 import { baseSepolia } from 'https://esm.sh/viem@2.21.19/chains'
 
 // Contract addresses from shared package
@@ -224,15 +224,14 @@ async function handleAuth(req: Request, path: string, corsHeaders: Record<string
         throw new Error('Invalid SIWE message format')
       }
       
-      // Verify the signature using viem
-      const isValid = await verifyMessage({
-        address: parsed.address as `0x${string}`,
+      // Verify the signature using viem - recover the signer address
+      const recoveredAddress = await recoverMessageAddress({
         message,
         signature: signature as `0x${string}`
       })
       
-      if (!isValid) {
-        throw new Error('Signature verification failed')
+      if (recoveredAddress.toLowerCase() !== parsed.address.toLowerCase()) {
+        throw new Error('Signature verification failed - address mismatch')
       }
       
       // Verify nonce if it exists in store (may not exist if edge function restarted)
