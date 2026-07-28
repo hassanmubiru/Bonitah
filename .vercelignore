@@ -1,0 +1,8 @@
+# Vercel build ignore
+node_modules
+.git
+coverage
+.nyc_output
+*.log
+.DS_Store
+Thumbs.db
