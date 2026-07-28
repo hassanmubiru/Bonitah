@@ -187,7 +187,7 @@ export const RecentTransactions = React.memo(function RecentTransactions({ userA
         {!isLoading && !isError && (
           <div className="space-y-3 max-h-80 overflow-y-auto">
             {transactions?.events && transactions.events.length > 0 ? (
-              transactions.events.map((event, index) => {
+              transactions.data.transactions.map((event, index) => {
                 const formatted = formatTransactionEvent(event);
                 return (
                   <div
