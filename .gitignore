@@ -49,3 +49,6 @@ Thumbs.db
 
 # Kiro AI development environment
 .kiro/
+
+# Local Netlify folder
+.netlify
