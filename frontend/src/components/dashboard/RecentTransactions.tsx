@@ -22,7 +22,9 @@ interface RecentTransactionsProps {
  * - Proper loading/error/retry states
  * - Transaction details with proper formatting
  */
-export const RecentTransactions = React.memo(function RecentTransactions({ userAddress }: RecentTransactionsProps) {
+export const RecentTransactions = React.memo(function RecentTransactions({
+  userAddress,
+}: RecentTransactionsProps) {
   // Fetch recent transactions from backend API
   const {
     data: transactions,
@@ -66,72 +68,72 @@ export const RecentTransactions = React.memo(function RecentTransactions({ userA
   });
 
   // Format transaction event for display - memoized for performance
-  const formatTransactionEvent = React.useCallback((event: {
-    eventName: string;
-    payload: Record<string, unknown>;
-  }) => {
-    const eventName = event.eventName;
-    const payload = event.payload;
+  const formatTransactionEvent = React.useCallback(
+    (event: { eventName: string; payload: Record<string, unknown> }) => {
+      const eventName = event.eventName;
+      const payload = event.payload;
 
-    switch (eventName) {
-      case 'DepositMade':
-        return {
-          type: 'Deposit',
-          description: `Deposited ${formatAmount(payload['amount'] as string)}`,
-          icon: '💰',
-          color: 'text-green-600',
-        };
-      case 'WithdrawalMade':
-        return {
-          type: 'Withdrawal',
-          description: `Withdrew ${formatAmount(payload['amount'] as string)}`,
-          icon: '💸',
-          color: 'text-red-600',
-        };
-      case 'GoalCreated':
-        return {
-          type: 'Goal',
-          description: `Created goal ${payload['goalId']} for ${formatAmount(payload['targetAmount'] as string)}`,
-          icon: '🎯',
-          color: 'text-blue-600',
-        };
-      case 'GoalCompleted':
-        return {
-          type: 'Goal',
-          description: `Completed goal ${payload['goalId']}`,
-          icon: '🏆',
-          color: 'text-purple-600',
-        };
-      case 'ContributionMade':
-        return {
-          type: 'Contribution',
-          description: `Contributed ${formatAmount(payload['amount'] as string)} to pool ${payload['poolId']}`,
-          icon: '🤝',
-          color: 'text-orange-600',
-        };
-      case 'VoteCast':
-        return {
-          type: 'Vote',
-          description: `Voted on ${payload['proposalId'] || payload['actionId']}`,
-          icon: '🗳️',
-          color: 'text-indigo-600',
-        };
-      case 'CertificateIssued':
-        return {
-          type: 'Certificate',
-          description: `Earned certificate ${payload['certificateId']}`,
-          icon: '🎓',
-          color: 'text-emerald-600',
-        };
-      default:
-        return {
-          type: eventName,
-          description: 'Transaction completed',
-          icon: '📄',
-          color: 'text-gray-600',
-        };
-    }
-  }, []); // No dependencies needed for this formatter
+      switch (eventName) {
+        case 'DepositMade':
+          return {
+            type: 'Deposit',
+            description: `Deposited ${formatAmount(payload['amount'] as string)}`,
+            icon: '💰',
+            color: 'text-green-600',
+          };
+        case 'WithdrawalMade':
+          return {
+            type: 'Withdrawal',
+            description: `Withdrew ${formatAmount(payload['amount'] as string)}`,
+            icon: '💸',
+            color: 'text-red-600',
+          };
+        case 'GoalCreated':
+          return {
+            type: 'Goal',
+            description: `Created goal ${payload['goalId']} for ${formatAmount(payload['targetAmount'] as string)}`,
+            icon: '🎯',
+            color: 'text-blue-600',
+          };
+        case 'GoalCompleted':
+          return {
+            type: 'Goal',
+            description: `Completed goal ${payload['goalId']}`,
+            icon: '🏆',
+            color: 'text-purple-600',
+          };
+        case 'ContributionMade':
+          return {
+            type: 'Contribution',
+            description: `Contributed ${formatAmount(payload['amount'] as string)} to pool ${payload['poolId']}`,
+            icon: '🤝',
+            color: 'text-orange-600',
+          };
+        case 'VoteCast':
+          return {
+            type: 'Vote',
+            description: `Voted on ${payload['proposalId'] || payload['actionId']}`,
+            icon: '🗳️',
+            color: 'text-indigo-600',
+          };
+        case 'CertificateIssued':
+          return {
+            type: 'Certificate',
+            description: `Earned certificate ${payload['certificateId']}`,
+            icon: '🎓',
+            color: 'text-emerald-600',
+          };
+        default:
+          return {
+            type: eventName,
+            description: 'Transaction completed',
+            icon: '📄',
+            color: 'text-gray-600',
+          };
+      }
+    },
+    [],
+  ); // No dependencies needed for this formatter
 
   // Format amount values (assuming 18 decimals) - memoized for performance
   const formatAmount = React.useCallback((amount: string | undefined) => {
@@ -186,7 +188,7 @@ export const RecentTransactions = React.memo(function RecentTransactions({ userA
 
         {!isLoading && !isError && (
           <div className="space-y-3 max-h-80 overflow-y-auto">
-            {transactions?.events && transactions?.data?.transactions.length > 0 ? (
+            {transactions?.data?.transactions && transactions?.data?.transactions.length > 0 ? (
               transactions.data.transactions.map((event, index) => {
                 const formatted = formatTransactionEvent(event);
                 return (
