@@ -1,5 +1,5 @@
-# Supabase configuration for BFN Backend
-project_id = "your-project-id"
+[project]
+id = "nbgicdhybbrbxbhfxsvi"
 
 [api]
 enabled = true
@@ -9,56 +9,17 @@ extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
 [db]
-enabled = true
 port = 54322
 shadow_port = 54320
 major_version = 15
 
-[realtime]
-enabled = true
-ip_version = "ipv4"
-
 [studio]
 enabled = true
 port = 54323
-api_url = "http://127.0.0.1:54321"
-
-[inbucket]
-enabled = true
-port = 54324
-sender_autoconfirm = true
-
-[storage]
-enabled = true
-file_size_limit = "50MiB"
+api_url = "http://127.0.0.1"
 
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://localhost:3000"]
 jwt_expiry = 3600
 enable_signup = true
-enable_anonymous_sign_in = false
-
-[edge_functions]
-enabled = true
-import_map = "./functions/_shared/import_map.json"
-
-# Environment variables for Edge Functions
-[env]
-# Blockchain
-BASE_SEPOLIA_RPC_URL = "https://sepolia.base.org"
-CHAIN_ID = "84532"
-
-# Authentication
-JWT_SECRET = "your-jwt-secret-at-least-32-characters-long-for-production"
-
-# AI Providers (set these in Supabase dashboard)
-OPENAI_API_KEY = ""
-DEEPSEEK_API_KEY = ""
-OLLAMA_API_KEY = ""
-
-# Supabase (automatically provided)
-SUPABASE_URL = ""
-SUPABASE_ANON_KEY = ""
-SUPABASE_SERVICE_ROLE_KEY = ""
