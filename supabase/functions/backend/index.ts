@@ -53,7 +53,9 @@ serve(async (req: Request) => {
 
   try {
     const url = new URL(req.url)
-    const path = url.pathname
+    const fullPath = url.pathname
+    // Strip the function name prefix from the path
+    const path = fullPath.replace(/^\/backend/, '') || '/'
     const searchParams = url.searchParams
 
     console.log(`${req.method} ${path}`)
