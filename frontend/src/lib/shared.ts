@@ -23,8 +23,8 @@ const contractAddresses = {
   },
 };
 
-export function getContractAddress(contractName: string, chainId = BASE_SEPOLIA_CHAIN_ID): string {
-  return contractAddresses[chainId]?.[contractName] || '0x0';
+export function getContractAddress(contractName: string, chainId = BASE_SEPOLIA_CHAIN_ID): `0x${string}` {
+  return (contractAddresses[chainId]?.[contractName] || '0x0') as `0x${string}`;
 }
 
 export function getContractAbi(contractName: string): any[] {
