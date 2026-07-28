@@ -157,6 +157,27 @@ async function verifyJWT(token: string): Promise<any> {
 // In-memory nonce store (Edge Functions are short-lived, this works for auth flows)
 const nonceStore = new Map<string, { address: string; expires: number }>()
 
+// Parse a SIWE message string to extract fields
+function parseSiweMessage(message: string): { address: string; nonce: string; domain: string; chainId: number } | null {
+  try {
+    const addressMatch = message.match(/0x[a-fA-F0-9]{40}/)
+    const nonceMatch = message.match(/Nonce: (.+)/)
+    const domainMatch = message.match(/^(.+) wants you to sign in/)
+    const chainIdMatch = message.match(/Chain ID: (\d+)/)
+    
+    if (!addressMatch || !nonceMatch) return null
+    
+    return {
+      address: addressMatch[0],
+      nonce: nonceMatch[1].trim(),
+      domain: domainMatch ? domainMatch[1].trim() : '',
+      chainId: chainIdMatch ? parseInt(chainIdMatch[1]) : 84532
+    }
+  } catch {
+    return null
+  }
+}
+
 // Authentication handler
 async function handleAuth(req: Request, path: string, corsHeaders: Record<string, string>) {
   if (path === '/auth/nonce' && req.method === 'POST') {
@@ -181,36 +202,43 @@ async function handleAuth(req: Request, path: string, corsHeaders: Record<string
     const { message, signature } = await req.json()
     
     try {
-      const siweMessage = new SiweMessage(message)
-      const result = await siweMessage.verify({ signature })
+      // Parse the SIWE message to extract address and nonce
+      const parsed = parseSiweMessage(message)
+      if (!parsed) {
+        throw new Error('Invalid SIWE message format')
+      }
       
-      if (!result.success) {
+      // Verify the signature using viem
+      const isValid = await verifyMessage({
+        address: parsed.address as `0x${string}`,
+        message,
+        signature: signature as `0x${string}`
+      })
+      
+      if (!isValid) {
         throw new Error('Signature verification failed')
       }
       
-      // Verify nonce exists and matches
-      const storedNonce = nonceStore.get(siweMessage.nonce)
-      if (!storedNonce) {
-        // Allow verification even without stored nonce (edge function may have restarted)
-        console.warn('Nonce not found in store, proceeding with signature verification only')
-      } else if (storedNonce.expires < Date.now()) {
-        nonceStore.delete(siweMessage.nonce)
-        throw new Error('Nonce expired')
-      } else {
-        // Clean up used nonce
-        nonceStore.delete(siweMessage.nonce)
+      // Verify nonce if it exists in store (may not exist if edge function restarted)
+      const storedNonce = nonceStore.get(parsed.nonce)
+      if (storedNonce) {
+        if (storedNonce.expires < Date.now()) {
+          nonceStore.delete(parsed.nonce)
+          throw new Error('Nonce expired')
+        }
+        nonceStore.delete(parsed.nonce)
       }
       
       // Create JWT
       const jwt = await createJWT({
-        address: siweMessage.address,
+        address: parsed.address,
         role: 'user',
         exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
       })
       
       return jsonResponse({ 
         jwt, 
-        address: siweMessage.address,
+        address: parsed.address,
         role: 'user'
       }, corsHeaders)
       
