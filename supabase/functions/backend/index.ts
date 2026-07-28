@@ -3,9 +3,8 @@
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
-import { createPublicClient, http, formatUnits, parseAbiItem } from 'https://esm.sh/viem@2.21.19'
+import { createPublicClient, http, formatUnits, parseAbiItem, verifyMessage } from 'https://esm.sh/viem@2.21.19'
 import { baseSepolia } from 'https://esm.sh/viem@2.21.19/chains'
-import { SiweMessage } from 'https://esm.sh/siwe@2.3.2?deps=ethers@6.13.4'
 
 // Contract addresses from shared package
 const CONTRACTS = {
