@@ -57,11 +57,11 @@ export function useSiweAuth() {
     }
 
     isCheckingAuth.current = true;
-    setAuthState(prev => ({ ...prev, isLoading: true }));
+    setAuthState((prev) => ({ ...prev, isLoading: true }));
 
     const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
     const token = localStorage.getItem('bfn-auth-token');
-    
+
     if (!token) {
       setAuthState({
         isAuthenticated: false,
@@ -100,10 +100,11 @@ export function useSiweAuth() {
       }
     } catch (error) {
       console.error('Auth check failed:', error);
+      localStorage.removeItem('bfn-auth-token');
       setAuthState({
         isAuthenticated: false,
         isLoading: false,
-        error: 'Authentication check failed',
+        error: null,
       });
     } finally {
       isCheckingAuth.current = false;
@@ -116,7 +117,7 @@ export function useSiweAuth() {
    */
   const signIn = useCallback(async () => {
     const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
-    
+
     if (!address || !isConnected || chainId !== BASE_SEPOLIA_CHAIN_ID) {
       setAuthState((prev) => ({
         ...prev,
@@ -211,7 +212,7 @@ export function useSiweAuth() {
    */
   const signOut = useCallback(async () => {
     const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
-    
+
     try {
       const token = localStorage.getItem('bfn-auth-token');
       if (token) {
