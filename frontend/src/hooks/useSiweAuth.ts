@@ -155,7 +155,7 @@ export function useSiweAuth() {
         statement,
         uri: origin,
         version: '1',
-        chainId: BASE_SEPOLIA_CHAIN_ID,
+        chainId: chainId || BASE_SEPOLIA_CHAIN_ID,
         nonce,
         issuedAt: new Date().toISOString(),
         expirationTime: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutes
