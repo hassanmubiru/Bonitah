@@ -121,7 +121,7 @@ export const PortfolioChart = React.memo(function PortfolioChart({
           <div>
             <div className="text-sm text-muted-foreground">Current</div>
             <div className="font-semibold">
-              ${formatPortfolioValue(series[series.length - 1]?.value || '0')}
+              ${formatPortfolioValue(String(series[series.length - 1]?.value || 0))}
             </div>
           </div>
           <div>
