@@ -67,66 +67,52 @@ export const RecentTransactions = React.memo(function RecentTransactions({
     refetchOnReconnect: true,
   });
 
-  // Format transaction event for display - memoized for performance
-  const formatTransactionEvent = React.useCallback(
-    (event: { eventName: string; payload: Record<string, unknown> }) => {
-      const eventName = event.eventName;
-      const payload = event.payload;
+  // Format transaction for display - memoized for performance
+  const formatTransaction = React.useCallback(
+    (transaction: { type: string; amount: string; timestamp?: string }) => {
+      const type = transaction.type;
+      const amount = transaction.amount;
 
-      switch (eventName) {
-        case 'DepositMade':
+      switch (type.toLowerCase()) {
+        case 'deposit':
           return {
             type: 'Deposit',
-            description: `Deposited ${formatAmount(payload['amount'] as string)}`,
+            description: `Deposited ${amount}`,
             icon: '💰',
             color: 'text-green-600',
           };
-        case 'WithdrawalMade':
+        case 'withdrawal':
           return {
             type: 'Withdrawal',
-            description: `Withdrew ${formatAmount(payload['amount'] as string)}`,
+            description: `Withdrew ${amount}`,
             icon: '💸',
             color: 'text-red-600',
           };
-        case 'GoalCreated':
+        case 'goal':
           return {
             type: 'Goal',
-            description: `Created goal ${payload['goalId']} for ${formatAmount(payload['targetAmount'] as string)}`,
+            description: `Goal transaction: ${amount}`,
             icon: '🎯',
             color: 'text-blue-600',
           };
-        case 'GoalCompleted':
-          return {
-            type: 'Goal',
-            description: `Completed goal ${payload['goalId']}`,
-            icon: '🏆',
-            color: 'text-purple-600',
-          };
-        case 'ContributionMade':
+        case 'contribution':
           return {
             type: 'Contribution',
-            description: `Contributed ${formatAmount(payload['amount'] as string)} to pool ${payload['poolId']}`,
+            description: `Contributed ${amount}`,
             icon: '🤝',
             color: 'text-orange-600',
           };
-        case 'VoteCast':
+        case 'vote':
           return {
             type: 'Vote',
-            description: `Voted on ${payload['proposalId'] || payload['actionId']}`,
+            description: `Voted on proposal`,
             icon: '🗳️',
             color: 'text-indigo-600',
           };
-        case 'CertificateIssued':
-          return {
-            type: 'Certificate',
-            description: `Earned certificate ${payload['certificateId']}`,
-            icon: '🎓',
-            color: 'text-emerald-600',
-          };
         default:
           return {
-            type: eventName,
-            description: 'Transaction completed',
+            type: type,
+            description: `Transaction: ${amount}`,
             icon: '📄',
             color: 'text-gray-600',
           };
@@ -146,10 +132,19 @@ export const RecentTransactions = React.memo(function RecentTransactions({
   }, []);
 
   // Format timestamp - memoized for performance
-  const formatTimestamp = React.useCallback((blockNumber: string) => {
-    // Since we don't have exact timestamp, use block number as relative indicator
-    const blockNum = parseInt(blockNumber);
-    return `Block ${blockNum.toLocaleString()}`;
+  const formatTimestamp = React.useCallback((timestamp?: string) => {
+    if (!timestamp) return 'Recent';
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return 'Recent';
+    }
   }, []);
 
   return (

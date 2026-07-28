@@ -165,9 +165,6 @@ importers:
 
   frontend:
     dependencies:
-      '@bfn/shared':
-        specifier: file:../shared
-        version: file:shared(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@radix-ui/react-progress':
         specifier: ^1.1.16
         version: 1.1.16(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -195,6 +192,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.62.11
         version: 5.101.4(react@19.2.8)
+      abitype:
+        specifier: ^1.0.8
+        version: 1.3.0(typescript@5.9.3)(zod@3.25.76)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -234,6 +234,9 @@ importers:
       wagmi:
         specifier: ^2.14.6
         version: 2.19.5(@tanstack/query-core@5.101.4)(@tanstack/react-query@5.101.4(react@19.2.8))(@types/react@19.2.17)(bufferutil@4.1.0)(react@19.2.8)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.55.5(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))(zod@3.25.76)
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3.2.0
@@ -528,9 +531,6 @@ packages:
 
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
-
-  '@bfn/shared@file:shared':
-    resolution: {directory: shared, type: directory}
 
   '@borewit/text-codec@0.2.2':
     resolution: {integrity: sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ==}
@@ -7432,16 +7432,6 @@ snapshots:
       - zod
 
   '@bcoe/v8-coverage@0.2.3': {}
-
-  '@bfn/shared@file:shared(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)':
-    dependencies:
-      abitype: 1.3.0(typescript@5.9.3)(zod@3.25.76)
-      viem: 2.55.8(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - bufferutil
-      - typescript
-      - utf-8-validate
 
   '@borewit/text-codec@0.2.2': {}
 
