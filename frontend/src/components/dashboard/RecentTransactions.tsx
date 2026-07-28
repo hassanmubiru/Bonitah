@@ -189,8 +189,13 @@ export const RecentTransactions = React.memo(function RecentTransactions({
         {!isLoading && !isError && (
           <div className="space-y-3 max-h-80 overflow-y-auto">
             {transactions?.data?.transactions && transactions?.data?.transactions.length > 0 ? (
-              transactions.data.transactions.map((event, index) => {
-                const formatted = formatTransactionEvent(event);
+              transactions.data.transactions.map((transaction, index) => {
+                const formatted = {
+                  type: transaction.type,
+                  description: `${transaction.type}: ${transaction.amount}`,
+                  icon: '💰',
+                  color: 'text-green-600',
+                };
                 return (
                   <div
                     key={index}
