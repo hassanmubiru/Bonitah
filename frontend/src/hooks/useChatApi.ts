@@ -244,15 +244,20 @@ export function useChatApi() {
       }
 
       const data: { conversation: { messages: ChatMessage[] } } = await response.json();
-      setState((prev) => ({
-        ...prev,
-        messages: data.conversation.messages.map((msg) => ({
-          ...msg,
-          createdAt: new Date(msg.createdAt),
-        })),
-        currentConversationId: conversationId,
-        isLoading: false,
-      }));
+      // Only replace messages if the API actually returned some
+      if (data.conversation?.messages?.length > 0) {
+        setState((prev) => ({
+          ...prev,
+          messages: data.conversation.messages.map((msg) => ({
+            ...msg,
+            createdAt: new Date(msg.createdAt),
+          })),
+          currentConversationId: conversationId,
+          isLoading: false,
+        }));
+      } else {
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
     } catch (error) {
       console.error('Failed to load conversation:', error);
       setState((prev) => ({
@@ -353,16 +358,8 @@ export function useChatApi() {
   useEffect(() => {
     if (isAuthenticated) {
       loadConversations();
-    } else {
-      // Clear state when not authenticated
-      setState({
-        messages: [],
-        conversations: [],
-        currentConversationId: null,
-        isLoading: false,
-        error: null,
-      });
     }
+    // Don't clear messages when not authenticated - keep localStorage history
   }, [isAuthenticated, loadConversations]);
 
   return {
