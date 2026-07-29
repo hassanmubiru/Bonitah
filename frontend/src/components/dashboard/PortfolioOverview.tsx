@@ -37,16 +37,16 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
     savingsVaultAbi = [];
   }
 
-  // Fetch portfolio value (total across all savings types) - always call hooks
+  // Fetch portfolio value - disabled (proxy contract doesn't support direct reads)
   const {
     data: portfolioValue,
     isLoading: portfolioLoading,
     isError: portfolioError,
     error: portfolioErrorMessage,
     refetch: refetchPortfolio,
-  } = usePortfolioValue(savingsVaultAddress, savingsVaultAbi, userAddress, contractsDeployed);
+  } = usePortfolioValue(savingsVaultAddress, savingsVaultAbi, userAddress, false);
 
-  // Fetch available balance (immediately withdrawable)
+  // Fetch available balance - disabled
   const {
     data: availableBalance,
     isLoading: balanceLoading,
@@ -58,10 +58,10 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
     savingsVaultAbi,
     userAddress,
     'availableBalance',
-    contractsDeployed,
+    false,
   );
 
-  // Fetch locked funds total
+  // Fetch locked funds total - disabled
   const {
     data: lockedTotal,
     isLoading: lockedLoading,
@@ -73,7 +73,7 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
     abi: savingsVaultAbi,
     functionName: 'lockedTotal',
     args: [userAddress],
-    enabled: contractsDeployed,
+    enabled: false,
   });
 
   // Handle case where contracts aren't deployed yet

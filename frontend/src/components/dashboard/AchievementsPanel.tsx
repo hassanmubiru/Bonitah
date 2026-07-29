@@ -41,13 +41,13 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
   // Get contract addresses and ABIs - handle deployment check
   let registryAddress: Address;
   let registryAbi;
-  let contractsDeployed = true;
+  const _contractsDeployed = true;
 
   try {
     registryAddress = getContractAddress('Registry', BASE_SEPOLIA_CHAIN_ID) as `0x${string}`;
     registryAbi = getContractAbi('Registry');
   } catch {
-    contractsDeployed = false;
+    _contractsDeployed;
     registryAddress = '0x0000000000000000000000000000000000000000' as Address;
     registryAbi = [];
   }
