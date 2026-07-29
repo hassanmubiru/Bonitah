@@ -461,7 +461,7 @@ export default function HomePage() {
                 Explorer
               </a>
             </div>
-            <p className="text-xs text-gray-400">Built on Base · 2024</p>
+            <p className="text-xs text-gray-400">Built on Base · 2026</p>
           </div>
         </div>
       </footer>
