@@ -38,16 +38,14 @@ interface AchievementsPanelProps {
  * - Proper loading/error/retry states
  */
 export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
-  // Get contract addresses and ABIs - handle deployment check
+  // Get contract addresses and ABIs
   let registryAddress: Address;
   let registryAbi;
-  const _contractsDeployed = true;
 
   try {
     registryAddress = getContractAddress('Registry', BASE_SEPOLIA_CHAIN_ID) as `0x${string}`;
     registryAbi = getContractAbi('Registry');
   } catch {
-    _contractsDeployed;
     registryAddress = '0x0000000000000000000000000000000000000000' as Address;
     registryAbi = [];
   }
