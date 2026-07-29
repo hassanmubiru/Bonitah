@@ -59,7 +59,7 @@ export function useRegistryProfile() {
   const { data: reputation } = useContractRead({
     address: process.env['NEXT_PUBLIC_REGISTRY_ADDRESS'] as `0x${string}`,
     abi: registryABI,
-    functionName: 'getReputation',
+    functionName: 'reputationOf',
     args: address ? [address] : [],
     enabled: !!address && isConnected,
   });
