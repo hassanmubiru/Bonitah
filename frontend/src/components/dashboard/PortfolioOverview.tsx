@@ -125,9 +125,13 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
     return formatUnits(value, 6);
   };
 
-  // Calculate savings amount (portfolio minus locked)
+  // Calculate savings amount (funds in goals = portfolio - available - locked is not right)
+  // Correct: In Savings = portfolioValue - availableBalance (goals are not in available)
+  // lockedTotal is part of depositedBalance but not availableBalance
   const savingsAmount =
-    portfolioValue && lockedTotal ? portfolioValue - (lockedTotal as bigint) : undefined;
+    portfolioValue !== undefined && availableBalance !== undefined
+      ? (portfolioValue as bigint) - (availableBalance as bigint)
+      : undefined;
 
   return (
     <Card className="p-6">
