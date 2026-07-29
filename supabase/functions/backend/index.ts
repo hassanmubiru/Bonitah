@@ -308,15 +308,15 @@ async function handleAI(req: Request, path: string, corsHeaders: Record<string, 
     // Try Ollama Cloud first
     if (env.ollamaApiKey) {
       try {
-        const response = await fetch('https://api.ollama.ai/api/generate', {
+        const response = await fetch('https://api.ollama.com/api/generate', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${env.ollamaApiKey}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: 'qwen2.5:72b-cloud',
-            prompt: `You are a DeFi financial assistant for Bonitah Financial Network. User address: ${userAddress || 'anonymous'}. Question: ${question}`,
+            model: 'deepseek-v4-flash',
+            prompt: `You are a DeFi financial assistant for Bonitah Financial Network on Base Sepolia. Be helpful, concise, and knowledgeable about decentralized finance, savings, and blockchain. User address: ${userAddress || 'anonymous'}. Question: ${question}`,
             stream: false
           })
         })
