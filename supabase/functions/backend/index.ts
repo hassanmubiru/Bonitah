@@ -327,7 +327,7 @@ async function handleAI(req: Request, path: string, corsHeaders: Record<string, 
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: 'deepseek-v4-flash',
+            model: 'gpt-oss:20b',
             prompt: `You are a DeFi financial assistant for Bonitah Financial Network on Base Sepolia. Be helpful, concise, and knowledgeable about decentralized finance, savings, and blockchain. User address: ${userAddress || 'anonymous'}. Question: ${question}`,
             stream: false
           })
