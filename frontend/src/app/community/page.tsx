@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Loader2, Users, Vote, PlusCircle } from 'lucide-react';
-import { useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
+import { useWriteContract, useWaitForTransactionReceipt, useAccount, useReadContracts } from 'wagmi';
 import { parseUnits } from 'viem';
 
 import { useAuthGuard } from '@/hooks/useAuthGuard';
@@ -55,6 +55,9 @@ export default function CommunityPage() {
           <ContributeCard />
           <VoteCard />
         </div>
+
+        {/* Your Circles */}
+        <YourCircles />
       </div>
     </main>
   );
