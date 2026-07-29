@@ -2,9 +2,16 @@
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import {
-  Bot, Target, Users, ArrowRight, Shield,
-  ChevronRight, BarChart3, GraduationCap,
-  Lock, Zap
+  Bot,
+  Target,
+  Users,
+  ArrowRight,
+  Shield,
+  ChevronRight,
+  BarChart3,
+  GraduationCap,
+  Lock,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -25,10 +32,10 @@ export default function HomePage() {
     <main id="main-content" className="flex-1 overflow-hidden">
       {/* Background Effects */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50 via-white to-white" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-blue-100/40 rounded-full blur-[120px]" />
-        <div className="absolute top-1/3 right-0 w-[400px] h-[400px] bg-emerald-50/50 rounded-full blur-[100px]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] opacity-40" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-slate-50 to-slate-100" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-blue-200/20 rounded-full blur-[120px]" />
+        <div className="absolute top-1/3 right-0 w-[400px] h-[400px] bg-emerald-100/20 rounded-full blur-[100px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] opacity-30" />
       </div>
 
       {/* Hero Section */}
@@ -36,32 +43,46 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left - Content */}
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={stagger}
-              className="space-y-8"
-            >
-              <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-sm text-blue-700">
-                <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" /></span>
+            <motion.div initial="hidden" animate="visible" variants={stagger} className="space-y-8">
+              <motion.div
+                variants={fadeUp}
+                className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-sm text-blue-700"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
+                </span>
                 Built on Base
               </motion.div>
 
-              <motion.h1 variants={fadeUp} className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-[1.1]">
+              <motion.h1
+                variants={fadeUp}
+                className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-[1.1]"
+              >
                 Building Financial{' '}
                 <span className="bg-gradient-to-r from-blue-600 to-emerald-500 bg-clip-text text-transparent">
                   Freedom
                 </span>
-                <br />for Africa
+                <br />
+                for Africa
               </motion.h1>
 
-              <motion.p variants={fadeUp} className="text-lg sm:text-xl text-gray-600 max-w-lg leading-relaxed">
-                Learn, save, invest, and grow together using AI-powered insights and blockchain transparency on Base.
+              <motion.p
+                variants={fadeUp}
+                className="text-lg sm:text-xl text-gray-600 max-w-lg leading-relaxed"
+              >
+                Learn, save, invest, and grow together using AI-powered insights and blockchain
+                transparency on Base.
               </motion.p>
 
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4">
                 <ConnectButton />
-                <Button variant="outline" size="lg" asChild className="rounded-full border-gray-300 hover:border-gray-400">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  asChild
+                  className="rounded-full border-gray-300 hover:border-gray-400"
+                >
                   <Link href="/dashboard" className="group">
                     Explore Dashboard
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -127,13 +148,18 @@ export default function HomePage() {
 
                 {/* Platform features list */}
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Platform Features</p>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Platform Features
+                  </p>
                   {[
                     { icon: '🤖', label: 'AI-powered financial guidance' },
                     { icon: '💰', label: 'USDC savings with on-chain yields' },
                     { icon: '🏛️', label: 'Community governance & voting' },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2">
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2"
+                    >
                       <span className="text-sm">{item.icon}</span>
                       <span className="text-sm text-gray-700">{item.label}</span>
                     </div>
@@ -162,10 +188,14 @@ export default function HomePage() {
       {/* Trust Bar */}
       <section className="border-y border-gray-100 bg-gray-50/50 px-4 py-10">
         <div className="mx-auto max-w-5xl">
-          <p className="text-center text-xs font-medium text-gray-400 uppercase tracking-widest mb-6">Powered by</p>
+          <p className="text-center text-xs font-medium text-gray-400 uppercase tracking-widest mb-6">
+            Powered by
+          </p>
           <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4 text-gray-400">
             {['Base', 'Ethereum', 'IPFS', 'WalletConnect', 'Ollama AI'].map((name) => (
-              <span key={name} className="text-sm font-medium">{name}</span>
+              <span key={name} className="text-sm font-medium">
+                {name}
+              </span>
             ))}
           </div>
         </div>
@@ -181,12 +211,21 @@ export default function HomePage() {
             variants={stagger}
             className="text-center mb-16"
           >
-            <motion.p variants={fadeUp} className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-3">Features</motion.p>
-            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
+            <motion.p
+              variants={fadeUp}
+              className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-3"
+            >
+              Features
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900"
+            >
               Everything for financial growth
             </motion.h2>
             <motion.p variants={fadeUp} className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-              A complete platform combining DeFi, AI, education, and community — built for the next billion users.
+              A complete platform combining DeFi, AI, education, and community — built for the next
+              billion users.
             </motion.p>
           </motion.div>
 
@@ -198,20 +237,54 @@ export default function HomePage() {
             className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
           >
             {[
-              { icon: Bot, title: 'AI Financial Assistant', desc: 'Get personalized savings advice, budget analysis, and investment recommendations powered by AI.', color: 'blue' },
-              { icon: Target, title: 'Goal-Based Savings', desc: 'Create savings goals with deadlines, track progress, and celebrate milestones on-chain.', color: 'emerald' },
-              { icon: Users, title: 'Community Treasury', desc: 'Join investment circles, pool resources, and make collective financial decisions through governance.', color: 'purple' },
-              { icon: GraduationCap, title: 'Financial Education', desc: 'Interactive courses with blockchain-verified certificates. Learn DeFi, budgeting, and investing.', color: 'orange' },
-              { icon: BarChart3, title: 'Portfolio Analytics', desc: 'Real-time dashboard with yield tracking, performance metrics, and risk assessment tools.', color: 'cyan' },
-              { icon: Shield, title: 'On-chain Security', desc: 'Non-custodial, transparent smart contracts. Your funds are always under your control.', color: 'green' },
+              {
+                icon: Bot,
+                title: 'AI Financial Assistant',
+                desc: 'Get personalized savings advice, budget analysis, and investment recommendations powered by AI.',
+                color: 'blue',
+              },
+              {
+                icon: Target,
+                title: 'Goal-Based Savings',
+                desc: 'Create savings goals with deadlines, track progress, and celebrate milestones on-chain.',
+                color: 'emerald',
+              },
+              {
+                icon: Users,
+                title: 'Community Treasury',
+                desc: 'Join investment circles, pool resources, and make collective financial decisions through governance.',
+                color: 'purple',
+              },
+              {
+                icon: GraduationCap,
+                title: 'Financial Education',
+                desc: 'Interactive courses with blockchain-verified certificates. Learn DeFi, budgeting, and investing.',
+                color: 'orange',
+              },
+              {
+                icon: BarChart3,
+                title: 'Portfolio Analytics',
+                desc: 'Real-time dashboard with yield tracking, performance metrics, and risk assessment tools.',
+                color: 'cyan',
+              },
+              {
+                icon: Shield,
+                title: 'On-chain Security',
+                desc: 'Non-custodial, transparent smart contracts. Your funds are always under your control.',
+                color: 'green',
+              },
             ].map((feature, i) => (
               <motion.div
                 key={i}
                 variants={fadeUp}
                 className="group relative rounded-2xl border border-gray-200 bg-white p-6 hover:border-gray-300 hover:shadow-lg hover:shadow-gray-100 transition-all duration-300"
               >
-                <div className={`inline-flex rounded-xl p-3 mb-4 bg-${feature.color === 'blue' ? 'blue' : feature.color === 'emerald' ? 'emerald' : feature.color === 'purple' ? 'purple' : feature.color === 'orange' ? 'orange' : feature.color === 'cyan' ? 'cyan' : 'green'}-50`}>
-                  <feature.icon className={`h-6 w-6 text-${feature.color === 'blue' ? 'blue' : feature.color === 'emerald' ? 'emerald' : feature.color === 'purple' ? 'purple' : feature.color === 'orange' ? 'orange' : feature.color === 'cyan' ? 'cyan' : 'green'}-600`} />
+                <div
+                  className={`inline-flex rounded-xl p-3 mb-4 bg-${feature.color === 'blue' ? 'blue' : feature.color === 'emerald' ? 'emerald' : feature.color === 'purple' ? 'purple' : feature.color === 'orange' ? 'orange' : feature.color === 'cyan' ? 'cyan' : 'green'}-50`}
+                >
+                  <feature.icon
+                    className={`h-6 w-6 text-${feature.color === 'blue' ? 'blue' : feature.color === 'emerald' ? 'emerald' : feature.color === 'purple' ? 'purple' : feature.color === 'orange' ? 'orange' : feature.color === 'cyan' ? 'cyan' : 'green'}-600`}
+                  />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
                 <p className="text-sm text-gray-600 leading-relaxed">{feature.desc}</p>
@@ -225,23 +298,71 @@ export default function HomePage() {
       {/* How It Works */}
       <section className="px-4 py-24 bg-gray-50/50 border-y border-gray-100">
         <div className="mx-auto max-w-4xl">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-16">
-            <motion.p variants={fadeUp} className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-3">How it works</motion.p>
-            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+            className="text-center mb-16"
+          >
+            <motion.p
+              variants={fadeUp}
+              className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-3"
+            >
+              How it works
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900"
+            >
               Start in minutes
             </motion.h2>
           </motion.div>
 
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="space-y-6">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+            className="space-y-6"
+          >
             {[
-              { step: '1', title: 'Connect Wallet', desc: 'Link your MetaMask or WalletConnect wallet to Base Sepolia.' },
-              { step: '2', title: 'Register', desc: 'One-click on-chain registration to join the BFN community.' },
-              { step: '3', title: 'Set Goals', desc: 'Create personalized savings goals with target amounts and dates.' },
-              { step: '4', title: 'Deposit & Earn', desc: 'Deposit USDC and start earning yield on your savings.' },
-              { step: '5', title: 'Join Community', desc: 'Participate in savings circles and governance voting.' },
-              { step: '6', title: 'Track Growth', desc: 'Monitor portfolio performance with AI-powered insights.' },
+              {
+                step: '1',
+                title: 'Connect Wallet',
+                desc: 'Link your MetaMask or WalletConnect wallet to Base Sepolia.',
+              },
+              {
+                step: '2',
+                title: 'Register',
+                desc: 'One-click on-chain registration to join the BFN community.',
+              },
+              {
+                step: '3',
+                title: 'Set Goals',
+                desc: 'Create personalized savings goals with target amounts and dates.',
+              },
+              {
+                step: '4',
+                title: 'Deposit & Earn',
+                desc: 'Deposit USDC and start earning yield on your savings.',
+              },
+              {
+                step: '5',
+                title: 'Join Community',
+                desc: 'Participate in savings circles and governance voting.',
+              },
+              {
+                step: '6',
+                title: 'Track Growth',
+                desc: 'Monitor portfolio performance with AI-powered insights.',
+              },
             ].map((item, i) => (
-              <motion.div key={i} variants={fadeUp} className="flex items-start gap-6 bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+              <motion.div
+                key={i}
+                variants={fadeUp}
+                className="flex items-start gap-6 bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow"
+              >
                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">
                   {item.step}
                 </div>
@@ -283,14 +404,25 @@ export default function HomePage() {
       {/* Final CTA */}
       <section className="px-4 py-24 sm:py-32">
         <div className="mx-auto max-w-3xl text-center">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
-            <motion.h2 variants={fadeUp} className="text-3xl sm:text-5xl font-bold tracking-tight text-gray-900">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+          >
+            <motion.h2
+              variants={fadeUp}
+              className="text-3xl sm:text-5xl font-bold tracking-tight text-gray-900"
+            >
               Ready to Build Wealth?
             </motion.h2>
             <motion.p variants={fadeUp} className="mt-6 text-lg text-gray-600">
               Join thousands building financial freedom with AI-powered DeFi on Base.
             </motion.p>
-            <motion.div variants={fadeUp} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <motion.div
+              variants={fadeUp}
+              className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+            >
               <ConnectButton />
               <Button variant="outline" size="lg" asChild className="rounded-full">
                 <Link href="/dashboard">
@@ -311,10 +443,23 @@ export default function HomePage() {
               <span className="font-semibold text-gray-900">Bonitah Financial Network</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">
-              <Link href="/dashboard" className="hover:text-gray-900 transition-colors">Dashboard</Link>
-              <Link href="/savings" className="hover:text-gray-900 transition-colors">Savings</Link>
-              <Link href="/ai" className="hover:text-gray-900 transition-colors">AI Assistant</Link>
-              <a href="https://sepolia.basescan.org" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 transition-colors">Explorer</a>
+              <Link href="/dashboard" className="hover:text-gray-900 transition-colors">
+                Dashboard
+              </Link>
+              <Link href="/savings" className="hover:text-gray-900 transition-colors">
+                Savings
+              </Link>
+              <Link href="/ai" className="hover:text-gray-900 transition-colors">
+                AI Assistant
+              </Link>
+              <a
+                href="https://sepolia.basescan.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-gray-900 transition-colors"
+              >
+                Explorer
+              </a>
             </div>
             <p className="text-xs text-gray-400">Built on Base · 2024</p>
           </div>
