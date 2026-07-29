@@ -36,14 +36,7 @@ interface CommunityStatsProps {
  * - Proper loading/error/retry states
  */
 export function CommunityStats({ userAddress: _userAddress }: CommunityStatsProps) {
-  const __contractsDeployed;
-
-  try {
-    // Contract references removed for now - placeholder implementation
-    _contractsDeployed;
-  } catch {
-    _contractsDeployed;
-  }
+  // Contracts are deployed but reads are disabled (proxy doesn't expose expected functions)
 
   // For now, these functions don't exist in the current ABI, so we'll show placeholders
   // TODO: Implement proper data reading from contract mappings when available
