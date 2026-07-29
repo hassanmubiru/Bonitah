@@ -112,29 +112,23 @@ export function useRegistryProfile() {
       setError(null);
 
       try {
-        // Upload metadata to IPFS
-        const response = await fetch('/api/ipfs/upload', {
+        // Upload metadata to IPFS directly via Supabase backend
+        const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001';
+        const response = await fetch(`${apiUrl}/ipfs/profile-metadata`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('bfn-auth-token')}`,
           },
-          body: JSON.stringify({
-            documents: [
-              {
-                name: 'profile-metadata.json',
-                content: JSON.stringify(profileData),
-              },
-            ],
-          }),
+          body: JSON.stringify(profileData),
         });
 
         if (!response.ok) {
           throw new Error('Failed to upload metadata to IPFS');
         }
 
-        const { cids } = await response.json();
-        const metadataHash = cids[0];
+        const data = await response.json();
+        const metadataHash = data.ipfsHash;
 
         // Update Registry contract
         await updateProfileContract({
