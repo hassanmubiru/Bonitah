@@ -109,6 +109,18 @@ export function useChatApi() {
   // Backend API base URL
   const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001';
 
+  // Persist messages to localStorage
+  useEffect(() => {
+    if (state.messages.length > 0) {
+      try {
+        localStorage.setItem('bfn-chat-history', JSON.stringify({
+          messages: state.messages.slice(-50), // Keep last 50 messages
+          currentConversationId: state.currentConversationId,
+        }));
+      } catch { /* ignore storage errors */ }
+    }
+  }, [state.messages, state.currentConversationId]);
+
   /**
    * Get authorization header with JWT token
    */
