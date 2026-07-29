@@ -107,30 +107,30 @@ export function useContractRead({
     },
     enabled: enabled && !!publicClient,
     
-    // Retry policy (optimized for faster feedback):
-    // - Up to 2 retries (3 total attempts: initial + 2 retries)
-    // - Faster backoff: 500ms, 1s delays between retries
+    // Retry policy:
+    // Don't retry on contract reverts (function doesn't exist or access denied)
     retry: (failureCount, error) => {
-      // Stop retrying after 2 attempts (reduced for faster feedback)
-      if (failureCount >= 2) {
-        return false;
-      }
-
-      // Retry on network errors, timeouts, and RPC errors
-      // Don't retry on contract-specific errors (invalid function, etc.)
+      if (failureCount >= 2) return false;
+      
       if (error instanceof Error) {
         const message = error.message.toLowerCase();
-        const isRetryableError = (
+        // Don't retry on contract-specific errors
+        if (
+          message.includes('revert') ||
+          message.includes('not found on abi') ||
+          message.includes('execution reverted') ||
+          message.includes('invalid function')
+        ) {
+          return false;
+        }
+        // Only retry on network errors
+        return (
           message.includes('timeout') ||
           message.includes('network') ||
           message.includes('fetch') ||
-          message.includes('connection') ||
-          message.includes('rpc') ||
           message.includes('rate limit')
         );
-        return isRetryableError;
       }
-
       return false;
     },
     
