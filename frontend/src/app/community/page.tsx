@@ -89,33 +89,6 @@ const GOVERNANCE_ABI = [
   },
 ] as const;
 
-const REGISTRY_ABI = [
-  {
-    name: 'increaseReputation',
-    type: 'function',
-    stateMutability: 'nonpayable',
-    inputs: [
-      { name: 'user', type: 'address' },
-      { name: 'amount', type: 'uint256' },
-    ],
-    outputs: [],
-  },
-  {
-    name: 'grantRole',
-    type: 'function',
-    stateMutability: 'nonpayable',
-    inputs: [
-      { name: 'role', type: 'bytes32' },
-      { name: 'account', type: 'address' },
-    ],
-    outputs: [],
-  },
-] as const;
-
-// REPUTATION_ROLE = keccak256("REPUTATION_ROLE")
-const REPUTATION_ROLE =
-  '0xbb7482d026fc3277e93f1f33beacbaec5574bbbb0f00ce9dc9c2b96eb3385c15' as `0x${string}`;
-
 export default function CommunityPage() {
   const { isLoading: authLoading } = useAuthGuard();
   useAccount();
@@ -143,7 +116,6 @@ export default function CommunityPage() {
           <JoinCircleCard />
           <ContributeCard />
           <VoteCard />
-          <IncreaseReputationCard />
         </div>
 
         {/* Your Circles */}
@@ -442,121 +414,6 @@ function VoteCard() {
         <Button onClick={handleVote} disabled={isPending || !proposalId} className="w-full">
           {isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
           Cast Vote
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
-
-function IncreaseReputationCard() {
-  const { address } = useAccount();
-  const [targetAddress, setTargetAddress] = useState('');
-  const [amount, setAmount] = useState('100');
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isSuccess } = useWaitForTransactionReceipt({ hash });
-  const {
-    writeContract: grantRoleWrite,
-    data: grantHash,
-    isPending: grantPending,
-    error: grantError,
-  } = useWriteContract();
-  const { isSuccess: grantSuccess } = useWaitForTransactionReceipt({ hash: grantHash });
-
-  let registryAddress: `0x${string}`;
-  try {
-    registryAddress = getContractAddress('Registry', BASE_SEPOLIA_CHAIN_ID) as `0x${string}`;
-  } catch {
-    registryAddress = '0x0000000000000000000000000000000000000000';
-  }
-
-  const handleGrantRole = () => {
-    grantRoleWrite({
-      address: registryAddress,
-      abi: REGISTRY_ABI,
-      functionName: 'grantRole',
-      args: [REPUTATION_ROLE, address!],
-    });
-  };
-
-  const handleIncrease = () => {
-    const target = (targetAddress || address) as `0x${string}`;
-    writeContract({
-      address: registryAddress,
-      abi: REGISTRY_ABI,
-      functionName: 'increaseReputation',
-      args: [target, BigInt(amount)],
-    });
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <span className="text-lg">⭐</span>
-          Increase Reputation
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Step 1: Grant role */}
-        <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 space-y-2">
-          <p className="text-xs font-medium text-amber-800">
-            Step 1: Grant REPUTATION_ROLE to your wallet (admin only, one-time)
-          </p>
-          {grantSuccess && (
-            <Alert>
-              <AlertTitle>Role Granted!</AlertTitle>
-              <AlertDescription>You now have REPUTATION_ROLE.</AlertDescription>
-            </Alert>
-          )}
-          {grantError && (
-            <Alert variant="destructive">
-              <AlertDescription>{grantError.message.slice(0, 80)}</AlertDescription>
-            </Alert>
-          )}
-          <Button
-            onClick={handleGrantRole}
-            disabled={grantPending}
-            variant="outline"
-            size="sm"
-            className="w-full"
-          >
-            {grantPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Grant REPUTATION_ROLE to Self
-          </Button>
-        </div>
-
-        {/* Step 2: Increase reputation */}
-        <div className="space-y-2">
-          <Label>User Address (leave empty for self)</Label>
-          <Input
-            value={targetAddress}
-            onChange={(e) => setTargetAddress(e.target.value)}
-            placeholder={address || '0x...'}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Amount</Label>
-          <Input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="100"
-          />
-        </div>
-        {isSuccess && (
-          <Alert>
-            <AlertTitle>Reputation Increased!</AlertTitle>
-            <AlertDescription>Transaction: {hash?.slice(0, 14)}...</AlertDescription>
-          </Alert>
-        )}
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error.message.slice(0, 100)}</AlertDescription>
-          </Alert>
-        )}
-        <Button onClick={handleIncrease} disabled={isPending || !amount} className="w-full">
-          {isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Grant Reputation
         </Button>
       </CardContent>
     </Card>
