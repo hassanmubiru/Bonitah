@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Loader2, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
-import { useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
+import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import {
@@ -501,5 +501,83 @@ export default function SavingsPage() {
         )}
       </div>
     </main>
+  );
+}
+
+
+function RegistrationStep() {
+  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  let registryAddress: `0x${string}`;
+  try {
+    registryAddress = getContractAddress('Registry', BASE_SEPOLIA_CHAIN_ID) as `0x${string}`;
+  } catch {
+    registryAddress = '0x0000000000000000000000000000000000000000';
+  }
+
+  const handleRegister = () => {
+    writeContract({
+      address: registryAddress,
+      abi: REGISTRY_ABI,
+      functionName: 'register',
+    });
+  };
+
+  return (
+    <div className="flex items-center justify-between p-3 border rounded-lg">
+      <div>
+        <p className="text-sm font-medium">1. Register in BFN</p>
+        <p className="text-xs text-muted-foreground">One-time registration to use platform features</p>
+      </div>
+      <Button
+        size="sm"
+        onClick={handleRegister}
+        disabled={isPending || isSuccess}
+      >
+        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : isSuccess ? '✓ Registered' : 'Register'}
+      </Button>
+    </div>
+  );
+}
+
+function ApprovalStep() {
+  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  let savingsVaultAddress: `0x${string}`;
+  try {
+    savingsVaultAddress = getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID) as `0x${string}`;
+  } catch {
+    savingsVaultAddress = '0x0000000000000000000000000000000000000000';
+  }
+
+  const usdcAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as `0x${string}`;
+  // Approve max uint256 for convenience
+  const maxApproval = BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935');
+
+  const handleApprove = () => {
+    writeContract({
+      address: usdcAddress,
+      abi: USDC_ABI,
+      functionName: 'approve',
+      args: [savingsVaultAddress, maxApproval],
+    });
+  };
+
+  return (
+    <div className="flex items-center justify-between p-3 border rounded-lg">
+      <div>
+        <p className="text-sm font-medium">2. Approve USDC</p>
+        <p className="text-xs text-muted-foreground">Allow SavingsVault to use your USDC</p>
+      </div>
+      <Button
+        size="sm"
+        onClick={handleApprove}
+        disabled={isPending || isSuccess}
+      >
+        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : isSuccess ? '✓ Approved' : 'Approve'}
+      </Button>
+    </div>
   );
 }
