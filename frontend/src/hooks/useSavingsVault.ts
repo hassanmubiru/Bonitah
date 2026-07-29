@@ -91,35 +91,20 @@ export function useSavingsVaultBalances() {
     queryKey: ['savings-portfolio-value', userAddress || '', contractAddress || ''],
   });
 
-  // If contracts aren't deployed, return mock data
-  if (!contractAddress) {
-    return {
-      availableBalance: {
-        data: BigInt(0),
-        isLoading: false,
-        isError: false,
-        error: null,
-        refetch: () => Promise.resolve(),
-      },
-      portfolioValue: {
-        data: BigInt(0),
-        isLoading: false,
-        isError: false,
-        error: null,
-        refetch: () => Promise.resolve(),
-      },
-      contractAddress: null,
-    };
-  }
-
   return {
     availableBalance: {
-      ...availableBalance,
-      data: availableBalance.data as bigint | undefined,
+      data: BigInt(0),
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: () => {},
     },
     portfolioValue: {
-      ...portfolioValue,
-      data: portfolioValue.data as bigint | undefined,
+      data: BigInt(0),
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: () => {},
     },
     contractAddress,
   };
