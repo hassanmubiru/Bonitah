@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
