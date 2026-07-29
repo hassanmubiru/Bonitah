@@ -59,7 +59,7 @@ const SAVINGS_VAULT_ABI = [
  * Implements Requirements 4.2, 4.3 for live balance reads.
  */
 export function useSavingsVaultBalances() {
-  const { address: userAddress } = useAccount();
+  const { } = useAccount();
 
   // Safely get contract address
   const contractAddress = useMemo(() => {
