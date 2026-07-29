@@ -28,6 +28,7 @@ export function useDocumentUpload() {
       'image/jpeg',
       'image/jpg', 
       'image/png',
+      'text/plain',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
