@@ -100,7 +100,21 @@ const REGISTRY_ABI = [
     ],
     outputs: [],
   },
+  {
+    name: 'grantRole',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'role', type: 'bytes32' },
+      { name: 'account', type: 'address' },
+    ],
+    outputs: [],
+  },
 ] as const;
+
+// REPUTATION_ROLE = keccak256("REPUTATION_ROLE")
+const REPUTATION_ROLE =
+  '0xbb7482d026fc3277e93f1f33beacbaec5574bbbb0f00ce9dc9c2b96eb3385c15' as `0x${string}`;
 
 export default function CommunityPage() {
   const { isLoading: authLoading } = useAuthGuard();
@@ -440,6 +454,13 @@ function IncreaseReputationCard() {
   const [amount, setAmount] = useState('100');
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isSuccess } = useWaitForTransactionReceipt({ hash });
+  const {
+    writeContract: grantRoleWrite,
+    data: grantHash,
+    isPending: grantPending,
+    error: grantError,
+  } = useWriteContract();
+  const { isSuccess: grantSuccess } = useWaitForTransactionReceipt({ hash: grantHash });
 
   let registryAddress: `0x${string}`;
   try {
@@ -447,6 +468,15 @@ function IncreaseReputationCard() {
   } catch {
     registryAddress = '0x0000000000000000000000000000000000000000';
   }
+
+  const handleGrantRole = () => {
+    grantRoleWrite({
+      address: registryAddress,
+      abi: REGISTRY_ABI,
+      functionName: 'grantRole',
+      args: [REPUTATION_ROLE, address!],
+    });
+  };
 
   const handleIncrease = () => {
     const target = (targetAddress || address) as `0x${string}`;
@@ -467,9 +497,35 @@ function IncreaseReputationCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-xs text-muted-foreground">
-          Requires REPUTATION_ROLE on Registry. Grants voting power for governance.
-        </p>
+        {/* Step 1: Grant role */}
+        <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 space-y-2">
+          <p className="text-xs font-medium text-amber-800">
+            Step 1: Grant REPUTATION_ROLE to your wallet (admin only, one-time)
+          </p>
+          {grantSuccess && (
+            <Alert>
+              <AlertTitle>Role Granted!</AlertTitle>
+              <AlertDescription>You now have REPUTATION_ROLE.</AlertDescription>
+            </Alert>
+          )}
+          {grantError && (
+            <Alert variant="destructive">
+              <AlertDescription>{grantError.message.slice(0, 80)}</AlertDescription>
+            </Alert>
+          )}
+          <Button
+            onClick={handleGrantRole}
+            disabled={grantPending}
+            variant="outline"
+            size="sm"
+            className="w-full"
+          >
+            {grantPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            Grant REPUTATION_ROLE to Self
+          </Button>
+        </div>
+
+        {/* Step 2: Increase reputation */}
         <div className="space-y-2">
           <Label>User Address (leave empty for self)</Label>
           <Input
