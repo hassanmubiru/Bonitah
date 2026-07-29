@@ -6,13 +6,21 @@ import { parseUnits, formatUnits } from 'viem';
 import { getContractAddress, BASE_SEPOLIA_CHAIN_ID } from '@/lib/shared';
 
 // import { useContractRead } from './useContractRead';
+import { useContractRead } from './useContractRead';
 
 // Extended ABI for SavingsVault with deposit/withdraw functions
 // This will be replaced by the full generated ABI from task 9.2
 const SAVINGS_VAULT_ABI = [
   // Read functions
   {
-    name: 'balanceOf',
+    name: 'availableBalance',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'user', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    name: 'portfolioValue',
     type: 'function',
     stateMutability: 'view',
     inputs: [{ name: 'user', type: 'address' }],
