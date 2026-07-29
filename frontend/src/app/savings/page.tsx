@@ -142,6 +142,25 @@ export default function SavingsPage() {
           </p>
         </div>
 
+        {/* Registration & Approval Steps */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-lg">Setup Required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">Complete these steps before depositing:</p>
+            <div className="space-y-3">
+              <RegistrationStep />
+              <ApprovalStep />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Need test USDC? Get from{' '}
+              <a href="https://faucet.circle.com/" target="_blank" rel="noopener noreferrer" className="underline text-blue-600">
+                Circle Faucet
+              </a>
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Contract Deployment Warning */}
         {!contractsDeployed && (
