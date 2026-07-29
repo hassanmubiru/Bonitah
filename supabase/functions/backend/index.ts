@@ -307,8 +307,9 @@ async function handleAI(req: Request, path: string, corsHeaders: Record<string, 
       }
     }
     
-    let answer = 'AI service is not configured. Please set up API keys for OpenAI, DeepSeek, or Ollama.'
+    let answer = ''
     let provider = 'None'
+    let lastError = ''
     
     // Re-read env vars (they might be set as secrets after initial module load)
     const ollamaKey = Deno.env.get('OLLAMA_API_KEY')
@@ -338,9 +339,11 @@ async function handleAI(req: Request, path: string, corsHeaders: Record<string, 
           provider = 'Ollama'
         } else {
           const errData = await response.text()
+          lastError = `Ollama ${response.status}: ${errData.substring(0, 100)}`
           console.error('Ollama API error:', response.status, errData)
         }
       } catch (error) {
+        lastError = `Ollama fetch: ${error.message}`
         console.error('Ollama fetch error:', error)
       }
     }
@@ -379,12 +382,20 @@ async function handleAI(req: Request, path: string, corsHeaders: Record<string, 
       }
     }
     
+    // Set default message if no provider worked
+    if (!answer) {
+      if (!ollamaKey && !deepseekKey && !openaiKey) {
+        answer = 'AI service is not configured. Please set up API keys for OpenAI, DeepSeek, or Ollama.'
+      } else {
+        answer = `AI providers failed. Last error: ${lastError}`
+      }
+    }
+
     return jsonResponse({
       answer,
       conversationId: crypto.randomUUID(),
       provider,
-      userAddress,
-      debug: { ollamaAvailable: !!ollamaKey, deepseekAvailable: !!deepseekKey }
+      userAddress
     }, corsHeaders)
   }
 
