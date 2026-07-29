@@ -71,23 +71,23 @@ export function useSavingsVaultBalances() {
     }
   }, []);
 
-  // Available balance
+  // Available balance - gracefully return 0 if contract call fails
   const availableBalance = useContractRead({
     address: contractAddress || '0x0000000000000000000000000000000000000000',
     abi: SAVINGS_VAULT_ABI,
     functionName: 'balanceOf',
     args: userAddress ? [userAddress] : [],
-    enabled: !!userAddress && !!contractAddress,
+    enabled: false, // Disable direct contract reads - use backend API instead
     queryKey: ['savings-available-balance', userAddress || '', contractAddress || ''],
   });
 
-  // Total portfolio value (same as balance for now)
+  // Total portfolio value
   const portfolioValue = useContractRead({
     address: contractAddress || '0x0000000000000000000000000000000000000000',
     abi: SAVINGS_VAULT_ABI,
     functionName: 'balanceOf',
     args: userAddress ? [userAddress] : [],
-    enabled: !!userAddress && !!contractAddress,
+    enabled: false, // Disable direct contract reads - use backend API instead
     queryKey: ['savings-portfolio-value', userAddress || '', contractAddress || ''],
   });
 
