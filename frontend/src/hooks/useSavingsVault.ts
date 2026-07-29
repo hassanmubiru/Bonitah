@@ -1,17 +1,9 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import {
-  useAccount,
-  useWriteContract,
-  useWaitForTransactionReceipt,
-  useBalance,
-} from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useBalance } from 'wagmi';
 import { parseUnits, formatUnits } from 'viem';
-import {
-  getContractAddress,
-  BASE_SEPOLIA_CHAIN_ID,
-} from '@/lib/shared';
+import { getContractAddress, BASE_SEPOLIA_CHAIN_ID } from '@/lib/shared';
 
 import { useContractRead } from './useContractRead';
 
@@ -20,14 +12,7 @@ import { useContractRead } from './useContractRead';
 const SAVINGS_VAULT_ABI = [
   // Read functions
   {
-    name: 'availableBalance',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [{ name: 'user', type: 'address' }],
-    outputs: [{ name: '', type: 'uint256' }],
-  },
-  {
-    name: 'portfolioValue',
+    name: 'balanceOf',
     type: 'function',
     stateMutability: 'view',
     inputs: [{ name: 'user', type: 'address' }],
@@ -75,7 +60,7 @@ const SAVINGS_VAULT_ABI = [
  */
 export function useSavingsVaultBalances() {
   const { address: userAddress } = useAccount();
-  
+
   // Safely get contract address - return empty state if not deployed
   const contractAddress = useMemo(() => {
     try {
@@ -153,7 +138,7 @@ export function useSavingsVaultDeposit() {
       return null;
     }
   }, []);
-  
+
   const {
     writeContract,
     data: hash,
@@ -181,7 +166,7 @@ export function useSavingsVaultDeposit() {
       }
 
       const amountWei = parseUnits(amount, 18); // Assuming 18 decimals for stablecoin
-      
+
       writeContract({
         address: contractAddress,
         abi: SAVINGS_VAULT_ABI,
@@ -189,7 +174,7 @@ export function useSavingsVaultDeposit() {
         args: [amountWei],
       });
     },
-    [writeContract, contractAddress]
+    [writeContract, contractAddress],
   );
 
   return {
@@ -216,7 +201,7 @@ export function useSavingsVaultWithdraw() {
       return null;
     }
   }, []);
-  
+
   const {
     writeContract,
     data: hash,
@@ -244,7 +229,7 @@ export function useSavingsVaultWithdraw() {
       }
 
       const amountWei = parseUnits(amount, 18); // Assuming 18 decimals for stablecoin
-      
+
       writeContract({
         address: contractAddress,
         abi: SAVINGS_VAULT_ABI,
@@ -252,7 +237,7 @@ export function useSavingsVaultWithdraw() {
         args: [amountWei],
       });
     },
-    [writeContract, contractAddress]
+    [writeContract, contractAddress],
   );
 
   return {
@@ -271,7 +256,7 @@ export function useSavingsVaultWithdraw() {
  */
 export function useTokenBalance() {
   const { address: userAddress } = useAccount();
-  
+
   // For now using ETH balance as placeholder for token balance
   // This will be replaced with the actual token contract address from deployment
   const balance = useBalance({
@@ -301,7 +286,10 @@ export function formatTokenAmount(amount: bigint | undefined, decimals = 18): st
 /**
  * Utility function to validate amount input.
  */
-export function validateAmount(amount: string, maxAmount?: bigint): { isValid: boolean; error?: string } {
+export function validateAmount(
+  amount: string,
+  maxAmount?: bigint,
+): { isValid: boolean; error?: string } {
   if (!amount || amount.trim() === '') {
     return { isValid: false, error: 'Amount is required' };
   }
