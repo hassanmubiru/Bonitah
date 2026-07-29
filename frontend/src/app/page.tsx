@@ -345,6 +345,62 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Why BFN - Comparison */}
+      <section className="px-4 py-24 bg-gray-50/50 border-y border-gray-100">
+        <div className="mx-auto max-w-4xl">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+            className="text-center mb-12"
+          >
+            <motion.p
+              variants={fadeUp}
+              className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-3"
+            >
+              Why BFN
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900"
+            >
+              A better financial system
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+            className="rounded-2xl border border-gray-200 bg-white overflow-hidden"
+          >
+            <div className="grid grid-cols-2 text-center text-sm font-semibold border-b border-gray-100">
+              <div className="px-4 py-3 bg-gray-50 text-gray-500">Traditional Finance</div>
+              <div className="px-4 py-3 bg-blue-50 text-blue-700">Bonitah Financial Network</div>
+            </div>
+            {[
+              ['Limited financial education', 'AI financial coaching'],
+              ['Centralized savings', 'Non-custodial, on-chain savings'],
+              ['Opaque transactions', 'Transparent blockchain records'],
+              ['Individual investing', 'Community-powered investing'],
+              ['Generic advice', 'Personalized AI guidance'],
+              ['Paper certificates', 'Blockchain-verified credentials'],
+            ].map(([trad, bfn], i) => (
+              <motion.div
+                key={i}
+                variants={fadeUp}
+                className="grid grid-cols-2 border-b border-gray-50 last:border-0"
+              >
+                <div className="px-4 py-3 text-sm text-gray-500 border-r border-gray-50">{trad}</div>
+                <div className="px-4 py-3 text-sm text-gray-900 font-medium">{bfn}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* Architecture Section */}
       <section className="px-4 py-24 bg-gray-50/50 border-y border-gray-100">
         <div className="mx-auto max-w-4xl">
