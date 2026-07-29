@@ -66,7 +66,12 @@ serve(async (req: Request) => {
         timestamp: new Date().toISOString(),
         service: 'bfn-backend',
         environment: 'supabase-edge',
-        contracts: CONTRACTS
+        contracts: CONTRACTS,
+        aiConfigured: {
+          ollama: !!Deno.env.get('OLLAMA_API_KEY'),
+          deepseek: !!Deno.env.get('DEEPSEEK_API_KEY'),
+          openai: !!Deno.env.get('OPENAI_API_KEY'),
+        }
       }, corsHeaders)
     }
 
