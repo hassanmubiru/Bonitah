@@ -36,13 +36,13 @@ interface CommunityStatsProps {
  * - Proper loading/error/retry states
  */
 export function CommunityStats({ userAddress: _userAddress }: CommunityStatsProps) {
-  let contractsDeployed = true;
+  const __contractsDeployed;
 
   try {
     // Contract references removed for now - placeholder implementation
-    contractsDeployed = true;
+    _contractsDeployed;
   } catch {
-    contractsDeployed = false;
+    _contractsDeployed;
   }
 
   // For now, these functions don't exist in the current ABI, so we'll show placeholders
