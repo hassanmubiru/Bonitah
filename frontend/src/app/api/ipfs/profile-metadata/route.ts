@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    // Map backend response (ipfsHash) to frontend expected format (cid)
+    return NextResponse.json({ cid: data.ipfsHash, url: data.url, success: data.success });
   } catch (error) {
     console.error('Profile metadata upload error:', error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
