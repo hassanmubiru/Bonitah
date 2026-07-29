@@ -485,9 +485,9 @@ function YourCircles() {
   });
 
   // Also read circle details for circles we're a member of
-  const memberCircleIds =
+  const memberCircleIds: number[] =
     memberResults
-      ?.map((r, i) => ({ poolId: poolIds[i], isMember: r.result as boolean | undefined }))
+      ?.map((r, i) => ({ poolId: poolIds[i]!, isMember: r.result as boolean | undefined }))
       .filter((r) => r.isMember === true)
       .map((r) => r.poolId) || [];
 
