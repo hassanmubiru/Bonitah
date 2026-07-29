@@ -1,3 +1,5 @@
+import { type Abi } from 'viem';
+
 // Re-exports from copied shared package
 export const BASE_SEPOLIA_CHAIN_ID = 84532;
 
@@ -27,19 +29,49 @@ export function getContractAddress(contractName: string, chainId = BASE_SEPOLIA_
   return (contractAddresses[chainId]?.[contractName] || '0x0') as `0x${string}`;
 }
 
-export function getContractAbi(contractName: string): any[] {
+export function getContractAbi(contractName: string): Abi {
   // Simplified ABIs - in a real deployment these would be the full ABIs
-  const abis: Record<string, any[]> = {
+  const abis: Record<string, Abi> = {
     Registry: [
       {
         inputs: [{ name: 'user', type: 'address' }],
         name: 'getProfile',
         outputs: [{ name: '', type: 'tuple', components: [
-          { name: 'isRegistered', type: 'bool' },
-          { name: 'username', type: 'string' },
-          { name: 'metadataCID', type: 'string' }
+          { name: 'registered', type: 'bool' },
+          { name: 'verified', type: 'bool' },
+          { name: 'reputationScore', type: 'uint256' },
+          { name: 'ipfsProfileHash', type: 'string' },
+          { name: 'registeredAt', type: 'uint256' }
         ]}],
         stateMutability: 'view',
+        type: 'function'
+      },
+      {
+        inputs: [{ name: 'ipfsProfileHash', type: 'string' }],
+        name: 'updateProfile',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function'
+      },
+      {
+        inputs: [{ name: 'user', type: 'address' }],
+        name: 'isRegistered',
+        outputs: [{ name: '', type: 'bool' }],
+        stateMutability: 'view',
+        type: 'function'
+      },
+      {
+        inputs: [{ name: 'user', type: 'address' }],
+        name: 'reputationOf',
+        outputs: [{ name: '', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function'
+      },
+      {
+        inputs: [],
+        name: 'register',
+        outputs: [],
+        stateMutability: 'nonpayable',
         type: 'function'
       }
     ],
