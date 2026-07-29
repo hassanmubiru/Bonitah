@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useAccount } from 'wagmi';
 import { useEffect, useState } from 'react';
 
@@ -45,10 +44,11 @@ export function SiteHeader() {
           <div className="flex items-center gap-6">
             <Link
               href="/"
-              className="rounded-md text-sm font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="flex items-center gap-2 rounded-md text-sm font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               aria-label="Bonitah Financial Network - Go to homepage"
             >
-              Bonitah Financial Network
+              <img src="/logo.png" alt="BFN Logo" width={32} height={32} className="rounded-md" />
+              <span className="hidden sm:inline">BFN</span>
             </Link>
 
             {/* Navigation links - only show when authenticated and mounted */}

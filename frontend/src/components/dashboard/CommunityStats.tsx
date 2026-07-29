@@ -51,10 +51,10 @@ export function CommunityStats({ userAddress: _userAddress }: CommunityStatsProp
   const refetchPools = () => {};
 
   // Contract reads disabled for now - placeholder implementation
-  const votingPower = BigInt(0);
-  const votingLoading = false;
-  const votingError = false;
-  const refetchVoting = () => {};
+  // const votingPower = BigInt(0);
+  // const votingLoading = false;
+  // const votingError = false;
+  // const refetchVoting = () => {};
 
   /*
   // Fetch user's voting power in governance (this function exists in the ABI)
@@ -89,14 +89,14 @@ export function CommunityStats({ userAddress: _userAddress }: CommunityStatsProp
 
 
 
-  const isLoading = circlesLoading || poolsLoading || votingLoading;
-  const hasError = circlesError || poolsError || votingError;
+  const isLoading = circlesLoading || poolsLoading;
+  const hasError = circlesError || poolsError;
   const errorMessage = hasError ? 'Failed to load community data' : null;
 
   const handleRetry = () => {
     if (circlesError) refetchCircles();
     if (poolsError) refetchPools();
-    if (votingError) refetchVoting();
+    
   };
 
   // Format currency values
@@ -140,92 +140,44 @@ export function CommunityStats({ userAddress: _userAddress }: CommunityStatsProp
           <div className="space-y-6">
             {/* Circle Memberships */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">Savings Circles</h4>
-                <span className="text-sm text-muted-foreground">
-                  {circleMemberships && Array.isArray(circleMemberships)
-                    ? (circleMemberships as Circle[]).length
-                    : 0}{' '}
-                  joined
-                </span>
-              </div>
-              {circleMemberships &&
-              Array.isArray(circleMemberships) &&
-              circleMemberships.length > 0 ? (
+              <h4 className="font-medium mb-2">Savings Circles</h4>
+              {circleMemberships.length > 0 ? (
                 <div className="space-y-2">
-                  {(circleMemberships as Circle[])
-                    .slice(0, 2)
-                    .map((circle: Circle, index: number) => (
-                      <div key={index} className="flex justify-between text-sm">
-                        <span>Circle #{Number(circle.id)}</span>
-                        <span className="text-muted-foreground">
-                          {Number(circle.memberCount)}/{Number(circle.maxMembers)} members
-                        </span>
-                      </div>
-                    ))}
-                  {(circleMemberships as Circle[]).length > 2 && (
-                    <p className="text-xs text-muted-foreground">
-                      +{(circleMemberships as Circle[]).length - 2} more circles
-                    </p>
-                  )}
+                  {(circleMemberships as Circle[]).slice(0, 2).map((circle: Circle, index: number) => (
+                    <div key={index} className="flex justify-between text-sm">
+                      <span>Circle #{Number(circle.id)}</span>
+                      <span className="text-muted-foreground">
+                        {Number(circle.memberCount)}/{Number(circle.maxMembers)} members
+                      </span>
+                    </div>
+                  ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No circle memberships</p>
+                <p className="text-sm text-muted-foreground">Coming soon — join community savings circles to pool resources with others.</p>
               )}
             </div>
 
             {/* Pool Contributions */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">Pool Contributions</h4>
-                <span className="text-sm text-muted-foreground">
-                  {poolContributions && Array.isArray(poolContributions)
-                    ? (poolContributions as PoolContribution[])
-                        .reduce(
-                          (total: number, pool: PoolContribution) =>
-                            total + parseFloat(formatValue(pool.amount)),
-                          0,
-                        )
-                        .toLocaleString('en-US', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })
-                    : '0.00'}{' '}
-                  total
-                </span>
-              </div>
-              {poolContributions &&
-              Array.isArray(poolContributions) &&
-              poolContributions.length > 0 ? (
+              <h4 className="font-medium mb-2">Pool Contributions</h4>
+              {poolContributions.length > 0 ? (
                 <div className="space-y-2">
-                  {(poolContributions as PoolContribution[])
-                    .slice(0, 2)
-                    .map((pool: PoolContribution, index: number) => (
-                      <div key={index} className="flex justify-between text-sm">
-                        <span>Pool #{Number(pool.poolId)}</span>
-                        <span>${formatValue(pool.amount)}</span>
-                      </div>
-                    ))}
-                  {(poolContributions as PoolContribution[]).length > 2 && (
-                    <p className="text-xs text-muted-foreground">
-                      +{(poolContributions as PoolContribution[]).length - 2} more pools
-                    </p>
-                  )}
+                  {(poolContributions as PoolContribution[]).slice(0, 2).map((pool: PoolContribution, index: number) => (
+                    <div key={index} className="flex justify-between text-sm">
+                      <span>Pool #{Number(pool.poolId)}</span>
+                      <span>${formatValue(pool.amount)}</span>
+                    </div>
+                  ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No pool contributions</p>
+                <p className="text-sm text-muted-foreground">Coming soon — contribute to community investment pools.</p>
               )}
             </div>
 
-            {/* Voting Power */}
+            {/* Governance */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">Governance Power</h4>
-              </div>
-              <div className="text-2xl font-semibold text-purple-600">
-                {votingPower ? Number(votingPower).toLocaleString() : '0'}
-              </div>
-              <p className="text-xs text-muted-foreground">Voting power</p>
+              <h4 className="font-medium mb-2">Governance</h4>
+              <p className="text-sm text-muted-foreground">Coming soon — vote on community proposals and treasury decisions.</p>
             </div>
           </div>
         )}
