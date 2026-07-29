@@ -306,7 +306,41 @@ export default function AiAssistantPage() {
                               : 'bg-muted'
                           }`}
                         >
-                          <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                          <div className="text-sm whitespace-pre-wrap">
+                            {message.role === 'assistant' ? (
+                              <ReactMarkdown
+                                components={{
+                                  table: ({ children }) => (
+                                    <table className="w-full text-xs border-collapse my-2">{children}</table>
+                                  ),
+                                  th: ({ children }) => (
+                                    <th className="border border-border px-2 py-1 bg-muted/50 text-left font-medium">{children}</th>
+                                  ),
+                                  td: ({ children }) => (
+                                    <td className="border border-border px-2 py-1">{children}</td>
+                                  ),
+                                  strong: ({ children }) => (
+                                    <strong className="font-semibold">{children}</strong>
+                                  ),
+                                  code: ({ children }) => (
+                                    <code className="bg-muted px-1 py-0.5 rounded text-xs">{children}</code>
+                                  ),
+                                  ol: ({ children }) => (
+                                    <ol className="list-decimal list-inside my-2 space-y-1">{children}</ol>
+                                  ),
+                                  ul: ({ children }) => (
+                                    <ul className="list-disc list-inside my-2 space-y-1">{children}</ul>
+                                  ),
+                                  hr: () => <hr className="my-3 border-border" />,
+                                  p: ({ children }) => <p className="mb-2">{children}</p>,
+                                }}
+                              >
+                                {message.content}
+                              </ReactMarkdown>
+                            ) : (
+                              message.content
+                            )}
+                          </div>
                           <div className="text-xs opacity-70 mt-1">
                             {new Date(message.createdAt).toLocaleTimeString()}
                           </div>
