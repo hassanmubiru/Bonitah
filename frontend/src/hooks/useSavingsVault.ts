@@ -281,7 +281,7 @@ export function useTokenBalance() {
 /**
  * Utility function to format wei amounts for display.
  */
-export function formatTokenAmount(amount: bigint | undefined, decimals = 18): string {
+export function formatTokenAmount(amount: bigint | undefined, decimals = 6): string {
   if (!amount) return '0';
   return formatUnits(amount, decimals);
 }
