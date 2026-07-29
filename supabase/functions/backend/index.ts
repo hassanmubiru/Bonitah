@@ -276,6 +276,15 @@ async function handleAuth(req: Request, path: string, corsHeaders: Record<string
 
 // AI handler with real integrations
 async function handleAI(req: Request, path: string, corsHeaders: Record<string, string>) {
+  // Conversation history (stub - returns empty list)
+  if (path === '/ai/conversations' && req.method === 'GET') {
+    return jsonResponse({ conversations: [] }, corsHeaders)
+  }
+
+  if (path.startsWith('/ai/conversations/') && req.method === 'GET') {
+    return jsonResponse({ messages: [] }, corsHeaders)
+  }
+
   if (path === '/ai/provider' && req.method === 'GET') {
     const available = []
     const configured = []
