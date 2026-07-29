@@ -12,12 +12,7 @@ import {
   formatTokenAmount,
   validateAmount,
 } from '@/hooks/useSavingsVault';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 /**
  * Savings page implementing full SavingsVault integration.
- * 
+ *
  * Implements Requirements:
  * - 4.2: Deposit flow with token amount input, validation, signed transactions
  * - 4.3: Withdraw flow with balance checking, validation, signed transactions  
@@ -45,10 +40,10 @@ export default function SavingsPage() {
 
   // Contract read hooks for live balance data
   const { availableBalance, portfolioValue, contractAddress } = useSavingsVaultBalances();
-  
+
   // Token balance for deposit validation
   const tokenBalance = useTokenBalance();
-  
+
   // Transaction hooks for deposit/withdraw operations
   const depositTx = useSavingsVaultDeposit();
   const withdrawTx = useSavingsVaultWithdraw();
@@ -57,14 +52,8 @@ export default function SavingsPage() {
   const contractsDeployed = !!contractAddress;
 
   // Form validation
-  const depositValidation = validateAmount(
-    depositAmount,
-    tokenBalance.data
-  );
-  const withdrawValidation = validateAmount(
-    withdrawAmount,
-    availableBalance.data
-  );
+  const depositValidation = validateAmount(depositAmount, tokenBalance.data);
+  const withdrawValidation = validateAmount(withdrawAmount, availableBalance.data);
 
   // Handle successful transactions - reset forms and refetch balances
   useEffect(() => {
@@ -94,9 +83,9 @@ export default function SavingsPage() {
   // Handle deposit submission
   const handleDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!depositValidation.isValid) return;
-    
+
     try {
       await depositTx.deposit(depositAmount);
     } catch (error) {
@@ -104,12 +93,12 @@ export default function SavingsPage() {
     }
   };
 
-  // Handle withdraw submission  
+  // Handle withdraw submission
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!withdrawValidation.isValid) return;
-    
+
     try {
       await withdrawTx.withdraw(withdrawAmount);
     } catch (error) {
@@ -145,8 +134,8 @@ export default function SavingsPage() {
           <Alert className="mb-8">
             <AlertTitle>⚠️ Contracts Not Deployed</AlertTitle>
             <AlertDescription>
-              The SavingsVault contracts haven't been deployed to Base Sepolia yet. 
-              To use the savings features, please deploy the contracts first using the deployment scripts.
+              The SavingsVault contracts haven't been deployed to Base Sepolia yet. To use the
+              savings features, please deploy the contracts first using the deployment scripts.
               <br />
               <code className="mt-2 inline-block text-sm bg-muted px-2 py-1 rounded">
                 ./scripts/deploy-base-sepolia.sh
@@ -168,7 +157,9 @@ export default function SavingsPage() {
                 disabled={availableBalance.isLoading}
                 aria-label="Refresh available balance"
               >
-                <RefreshCw className={`h-4 w-4 ${availableBalance.isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`h-4 w-4 ${availableBalance.isLoading ? 'animate-spin' : ''}`}
+                />
               </Button>
             </CardHeader>
             <CardContent>
@@ -180,9 +171,7 @@ export default function SavingsPage() {
               ) : availableBalance.isError ? (
                 <div>
                   <p className="text-2xl font-bold text-destructive">Error</p>
-                  <p className="text-sm text-muted-foreground">
-                    Failed to load balance
-                  </p>
+                  <p className="text-sm text-muted-foreground">Failed to load balance</p>
                   <Button
                     variant="outline"
                     size="sm"
@@ -195,11 +184,9 @@ export default function SavingsPage() {
               ) : (
                 <div>
                   <div className="text-2xl font-bold">
-                    {formatTokenAmount(availableBalance.data)} {tokenBalance.symbol}
+                    {formatTokenAmount(availableBalance.data)} USDC
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Available for withdrawal
-                  </p>
+                  <p className="text-sm text-muted-foreground">Available for withdrawal</p>
                 </div>
               )}
             </CardContent>
@@ -216,7 +203,9 @@ export default function SavingsPage() {
                 disabled={portfolioValue.isLoading}
                 aria-label="Refresh portfolio value"
               >
-                <RefreshCw className={`h-4 w-4 ${portfolioValue.isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`h-4 w-4 ${portfolioValue.isLoading ? 'animate-spin' : ''}`}
+                />
               </Button>
             </CardHeader>
             <CardContent>
@@ -228,9 +217,7 @@ export default function SavingsPage() {
               ) : portfolioValue.isError ? (
                 <div>
                   <p className="text-2xl font-bold text-destructive">Error</p>
-                  <p className="text-sm text-muted-foreground">
-                    Failed to load portfolio value
-                  </p>
+                  <p className="text-sm text-muted-foreground">Failed to load portfolio value</p>
                   <Button
                     variant="outline"
                     size="sm"
@@ -243,7 +230,7 @@ export default function SavingsPage() {
               ) : (
                 <div>
                   <div className="text-2xl font-bold">
-                    {formatTokenAmount(portfolioValue.data)} {tokenBalance.symbol}
+                    {formatTokenAmount(portfolioValue.data)} USDC
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Including deposits, goals, and locks
@@ -267,9 +254,7 @@ export default function SavingsPage() {
               </div>
             ) : tokenBalance.isError ? (
               <div>
-                <p className="text-sm text-destructive">
-                  Failed to load wallet balance
-                </p>
+                <p className="text-sm text-destructive">Failed to load wallet balance</p>
                 <Button
                   variant="outline"
                   size="sm"
@@ -280,9 +265,7 @@ export default function SavingsPage() {
                 </Button>
               </div>
             ) : (
-              <div className="text-lg font-semibold">
-                {tokenBalance.formatted} {tokenBalance.symbol}
-              </div>
+              <div className="text-lg font-semibold">{tokenBalance.formatted} USDC</div>
             )}
           </CardContent>
         </Card>
@@ -325,12 +308,12 @@ export default function SavingsPage() {
                     value={depositAmount}
                     onChange={(e) => setDepositAmount(e.target.value)}
                     disabled={depositTx.isLoading}
-                    className={!depositValidation.isValid && depositAmount ? 'border-destructive' : ''}
+                    className={
+                      !depositValidation.isValid && depositAmount ? 'border-destructive' : ''
+                    }
                   />
                   {!depositValidation.isValid && depositAmount && (
-                    <p className="text-sm text-destructive">
-                      {depositValidation.error}
-                    </p>
+                    <p className="text-sm text-destructive">{depositValidation.error}</p>
                   )}
                 </div>
 
@@ -355,7 +338,12 @@ export default function SavingsPage() {
 
                 <Button
                   type="submit"
-                  disabled={!depositValidation.isValid || depositTx.isLoading || !depositAmount || !contractsDeployed}
+                  disabled={
+                    !depositValidation.isValid ||
+                    depositTx.isLoading ||
+                    !depositAmount ||
+                    !contractsDeployed
+                  }
                   className="w-full"
                 >
                   {depositTx.isLoading ? (
@@ -383,15 +371,15 @@ export default function SavingsPage() {
                     value={withdrawAmount}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
                     disabled={withdrawTx.isLoading}
-                    className={!withdrawValidation.isValid && withdrawAmount ? 'border-destructive' : ''}
+                    className={
+                      !withdrawValidation.isValid && withdrawAmount ? 'border-destructive' : ''
+                    }
                   />
                   {!withdrawValidation.isValid && withdrawAmount && (
-                    <p className="text-sm text-destructive">
-                      {withdrawValidation.error}
-                    </p>
+                    <p className="text-sm text-destructive">{withdrawValidation.error}</p>
                   )}
                   <p className="text-sm text-muted-foreground">
-                    Available: {formatTokenAmount(availableBalance.data)} {tokenBalance.symbol}
+                    Available: {formatTokenAmount(availableBalance.data)} USDC
                   </p>
                 </div>
 
@@ -416,7 +404,12 @@ export default function SavingsPage() {
 
                 <Button
                   type="submit"
-                  disabled={!withdrawValidation.isValid || withdrawTx.isLoading || !withdrawAmount || !contractsDeployed}
+                  disabled={
+                    !withdrawValidation.isValid ||
+                    withdrawTx.isLoading ||
+                    !withdrawAmount ||
+                    !contractsDeployed
+                  }
                   className="w-full"
                 >
                   {withdrawTx.isLoading ? (
@@ -450,7 +443,12 @@ export default function SavingsPage() {
                       Hash: {depositTx.hash}
                     </p>
                     <p className="text-sm">
-                      Status: {depositTx.isLoading ? 'Confirming...' : depositTx.isSuccess ? 'Confirmed' : 'Failed'}
+                      Status:{' '}
+                      {depositTx.isLoading
+                        ? 'Confirming...'
+                        : depositTx.isSuccess
+                          ? 'Confirmed'
+                          : 'Failed'}
                     </p>
                   </div>
                 )}
@@ -461,7 +459,12 @@ export default function SavingsPage() {
                       Hash: {withdrawTx.hash}
                     </p>
                     <p className="text-sm">
-                      Status: {withdrawTx.isLoading ? 'Confirming...' : withdrawTx.isSuccess ? 'Confirmed' : 'Failed'}
+                      Status:{' '}
+                      {withdrawTx.isLoading
+                        ? 'Confirming...'
+                        : withdrawTx.isSuccess
+                          ? 'Confirmed'
+                          : 'Failed'}
                     </p>
                   </div>
                 )}
