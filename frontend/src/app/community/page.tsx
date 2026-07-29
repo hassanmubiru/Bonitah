@@ -538,11 +538,23 @@ function YourCircles() {
         ) : memberCircleIds.length > 0 ? (
           <div className="space-y-3">
             {memberCircleIds.map((poolId, i) => {
-              const details = circleDetails?.[i]?.result as
-                [string, bigint, number, bigint, bigint, boolean] | undefined;
-              const memberCount = details ? Number(details[3]) : 0;
-              const balance = details ? Number(details[4]) / 1e6 : 0;
-              const threshold = details ? details[2] : 0;
+              const raw = circleDetails?.[i]?.result;
+              // wagmi returns structs as objects with named fields or as arrays
+              let memberCount = 0;
+              let balance = 0;
+              let threshold = 0;
+              if (raw) {
+                if (typeof raw === 'object' && !Array.isArray(raw)) {
+                  const obj = raw as Record<string, unknown>;
+                  memberCount = Number(obj.memberCount ?? obj[3] ?? 0);
+                  balance = Number(obj.treasuryBalance ?? obj[4] ?? 0) / 1e6;
+                  threshold = Number(obj.approvalThreshold ?? obj[2] ?? 0);
+                } else if (Array.isArray(raw)) {
+                  memberCount = Number(raw[3] ?? 0);
+                  balance = Number(raw[4] ?? 0) / 1e6;
+                  threshold = Number(raw[2] ?? 0);
+                }
+              }
               return (
                 <div
                   key={poolId}
