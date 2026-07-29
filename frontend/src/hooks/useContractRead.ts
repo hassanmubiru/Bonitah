@@ -5,7 +5,7 @@ import { type Address, type Abi } from 'viem';
 import { readContract } from 'viem/actions';
 import { usePublicClient } from 'wagmi';
 
-// Import BASE_SEPOLIA_CHAIN_ID directly to avoid module issues  
+// Import BASE_SEPOLIA_CHAIN_ID directly to avoid module issues
 const BASE_SEPOLIA_CHAIN_ID = 84532;
 
 /**
@@ -55,7 +55,7 @@ export interface UseContractReadOptions {
 
 /**
  * Custom hook for reading blockchain data with retry policy and timeout.
- * 
+ *
  * Simplified generic approach to avoid complex TypeScript constraints.
  */
 export function useContractRead({
@@ -64,7 +64,7 @@ export function useContractRead({
   functionName,
   args = [],
   enabled = true,
-  queryKey = []
+  queryKey = [],
 }: UseContractReadOptions): ContractReadState<unknown> {
   const publicClient = usePublicClient();
 
@@ -106,12 +106,12 @@ export function useContractRead({
       }
     },
     enabled: enabled && !!publicClient,
-    
+
     // Retry policy:
     // Don't retry on contract reverts (function doesn't exist or access denied)
     retry: (failureCount, error) => {
       if (failureCount >= 2) return false;
-      
+
       if (error instanceof Error) {
         const message = error.message.toLowerCase();
         // Don't retry on contract-specific errors
@@ -133,19 +133,19 @@ export function useContractRead({
       }
       return false;
     },
-    
+
     // Faster backoff delay: 500ms, 1000ms
-    retryDelay: (attemptIndex) => Math.min(500 * (2 ** attemptIndex), 1000),
-    
+    retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 1000),
+
     // Cache for 60 seconds (longer cache for better performance)
     staleTime: 60_000,
-    
+
     // Keep in cache for 10 minutes after going stale
     gcTime: 10 * 60 * 1000,
-    
+
     // Don't refetch on window focus (explicit user action only)
     refetchOnWindowFocus: false,
-    
+
     // Don't refetch on reconnect automatically
     refetchOnReconnect: false,
   });
@@ -170,7 +170,7 @@ export function useContractBalance(
   abi: Abi,
   userAddress: Address | undefined,
   functionName = 'balanceOf',
-  enabled = true
+  enabled = true,
 ): ContractReadState<bigint> {
   return useContractRead({
     address: contractAddress,
@@ -190,12 +190,12 @@ export function usePortfolioValue(
   contractAddress: Address,
   abi: Abi,
   userAddress: Address | undefined,
-  enabled = true
+  enabled = true,
 ): ContractReadState<bigint> {
   return useContractRead({
     address: contractAddress,
     abi,
-    functionName: 'balanceOf',
+    functionName: 'portfolioValue',
     args: userAddress ? [userAddress] : [],
     enabled: enabled && !!userAddress,
     queryKey: ['portfolio', userAddress || ''],
@@ -209,7 +209,7 @@ export function useReputationScore(
   contractAddress: Address,
   abi: Abi,
   userAddress: Address | undefined,
-  enabled = true
+  enabled = true,
 ): ContractReadState<bigint> {
   return useContractRead({
     address: contractAddress,
