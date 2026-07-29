@@ -89,6 +89,19 @@ const GOVERNANCE_ABI = [
   },
 ] as const;
 
+const REGISTRY_ABI = [
+  {
+    name: 'increaseReputation',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'user', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [],
+  },
+] as const;
+
 export default function CommunityPage() {
   const { isLoading: authLoading } = useAuthGuard();
   useAccount();
@@ -116,6 +129,7 @@ export default function CommunityPage() {
           <JoinCircleCard />
           <ContributeCard />
           <VoteCard />
+          <IncreaseReputationCard />
         </div>
 
         {/* Your Circles */}
@@ -414,6 +428,79 @@ function VoteCard() {
         <Button onClick={handleVote} disabled={isPending || !proposalId} className="w-full">
           {isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
           Cast Vote
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function IncreaseReputationCard() {
+  const { address } = useAccount();
+  const [targetAddress, setTargetAddress] = useState('');
+  const [amount, setAmount] = useState('100');
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  let registryAddress: `0x${string}`;
+  try {
+    registryAddress = getContractAddress('Registry', BASE_SEPOLIA_CHAIN_ID) as `0x${string}`;
+  } catch {
+    registryAddress = '0x0000000000000000000000000000000000000000';
+  }
+
+  const handleIncrease = () => {
+    const target = (targetAddress || address) as `0x${string}`;
+    writeContract({
+      address: registryAddress,
+      abi: REGISTRY_ABI,
+      functionName: 'increaseReputation',
+      args: [target, BigInt(amount)],
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <span className="text-lg">⭐</span>
+          Increase Reputation
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-xs text-muted-foreground">
+          Requires REPUTATION_ROLE on Registry. Grants voting power for governance.
+        </p>
+        <div className="space-y-2">
+          <Label>User Address (leave empty for self)</Label>
+          <Input
+            value={targetAddress}
+            onChange={(e) => setTargetAddress(e.target.value)}
+            placeholder={address || '0x...'}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Amount</Label>
+          <Input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="100"
+          />
+        </div>
+        {isSuccess && (
+          <Alert>
+            <AlertTitle>Reputation Increased!</AlertTitle>
+            <AlertDescription>Transaction: {hash?.slice(0, 14)}...</AlertDescription>
+          </Alert>
+        )}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error.message.slice(0, 100)}</AlertDescription>
+          </Alert>
+        )}
+        <Button onClick={handleIncrease} disabled={isPending || !amount} className="w-full">
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+          Grant Reputation
         </Button>
       </CardContent>
     </Card>
