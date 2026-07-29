@@ -305,13 +305,18 @@ async function handleAI(req: Request, path: string, corsHeaders: Record<string, 
     let answer = 'AI service is not configured. Please set up API keys for OpenAI, DeepSeek, or Ollama.'
     let provider = 'None'
     
+    // Re-read env vars (they might be set as secrets after initial module load)
+    const ollamaKey = Deno.env.get('OLLAMA_API_KEY')
+    const deepseekKey = Deno.env.get('DEEPSEEK_API_KEY')
+    const openaiKey = Deno.env.get('OPENAI_API_KEY')
+    
     // Try Ollama Cloud first
-    if (env.ollamaApiKey) {
+    if (ollamaKey) {
       try {
         const response = await fetch('https://api.ollama.com/api/generate', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${env.ollamaApiKey}`,
+            'Authorization': `Bearer ${ollamaKey}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
