@@ -337,12 +337,12 @@ async function handleAI(req: Request, path: string, corsHeaders: Record<string, 
     }
     
     // Fallback to DeepSeek
-    if (provider === 'None' && env.deepseekApiKey) {
+    if (provider === 'None' && deepseekKey) {
       try {
         const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${env.deepseekApiKey}`,
+            'Authorization': `Bearer ${deepseekKey}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
