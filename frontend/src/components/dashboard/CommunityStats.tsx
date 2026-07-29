@@ -2,6 +2,7 @@
 
 import { type Address } from 'viem';
 import { formatUnits } from 'viem';
+import Link from 'next/link';
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -153,7 +154,10 @@ export function CommunityStats({ userAddress: _userAddress }: CommunityStatsProp
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Coming soon — join community savings circles to pool resources with others.</p>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Create or join a savings circle to pool resources with others.</p>
+                  <Button variant="outline" size="sm" asChild><Link href="/community">Get Started →</Link></Button>
+                </div>
               )}
             </div>
 
@@ -170,14 +174,20 @@ export function CommunityStats({ userAddress: _userAddress }: CommunityStatsProp
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Coming soon — contribute to community investment pools.</p>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Contribute USDC to community investment pools.</p>
+                  <Button variant="outline" size="sm" asChild><Link href="/community">Contribute →</Link></Button>
+                </div>
               )}
             </div>
 
             {/* Governance */}
             <div>
               <h4 className="font-medium mb-2">Governance</h4>
-              <p className="text-sm text-muted-foreground">Coming soon — vote on community proposals and treasury decisions.</p>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Vote on community proposals and treasury decisions.</p>
+                <Button variant="outline" size="sm" asChild><Link href="/community">Vote →</Link></Button>
+              </div>
             </div>
           </div>
         )}
