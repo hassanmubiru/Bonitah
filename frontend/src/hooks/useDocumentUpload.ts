@@ -2,10 +2,12 @@
 
 import { useState, useCallback } from 'react';
 
+const API_URL = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001';
+
 /**
  * Document upload management hook
- * 
- * Implements Task 21.9 requirements for IPFS document upload
+ *
+ * Uploads files directly to the Supabase backend IPFS service.
  */
 export function useDocumentUpload() {
   const [isUploading, setIsUploading] = useState(false);
@@ -15,7 +17,7 @@ export function useDocumentUpload() {
   /**
    * Upload document to IPFS via backend service
    */
-  const uploadDocument = useCallback(async (file: File, category: string = 'general') => {
+  const uploadDocument = useCallback(async (file: File, _category: string = 'general') => {
     // Validate file size (10MB limit)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
@@ -26,13 +28,13 @@ export function useDocumentUpload() {
     const allowedTypes = [
       'application/pdf',
       'image/jpeg',
-      'image/jpg', 
+      'image/jpg',
       'image/png',
       'text/plain',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
-    
+
     if (!allowedTypes.includes(file.type)) {
       throw new Error('Unsupported file type. Please use PDF, images, or document files.');
     }
@@ -43,12 +45,11 @@ export function useDocumentUpload() {
 
     try {
       const formData = new FormData();
-      formData.append('files', file);
-      formData.append('category', category);
+      formData.append('file', file);
 
       // Simulate upload progress
       const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
+        setUploadProgress((prev) => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return 90;
@@ -57,7 +58,8 @@ export function useDocumentUpload() {
         });
       }, 200);
 
-      const response = await fetch('/api/ipfs/upload', {
+      // Call Supabase backend directly
+      const response = await fetch(`${API_URL}/ipfs/profile-docs`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('bfn-auth-token')}`,
@@ -70,29 +72,29 @@ export function useDocumentUpload() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Upload failed');
+        throw new Error(errorData.message || errorData.error || 'Upload failed');
       }
 
       const result = await response.json();
-      
+
       setTimeout(() => {
         setUploadProgress(0);
         setIsUploading(false);
       }, 1000);
 
       return {
-        cid: result.cids[0],
-        url: `https://ipfs.io/ipfs/${result.cids[0]}`,
+        cid: result.ipfsHash,
+        url: result.url || `https://gateway.pinata.cloud/ipfs/${result.ipfsHash}`,
         name: file.name,
         size: formatFileSize(file.size),
         type: file.type,
       };
-
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Upload failed');
+    } catch (uploadError) {
+      const message = uploadError instanceof Error ? uploadError.message : 'Upload failed';
+      setError(message);
       setIsUploading(false);
       setUploadProgress(0);
-      throw error;
+      throw uploadError;
     }
   }, []);
 
@@ -101,7 +103,7 @@ export function useDocumentUpload() {
    */
   const deleteDocument = useCallback(async (documentId: string) => {
     try {
-      const response = await fetch(`/api/ipfs/unpin/${documentId}`, {
+      const response = await fetch(`${API_URL}/ipfs/${documentId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('bfn-auth-token')}`,
@@ -113,9 +115,10 @@ export function useDocumentUpload() {
       }
 
       return true;
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Delete failed');
-      throw error;
+    } catch (deleteError) {
+      const message = deleteError instanceof Error ? deleteError.message : 'Delete failed';
+      setError(message);
+      throw deleteError;
     }
   }, []);
 
@@ -141,10 +144,10 @@ export function useDocumentUpload() {
  */
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
