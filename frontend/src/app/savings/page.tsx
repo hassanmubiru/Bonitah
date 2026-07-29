@@ -142,32 +142,6 @@ export default function SavingsPage() {
           </p>
         </div>
 
-        {/* Registration & Approval Info */}
-        <Alert className="mb-8">
-          <AlertDescription>
-            <strong>Before depositing:</strong>
-            <ol className="mt-2 list-decimal list-inside space-y-1 text-sm">
-              <li>
-                You must be <strong>registered</strong> in the BFN Registry contract
-              </li>
-              <li>
-                You need <strong>USDC tokens</strong> on Base Sepolia (get from{' '}
-                <a
-                  href="https://faucet.circle.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline text-blue-600"
-                >
-                  Circle Faucet
-                </a>
-                )
-              </li>
-              <li>
-                You must <strong>approve</strong> the SavingsVault to spend your USDC
-              </li>
-            </ol>
-          </AlertDescription>
-        </Alert>
 
         {/* Contract Deployment Warning */}
         {!contractsDeployed && (
