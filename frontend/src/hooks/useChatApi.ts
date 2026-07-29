@@ -80,31 +80,30 @@ export interface ChatApiState {
 export function useChatApi() {
   const { isAuthenticated } = useSiweAuth();
   
-  const [state, setState] = useState<ChatApiState>(() => {
-    // Load messages from localStorage on init
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('bfn-chat-history');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          return {
-            messages: parsed.messages || [],
-            conversations: [],
-            currentConversationId: parsed.currentConversationId || null,
-            isLoading: false,
-            error: null,
-          };
-        }
-      } catch { /* ignore parse errors */ }
-    }
-    return {
-      messages: [],
-      conversations: [],
-      currentConversationId: null,
-      isLoading: false,
-      error: null,
-    };
+  const [state, setState] = useState<ChatApiState>({
+    messages: [],
+    conversations: [],
+    currentConversationId: null,
+    isLoading: false,
+    error: null,
   });
+
+  // Load messages from localStorage on mount (client-side only)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('bfn-chat-history');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.messages?.length > 0) {
+          setState(prev => ({
+            ...prev,
+            messages: parsed.messages,
+            currentConversationId: parsed.currentConversationId || null,
+          }));
+        }
+      }
+    } catch { /* ignore */ }
+  }, []);
 
   // Backend API base URL
   const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001';

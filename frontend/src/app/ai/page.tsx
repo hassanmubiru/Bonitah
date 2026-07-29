@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -306,39 +307,15 @@ export default function AiAssistantPage() {
                               : 'bg-muted'
                           }`}
                         >
-                          <div className="text-sm whitespace-pre-wrap">
+                          <div className="text-sm">
                             {message.role === 'assistant' ? (
-                              <ReactMarkdown
-                                components={{
-                                  table: ({ children }) => (
-                                    <table className="w-full text-xs border-collapse my-2">{children}</table>
-                                  ),
-                                  th: ({ children }) => (
-                                    <th className="border border-border px-2 py-1 bg-muted/50 text-left font-medium">{children}</th>
-                                  ),
-                                  td: ({ children }) => (
-                                    <td className="border border-border px-2 py-1">{children}</td>
-                                  ),
-                                  strong: ({ children }) => (
-                                    <strong className="font-semibold">{children}</strong>
-                                  ),
-                                  code: ({ children }) => (
-                                    <code className="bg-muted px-1 py-0.5 rounded text-xs">{children}</code>
-                                  ),
-                                  ol: ({ children }) => (
-                                    <ol className="list-decimal list-inside my-2 space-y-1">{children}</ol>
-                                  ),
-                                  ul: ({ children }) => (
-                                    <ul className="list-disc list-inside my-2 space-y-1">{children}</ul>
-                                  ),
-                                  hr: () => <hr className="my-3 border-border" />,
-                                  p: ({ children }) => <p className="mb-2">{children}</p>,
-                                }}
-                              >
-                                {message.content}
-                              </ReactMarkdown>
+                              <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-li:my-0 prose-table:text-xs prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-hr:my-3">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                  {message.content}
+                                </ReactMarkdown>
+                              </div>
                             ) : (
-                              message.content
+                              <span>{message.content}</span>
                             )}
                           </div>
                           <div className="text-xs opacity-70 mt-1">
