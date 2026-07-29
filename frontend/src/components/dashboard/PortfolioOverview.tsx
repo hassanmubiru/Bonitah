@@ -1,6 +1,6 @@
 'use client';
 
-import { type Address } from 'viem';
+import { type Abi, type Address } from 'viem';
 import { formatUnits } from 'viem';
 
 import { Card } from '@/components/ui/card';
@@ -27,7 +27,7 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
   // Get contract addresses - disable direct contract reads as the proxy doesn't expose standard functions
   let savingsVaultAddress: Address;
   let savingsVaultAbi;
-   // Contracts are deployed
+  // Contracts are deployed
 
   try {
     savingsVaultAddress = getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID);
@@ -37,16 +37,29 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
     savingsVaultAbi = [];
   }
 
-  // Fetch portfolio value - disabled (proxy contract doesn't support direct reads)
+  // Fetch portfolio value from SavingsVault
   const {
     data: portfolioValue,
     isLoading: portfolioLoading,
     isError: portfolioError,
     error: portfolioErrorMessage,
     refetch: refetchPortfolio,
-  } = usePortfolioValue(savingsVaultAddress, savingsVaultAbi, userAddress, false);
+  } = usePortfolioValue(
+    savingsVaultAddress,
+    [
+      {
+        name: 'portfolioValue',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'user', type: 'address' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
+    ] as Abi,
+    userAddress,
+    true,
+  );
 
-  // Fetch available balance - disabled
+  // Fetch available balance
   const {
     data: availableBalance,
     isLoading: balanceLoading,
@@ -55,13 +68,21 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
     refetch: refetchBalance,
   } = useContractBalance(
     savingsVaultAddress,
-    savingsVaultAbi,
+    [
+      {
+        name: 'availableBalance',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'user', type: 'address' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
+    ] as Abi,
     userAddress,
     'availableBalance',
-    false,
+    true,
   );
 
-  // Fetch locked funds total - disabled
+  // Fetch locked funds total - disabled (no lockedTotal function with user param)
   const {
     data: lockedTotal,
     isLoading: lockedLoading,
@@ -77,20 +98,6 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
   });
 
   // Handle case where contracts aren't deployed yet
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // Any loading state
   const isLoading = portfolioLoading || balanceLoading || lockedLoading;
@@ -112,10 +119,10 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
     if (lockedError) refetchLocked();
   };
 
-  // Format values for display (assuming 18 decimals like most ERC20 tokens)
+  // Format values for display (USDC = 6 decimals)
   const formatValue = (value: bigint | undefined) => {
     if (value === undefined) return '0.00';
-    return formatUnits(value, 18);
+    return formatUnits(value, 6);
   };
 
   // Calculate savings amount (portfolio minus locked)
