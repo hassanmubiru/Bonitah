@@ -63,7 +63,7 @@ export function AchievementsPanel({ userAddress }: AchievementsPanelProps) {
     abi: registryAbi,
     functionName: 'reputationOf',
     args: [userAddress],
-    enabled: contractsDeployed,
+    enabled: false, // Disabled: proxy contract may not support this function
   });
 
   // For now, these functions don't exist in the current ABI, so we'll show placeholders
