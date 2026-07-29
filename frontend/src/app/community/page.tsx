@@ -546,9 +546,9 @@ function YourCircles() {
               if (raw) {
                 if (typeof raw === 'object' && !Array.isArray(raw)) {
                   const obj = raw as Record<string, unknown>;
-                  memberCount = Number(obj.memberCount ?? obj[3] ?? 0);
-                  balance = Number(obj.treasuryBalance ?? obj[4] ?? 0) / 1e6;
-                  threshold = Number(obj.approvalThreshold ?? obj[2] ?? 0);
+                  memberCount = Number(obj['memberCount'] ?? 0);
+                  balance = Number(obj['treasuryBalance'] ?? 0) / 1e6;
+                  threshold = Number(obj['approvalThreshold'] ?? 0);
                 } else if (Array.isArray(raw)) {
                   memberCount = Number(raw[3] ?? 0);
                   balance = Number(raw[4] ?? 0) / 1e6;
