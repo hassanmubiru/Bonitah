@@ -73,20 +73,20 @@ export function SavingsSummary({ userAddress: _userAddress }: SavingsSummaryProp
   const refetchLocks = () => {};
 
   // Handle case where contracts aren't deployed yet
-  if (!contractsDeployed) {
-    return (
-      <Card className="p-6 h-full">
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Savings Summary</h3>
-          <Alert>
-            <p className="text-sm">
-              Contracts are not yet deployed. Please wait for deployment to complete.
-            </p>
-          </Alert>
-        </div>
-      </Card>
-    );
-  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const isLoading = goalsLoading || locksLoading;
   const hasError = goalsError || locksError;

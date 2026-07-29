@@ -27,7 +27,7 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
   // Get contract addresses - disable direct contract reads as the proxy doesn't expose standard functions
   let savingsVaultAddress: Address;
   let savingsVaultAbi;
-  const contractsDeployed = false; // Disabled: proxy contract doesn't support direct reads
+  const contractsDeployed = true; // Contracts are deployed
 
   try {
     savingsVaultAddress = getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID);
@@ -77,20 +77,20 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
   });
 
   // Handle case where contracts aren't deployed yet
-  if (!contractsDeployed) {
-    return (
-      <Card className="p-6">
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Portfolio Overview</h2>
-          <Alert>
-            <p className="text-sm">
-              Contracts are not yet deployed. Please wait for deployment to complete.
-            </p>
-          </Alert>
-        </div>
-      </Card>
-    );
-  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Any loading state
   const isLoading = portfolioLoading || balanceLoading || lockedLoading;
