@@ -318,6 +318,7 @@ async function handleAI(req: Request, path: string, corsHeaders: Record<string, 
     // Try Ollama Cloud first
     if (ollamaKey) {
       try {
+        console.log('Attempting Ollama Cloud with key:', ollamaKey?.substring(0, 8) + '...')
         const response = await fetch('https://api.ollama.com/api/generate', {
           method: 'POST',
           headers: {
@@ -335,9 +336,12 @@ async function handleAI(req: Request, path: string, corsHeaders: Record<string, 
           const data = await response.json()
           answer = data.response
           provider = 'Ollama'
+        } else {
+          const errData = await response.text()
+          console.error('Ollama API error:', response.status, errData)
         }
       } catch (error) {
-        console.error('Ollama error:', error)
+        console.error('Ollama fetch error:', error)
       }
     }
     
