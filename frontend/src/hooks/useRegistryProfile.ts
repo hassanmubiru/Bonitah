@@ -88,13 +88,15 @@ export function useRegistryProfile() {
     }
 
     try {
-      const response = await fetch(`/api/ipfs/${metadataHash}`);
+      const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/ipfs/${metadataHash}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch metadata');
+        // Profile metadata not found is not a critical error
+        return null;
       }
       return await response.json();
-    } catch (error) {
-      console.error('Failed to fetch profile metadata:', error);
+    } catch {
+      // Silently fail - profile can still display without IPFS metadata
       return null;
     }
   }, []);
@@ -196,9 +198,20 @@ export function useRegistryProfile() {
         }
 
         setProfile(processedProfile);
-      } catch (error) {
-        console.error('Failed to process profile data:', error);
-        setError('Failed to process profile data');
+      } catch {
+        // Non-critical: show profile with defaults rather than error state
+        setProfile({
+          walletAddress: address,
+          displayName: '',
+          bio: '',
+          website: '',
+          twitter: '',
+          github: '',
+          location: '',
+          documents: [],
+          metadataHash: '',
+          isRegistered: false,
+        });
       } finally {
         setIsLoading(false);
       }
