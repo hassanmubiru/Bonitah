@@ -231,7 +231,7 @@ export function useSavingsVaultWithdraw() {
         throw new Error('Invalid amount');
       }
 
-      const amountWei = parseUnits(amount, 18); // Assuming 18 decimals for stablecoin
+      const amountWei = parseUnits(amount, 6); // USDC has 6 decimals
 
       writeContract({
         address: contractAddress,
@@ -303,7 +303,7 @@ export function validateAmount(
   }
 
   if (maxAmount !== undefined) {
-    const amountWei = parseUnits(amount, 18);
+    const amountWei = parseUnits(amount, 6); // USDC has 6 decimals
     if (amountWei > maxAmount) {
       return { isValid: false, error: 'Insufficient balance' };
     }
