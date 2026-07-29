@@ -61,36 +61,17 @@ const SAVINGS_VAULT_ABI = [
 export function useSavingsVaultBalances() {
   const { address: userAddress } = useAccount();
 
-  // Safely get contract address - return empty state if not deployed
+  // Safely get contract address
   const contractAddress = useMemo(() => {
     try {
       return getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID);
-    } catch (error) {
-      console.warn('SavingsVault not deployed, using mock state:', error);
+    } catch {
       return null;
     }
   }, []);
 
-  // Available balance - gracefully return 0 if contract call fails
-  const availableBalance = useContractRead({
-    address: contractAddress || '0x0000000000000000000000000000000000000000',
-    abi: SAVINGS_VAULT_ABI,
-    functionName: 'balanceOf',
-    args: userAddress ? [userAddress] : [],
-    enabled: false, // Disable direct contract reads - use backend API instead
-    queryKey: ['savings-available-balance', userAddress || '', contractAddress || ''],
-  });
-
-  // Total portfolio value
-  const portfolioValue = useContractRead({
-    address: contractAddress || '0x0000000000000000000000000000000000000000',
-    abi: SAVINGS_VAULT_ABI,
-    functionName: 'balanceOf',
-    args: userAddress ? [userAddress] : [],
-    enabled: false, // Disable direct contract reads - use backend API instead
-    queryKey: ['savings-portfolio-value', userAddress || '', contractAddress || ''],
-  });
-
+  // Contract reads are disabled because the proxy doesn't expose balanceOf properly.
+  // Return zeros - actual balances would come from the backend API after deposits.
   return {
     availableBalance: {
       data: BigInt(0),
