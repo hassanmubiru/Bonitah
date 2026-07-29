@@ -2,9 +2,35 @@
 
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { useAccount, useSignMessage, useDisconnect } from 'wagmi';
-import { SiweMessage } from 'siwe';
 
 import { BASE_SEPOLIA_CHAIN_ID } from '@/lib/shared';
+
+/**
+ * Create a SIWE message string manually (no siwe dependency needed)
+ */
+function createSiweMessage(params: {
+  domain: string;
+  address: string;
+  statement: string;
+  uri: string;
+  version: string;
+  chainId: number;
+  nonce: string;
+  issuedAt: string;
+  expirationTime: string;
+}): string {
+  return `${params.domain} wants you to sign in with your Ethereum account:
+${params.address}
+
+${params.statement}
+
+URI: ${params.uri}
+Version: ${params.version}
+Chain ID: ${params.chainId}
+Nonce: ${params.nonce}
+Issued At: ${params.issuedAt}
+Expiration Time: ${params.expirationTime}`;
+}
 
 /**
  * Authentication state for SIWE (Sign-In With Ethereum) flow.
@@ -149,7 +175,7 @@ export function useSiweAuth() {
       const origin = window.location.origin;
       const statement = 'Sign in to Bonitah Financial Network';
 
-      const message = new SiweMessage({
+      const messageString = createSiweMessage({
         domain,
         address,
         statement,
@@ -158,10 +184,8 @@ export function useSiweAuth() {
         chainId: chainId || BASE_SEPOLIA_CHAIN_ID,
         nonce,
         issuedAt: new Date().toISOString(),
-        expirationTime: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutes
+        expirationTime: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
       });
-
-      const messageString = message.prepareMessage();
 
       // Step 3: Request signature from wallet (Req 2.4, 2.5)
       const signature = await signMessageAsync({
