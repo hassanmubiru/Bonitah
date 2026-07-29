@@ -488,16 +488,70 @@ export default function SavingsPage() {
 }
 
 
-function RegistrationStep() {
-  const { writeContract, data: hash, isPending } = useWriteContract();
-  const { isSuccess } = useWaitForTransactionReceipt({ hash });
+function SetupCard() {
+  const { address } = useAccount();
 
   let registryAddress: `0x${string}`;
+  let savingsVaultAddress: `0x${string}`;
   try {
     registryAddress = getContractAddress('Registry', BASE_SEPOLIA_CHAIN_ID) as `0x${string}`;
+    savingsVaultAddress = getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID) as `0x${string}`;
   } catch {
     registryAddress = '0x0000000000000000000000000000000000000000';
+    savingsVaultAddress = '0x0000000000000000000000000000000000000000';
   }
+
+  const usdcAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as `0x${string}`;
+
+  // Check if already registered
+  const { data: isRegistered } = useReadContract({
+    address: registryAddress,
+    abi: REGISTRY_ABI,
+    functionName: 'isRegistered',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
+
+  // Check USDC allowance
+  const { data: allowance } = useReadContract({
+    address: usdcAddress,
+    abi: [{ name: 'allowance', type: 'function', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }, { name: 'spender', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }] as const,
+    functionName: 'allowance',
+    args: address ? [address, savingsVaultAddress] : undefined,
+    query: { enabled: !!address },
+  });
+
+  const registered = isRegistered === true;
+  const approved = allowance !== undefined && (allowance as bigint) > BigInt(0);
+
+  // Hide the card entirely if both steps are done
+  if (registered && approved) return null;
+
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle className="text-lg">Setup Required</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-muted-foreground">Complete these steps before depositing:</p>
+        <div className="space-y-3">
+          {!registered && <RegistrationStep registryAddress={registryAddress} />}
+          {registered && !approved && <ApprovalStep savingsVaultAddress={savingsVaultAddress} />}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Need test USDC? Get from{' '}
+          <a href="https://faucet.circle.com/" target="_blank" rel="noopener noreferrer" className="underline text-blue-600">
+            Circle Faucet
+          </a>
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function RegistrationStep({ registryAddress }: { registryAddress: `0x${string}` }) {
+  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { isSuccess } = useWaitForTransactionReceipt({ hash });
 
   const handleRegister = () => {
     writeContract({
@@ -513,30 +567,18 @@ function RegistrationStep() {
         <p className="text-sm font-medium">1. Register in BFN</p>
         <p className="text-xs text-muted-foreground">One-time registration to use platform features</p>
       </div>
-      <Button
-        size="sm"
-        onClick={handleRegister}
-        disabled={isPending || isSuccess}
-      >
-        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : isSuccess ? '✓ Registered' : 'Register'}
+      <Button size="sm" onClick={handleRegister} disabled={isPending || isSuccess}>
+        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : isSuccess ? '✓ Done' : 'Register'}
       </Button>
     </div>
   );
 }
 
-function ApprovalStep() {
+function ApprovalStep({ savingsVaultAddress }: { savingsVaultAddress: `0x${string}` }) {
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isSuccess } = useWaitForTransactionReceipt({ hash });
 
-  let savingsVaultAddress: `0x${string}`;
-  try {
-    savingsVaultAddress = getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID) as `0x${string}`;
-  } catch {
-    savingsVaultAddress = '0x0000000000000000000000000000000000000000';
-  }
-
   const usdcAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as `0x${string}`;
-  // Approve max uint256 for convenience
   const maxApproval = BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935');
 
   const handleApprove = () => {
@@ -554,12 +596,8 @@ function ApprovalStep() {
         <p className="text-sm font-medium">2. Approve USDC</p>
         <p className="text-xs text-muted-foreground">Allow SavingsVault to use your USDC</p>
       </div>
-      <Button
-        size="sm"
-        onClick={handleApprove}
-        disabled={isPending || isSuccess}
-      >
-        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : isSuccess ? '✓ Approved' : 'Approve'}
+      <Button size="sm" onClick={handleApprove} disabled={isPending || isSuccess}>
+        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : isSuccess ? '✓ Done' : 'Approve'}
       </Button>
     </div>
   );
