@@ -6,23 +6,61 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
   // Pin the file-tracing root to the monorepo root so Next does not misinfer it
-  // from an unrelated lockfile higher up the tree.
   outputFileTracingRoot: join(__dirname, '..'),
-  // Transpile the shared workspace package so its ESM source is bundled correctly.
+
+  // Transpile the shared workspace package
   transpilePackages: ['@bfn/shared'],
-  // wagmi/RainbowKit pull in optional pino-pretty/lokijs/encoding deps that are
-  // safe to leave unresolved in the browser bundle.
+
+  // Handle CORS policy issues
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'unsafe-none' },
+        ],
+      },
+    ];
+  },
+
+  // Optimize images
+  images: {
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60,
+  },
+
+  compress: true,
+
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-progress',
+      '@radix-ui/react-scroll-area',
+      '@radix-ui/react-select',
+      '@radix-ui/react-slider',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-tabs',
+    ],
+  },
+
+  // wagmi/RainbowKit pull in optional deps that are safe to leave unresolved
   webpack: (config, { webpack }) => {
     config.externals.push('pino-pretty', 'lokijs', 'encoding');
-    // The Coinbase wallet connector's CDP SDK references optional @x402/* payment
-    // modules that BFN does not use and are not installed. Ignore them so they do
-    // not break the bundle; they live in unused code paths.
     config.plugins.push(
       new webpack.IgnorePlugin({
         resourceRegExp: /^@x402\//,
       }),
     );
+    // Fallbacks for optional deps
+    config.resolve = config.resolve || {};
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      '@react-native-async-storage/async-storage': false,
+    };
     return config;
   },
 };
