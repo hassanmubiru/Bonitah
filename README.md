@@ -1,179 +1,237 @@
-# 🏦 Bonitah Financial Network (BFN)
+# Bonitah Financial Network (BFN)
 
-**Democratizing financial education through blockchain technology and AI-powered guidance**
-
-A decentralized platform combining real smart contracts, AI financial assistance, and educational resources to make financial literacy accessible globally.
+A decentralized financial inclusion platform built on Base Sepolia, combining blockchain-backed savings, community treasury pools, education-linked reputation, and AI-powered financial guidance.
 
 ---
 
-## 🚀 **Quick Start**
+## Live Deployment
 
-```bash
-# Clone and install
-git clone <repo-url>
-cd Bonitah
-pnpm install
+| Service | URL |
+|---------|-----|
+| Frontend | https://bonitah-f-n.netlify.app |
+| Backend API | https://nbgicdhybbrbxbhfxsvi.supabase.co/functions/v1/backend |
+| Blockchain | Base Sepolia (Chain ID: 84532) |
 
-# Start development environment
-pnpm dev        # Frontend: http://localhost:3000
-pnpm start:dev  # Backend:  http://localhost:3002
-```
+---
 
-## ⚡ **Key Features**
-
-- 🔗 **Real Smart Contracts** - Base Sepolia integration with USDC
-- 🤖 **AI Financial Assistant** - Ollama Cloud (Qwen 2.5 72B) + DeepSeek fallback  
-- 💰 **DeFi Savings** - Smart contract-based savings vault
-- 🎓 **Financial Education** - Interactive courses with on-chain certificates
-- 🌍 **Global Access** - Wallet-based authentication, works anywhere
-
-## 🏗️ **Architecture**
+## Architecture Overview
 
 ```
-┌─────────────┐    ┌──────────────┐    ┌─────────────────┐
-│   Frontend  │───▶│   Backend    │───▶│ Smart Contracts │
-│  (Next.js)  │    │  (NestJS)    │    │  (Base Sepolia) │
-└─────────────┘    └──────────────┘    └─────────────────┘
-       │                   │                      │
-       │                   ▼                      │
-       │            ┌──────────────┐              │
-       │            │      AI      │              │
-       └────────────│  (Ollama)    │──────────────┘
-                    └──────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                        Frontend (Next.js)                     │
+│  Netlify Static Export · Wagmi · RainbowKit · TanStack Query │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              ▼              ▼              ▼
+┌──────────────────┐ ┌─────────────┐ ┌──────────────┐
+│  Base Sepolia     │ │  Supabase   │ │   Pinata     │
+│  Smart Contracts  │ │  Edge Fn    │ │   IPFS       │
+│  (UUPS Proxies)   │ │  (Backend)  │ │              │
+└──────────────────┘ └─────────────┘ └──────────────┘
 ```
 
-## 📁 **Project Structure**
+---
+
+## Smart Contracts (Base Sepolia)
+
+All contracts use the UUPS upgradeable proxy pattern with role-based access control.
+
+| Contract | Address | Purpose |
+|----------|---------|---------|
+| Registry | `0xBd81a62b21eaE93D74daB2B2D93e040D51f75db1` | User registration, verification, reputation scores, IPFS profile hashes |
+| SavingsVault | `0x16E88B4a717B082f8d29C4EeA0796F488C0da7B6` | USDC deposits, withdrawals, savings goals, time-locked savings |
+| CommunityTreasury | `0xa0D284d9080cb7F6676e62116E0A659BB4Ed9b04` | Community investment circles and pooled savings |
+| Education | `0x5A63Da81A04BE39d5469B8BD9281CbD3332b51ac` | Course certificates, achievements, reputation rewards |
+| Governance | `0x13B14D148E3369dCC448006494810A95928eEEB4` | Proposals, reputation-weighted voting |
+| USDC (Test) | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | Base Sepolia USDC token |
+
+### Key Contract Functions
+
+**Registry**
+- `register()` — Register a new user
+- `updateProfile(string ipfsHash)` — Update profile metadata
+- `reputationOf(address)` → `uint256` — Read reputation score
+- `isRegistered(address)` → `bool`
+- `verifyUser(address)` — Admin: verify a user
+
+**SavingsVault**
+- `deposit(uint256 amount)` — Deposit USDC
+- `withdraw(uint256 amount)` — Withdraw available balance
+- `balanceOf(address)` → `uint256` — Total portfolio value
+- `createGoal(string name, uint256 target, uint256 deadline)`
+- `lockFunds(uint256 amount, uint256 unlockTime)`
+
+**Governance**
+- `createProposal(string description, uint256 duration)`
+- `vote(uint256 proposalId, bool support)` — Reputation-weighted voting
+- `executeProposal(uint256 proposalId)`
+
+---
+
+## Backend (Supabase Edge Function)
+
+Single Deno edge function handling all API routes. Authentication uses SIWE (Sign-In With Ethereum).
+
+### API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | Service status and contract addresses |
+| POST | `/auth/nonce` | Generate signing nonce |
+| POST | `/auth/verify` | Verify SIWE signature, return JWT |
+| GET | `/auth/me` | Current authenticated user |
+| POST | `/ai/chat` | AI financial assistant (Ollama/DeepSeek) |
+| GET | `/ai/provider` | Available AI providers |
+| GET | `/chain?contract=&function=&args=` | On-chain contract reads |
+| GET | `/analytics/portfolio?address=` | Portfolio analytics |
+| GET | `/transactions?address=` | Transaction history |
+| GET | `/education/courses` | Available courses |
+| POST | `/ipfs/profile-metadata` | Upload JSON metadata to IPFS |
+| POST | `/ipfs/profile-docs` | Upload files to IPFS |
+| GET | `/ipfs/:hash` | Fetch content from IPFS |
+
+### Authentication Flow
+1. Frontend requests nonce: `POST /auth/nonce { address }`
+2. User signs SIWE message with their wallet
+3. Frontend submits: `POST /auth/verify { message, signature }`
+4. Backend verifies signature, returns JWT (24h expiry)
+5. All subsequent requests include `Authorization: Bearer <jwt>`
+
+---
+
+## Frontend (Next.js)
+
+Static export deployed on Netlify. Client-side rendering with wallet integration.
+
+### Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Landing page |
+| `/auth` | Wallet connection and SIWE authentication |
+| `/dashboard` | Portfolio overview, charts, recent transactions |
+| `/savings` | Deposit/withdraw USDC, savings goals, locked funds |
+| `/profile` | Profile management, documents, reputation, verification |
+| `/community` | Community treasury and investment circles |
+| `/ai` | AI financial assistant chat |
+| `/settings` | App preferences and configuration |
+| `/admin` | Admin panel for user verification |
+
+### Tech Stack
+- **Framework**: Next.js 14 (App Router, static export)
+- **Wallet**: Wagmi v2 + RainbowKit (WalletConnect, Coinbase, MetaMask)
+- **State**: TanStack Query for server/contract state
+- **UI**: Tailwind CSS + shadcn/ui components
+- **Chain**: viem for contract interactions
+- **Hosting**: Netlify (static)
+
+---
+
+## Project Structure
 
 ```
 Bonitah/
-├── frontend/          # Next.js 16 + React 19 + RainbowKit
-├── backend/           # NestJS + Prisma + Redis
-├── contracts/         # Foundry smart contracts
-├── shared/            # TypeScript shared types/utils
-├── docs/              # All documentation (organized!)
-│   ├── deployment/    # Deployment guides
-│   ├── integration/   # Integration docs  
-│   ├── performance/   # Performance optimization
-│   └── testing/       # Test documentation
-└── scripts/           # Deployment and utility scripts
+├── contracts/          # Foundry project - Solidity smart contracts
+│   ├── src/            # Contract source (Registry, SavingsVault, etc.)
+│   ├── test/           # Foundry tests
+│   └── script/         # Deployment scripts
+├── frontend/           # Next.js frontend application
+│   ├── src/app/        # App Router pages
+│   ├── src/components/ # React components (ui, dashboard, profile)
+│   ├── src/hooks/      # Custom hooks (auth, contract reads, uploads)
+│   └── src/lib/        # Shared utilities and contract config
+├── backend/            # NestJS backend (local dev) + Supabase edge function
+│   ├── src/            # NestJS modules (auth, ai, chain-read, etc.)
+│   └── prisma/         # Database schema
+├── supabase/           # Supabase edge functions (production backend)
+│   └── functions/backend/index.ts
+├── docs/               # API and contract documentation
+└── .github/workflows/  # CI pipeline
 ```
-
-## 🛠️ **Technology Stack**
-
-### **Frontend**
-- **Next.js 16** - React framework with App Router
-- **React 19** - Latest React with concurrent features
-- **RainbowKit** - Wallet connection and Web3 UI
-- **TailwindCSS** - Utility-first styling
-- **Wagmi + Viem** - Type-safe Ethereum interactions
-
-### **Backend**  
-- **NestJS** - Scalable Node.js framework
-- **Prisma** - Type-safe database ORM
-- **Redis** - High-performance caching
-- **JWT** - Secure authentication
-- **AI Integration** - Multiple provider support
-
-### **Blockchain**
-- **Base Sepolia** - Layer 2 testnet
-- **Foundry** - Smart contract development
-- **Real USDC** - Circle's official stablecoin
-- **Viem** - Type-safe contract interactions
-
-### **AI & Education**
-- **Ollama Cloud** - Qwen 2.5 72B model
-- **DeepSeek** - Cost-effective fallback
-- **Financial Guidance** - Contextual AI assistance
-- **On-chain Certificates** - Verifiable achievements
-
-## 🌟 **Current Status**
-
-- ✅ **Smart Contracts**: Deployed on Base Sepolia with real USDC
-- ✅ **Frontend**: Production-ready with wallet integration  
-- ✅ **Backend**: Full API with authentication and AI
-- ✅ **AI Integration**: Ollama Cloud + DeepSeek working
-- ✅ **Performance**: Optimized (63% faster loading)
-- ✅ **Documentation**: Comprehensive guides available
-
-## 📚 **Documentation**
-
-- **[Deployment Guide](docs/deployment/production-deployment-guide.md)** - Production deployment
-- **[AI Integration](docs/integration/ollama-cloud-integration.md)** - Ollama Cloud setup
-- **[Performance Optimization](docs/performance/performance-optimization.md)** - Speed improvements  
-- **[Real Contracts Integration](docs/integration/REAL_CONTRACTS_INTEGRATION_COMPLETE.md)** - Blockchain setup
-
-## 💡 **Development**
-
-```bash
-# Install dependencies
-pnpm install
-
-# Environment setup
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env.local
-# Configure your environment variables
-
-# Database setup
-cd backend && pnpm db:migrate && pnpm db:seed
-
-# Start development
-pnpm dev          # Frontend development server
-pnpm start:dev    # Backend development server
-```
-
-## 🧪 **Testing**
-
-```bash
-# Frontend tests
-cd frontend && pnpm test
-
-# Backend tests  
-cd backend && pnpm test
-
-# Smart contract tests
-cd contracts && forge test
-
-# E2E tests
-cd frontend && pnpm test:e2e
-```
-
-## 🚀 **Deployment**
-
-```bash
-# Build for production
-pnpm build
-
-# Deploy smart contracts (Base Sepolia)
-cd contracts && ./scripts/deploy-base-sepolia.sh
-
-# Deploy backend (Docker + Railway)
-docker build -t bfn-backend ./backend
-# See deployment docs for full guide
-
-# Deploy frontend (Vercel)
-vercel deploy
-```
-
-## 🤝 **Contributing**
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
-
-## 📄 **License**
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## 🌍 **Mission**
-
-Democratizing financial education by combining:
-- **Blockchain transparency** for trust and verification
-- **AI guidance** for personalized learning  
-- **Real assets** for practical experience
-- **Global accessibility** for universal impact
 
 ---
 
-**Built with ❤️ for global financial literacy**
+## Development
+
+### Prerequisites
+- Node.js 20+
+- pnpm
+- Foundry (for contract development)
+
+### Setup
+
+```bash
+# Install dependencies
+cd frontend && npm install
+cd ../backend && npm install
+
+# Run frontend locally
+cd frontend && npm run dev
+
+# Run backend locally
+cd backend && npm run start:dev
+
+# Run contract tests
+cd contracts && forge test
+```
+
+### Environment Variables
+
+**Frontend** (`.env.local`):
+```
+NEXT_PUBLIC_API_URL=https://nbgicdhybbrbxbhfxsvi.supabase.co/functions/v1/backend
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<project_id>
+NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
+NEXT_PUBLIC_REGISTRY_ADDRESS=0xBd81a62b21eaE93D74daB2B2D93e040D51f75db1
+NEXT_PUBLIC_SAVINGS_VAULT_ADDRESS=0x16E88B4a717B082f8d29C4EeA0796F488C0da7B6
+NEXT_PUBLIC_COMMUNITY_TREASURY_ADDRESS=0xa0D284d9080cb7F6676e62116E0A659BB4Ed9b04
+NEXT_PUBLIC_EDUCATION_ADDRESS=0x5A63Da81A04BE39d5469B8BD9281CbD3332b51ac
+NEXT_PUBLIC_GOVERNANCE_ADDRESS=0x13B14D148E3369dCC448006494810A95928eEEB4
+NEXT_PUBLIC_USDC_ADDRESS=0x036CbD53842c5426634e7929541eC2318f3dCF7e
+```
+
+**Backend** (Supabase secrets):
+```
+JWT_SECRET=<secret>
+BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
+PINATA_JWT=<pinata_jwt>
+OLLAMA_API_KEY=<ollama_key>
+DEEPSEEK_API_KEY=<deepseek_key>
+```
+
+---
+
+## Deployment
+
+### Frontend (Netlify)
+- Static export (`output: 'export'` in next.config.mjs)
+- Auto-deploys from `main` branch or via `netlify deploy --prod --dir=out`
+- No server-side rendering — all client-side
+
+### Backend (Supabase Edge Functions)
+- Single Deno edge function at `supabase/functions/backend/index.ts`
+- Deploy: `supabase functions deploy backend`
+- Secrets managed via Supabase dashboard
+
+### Contracts (Foundry)
+- UUPS proxy pattern — upgradeable without redeployment
+- Deploy: `forge script script/Deploy.s.sol --rpc-url base-sepolia --broadcast`
+- Verify: `forge verify-contract <address> <contract> --chain base-sepolia`
+
+---
+
+## Security
+
+- **Authentication**: SIWE (EIP-4361) — wallet-based, no passwords
+- **Authorization**: Role-based access control on all contracts
+- **Upgradability**: UUPS proxy with `UPGRADER_ROLE` restriction
+- **IPFS**: Profile metadata and documents stored on Pinata
+- **Pre-commit**: Secret scanning + ESLint/Prettier via Husky hooks
+- **No PII**: Documents are user-controlled; no SSN/passport storage
+
+---
+
+## License
+
+Private — All rights reserved.
