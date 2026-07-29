@@ -17,23 +17,22 @@ interface PortfolioOverviewProps {
 /**
  * Portfolio overview showing total savings, locked funds, available balance,
  * and overall portfolio value from on-chain reads.
- * 
+ *
  * Requirements: 11.1, 11.2, 11.4, 11.5, 11.6
  * - Displays financial data from on-chain reads only (no placeholder values)
  * - Proper loading/error/retry states
  * - Real-time updates when wallet/network changes
  */
 export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
-  // Get contract addresses - but handle gracefully if not deployed
+  // Get contract addresses - disable direct contract reads as the proxy doesn't expose standard functions
   let savingsVaultAddress: Address;
   let savingsVaultAbi;
-  let contractsDeployed = true;
-  
+  const contractsDeployed = false; // Disabled: proxy contract doesn't support direct reads
+
   try {
     savingsVaultAddress = getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID);
     savingsVaultAbi = getContractAbi('SavingsVault');
   } catch {
-    contractsDeployed = false;
     savingsVaultAddress = '0x0000000000000000000000000000000000000000' as Address;
     savingsVaultAbi = [];
   }
@@ -54,7 +53,13 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
     isError: balanceError,
     error: balanceErrorMessage,
     refetch: refetchBalance,
-  } = useContractBalance(savingsVaultAddress, savingsVaultAbi, userAddress, 'availableBalance', contractsDeployed);
+  } = useContractBalance(
+    savingsVaultAddress,
+    savingsVaultAbi,
+    userAddress,
+    'availableBalance',
+    contractsDeployed,
+  );
 
   // Fetch locked funds total
   const {
@@ -89,15 +94,16 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
 
   // Any loading state
   const isLoading = portfolioLoading || balanceLoading || lockedLoading;
-  
+
   // Any error state
   const hasError = portfolioError || balanceError || lockedError;
-  
+
   // Get first error message for display
-  const errorMessage = portfolioErrorMessage?.message || 
-                      balanceErrorMessage?.message || 
-                      lockedErrorMessage?.message ||
-                      'Failed to load portfolio data';
+  const errorMessage =
+    portfolioErrorMessage?.message ||
+    balanceErrorMessage?.message ||
+    lockedErrorMessage?.message ||
+    'Failed to load portfolio data';
 
   // Retry all failed requests
   const handleRetry = () => {
@@ -113,9 +119,8 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
   };
 
   // Calculate savings amount (portfolio minus locked)
-  const savingsAmount = portfolioValue && lockedTotal 
-    ? portfolioValue - (lockedTotal as bigint)
-    : undefined;
+  const savingsAmount =
+    portfolioValue && lockedTotal ? portfolioValue - (lockedTotal as bigint) : undefined;
 
   return (
     <Card className="p-6">
@@ -123,12 +128,7 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Portfolio Overview</h2>
           {hasError && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleRetry}
-              disabled={isLoading}
-            >
+            <Button variant="outline" size="sm" onClick={handleRetry} disabled={isLoading}>
               Retry
             </Button>
           )}
@@ -158,7 +158,8 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
             {/* Total Portfolio Value */}
             <div className="text-center">
               <div className="text-3xl font-bold">
-                ${parseFloat(formatValue(portfolioValue)).toLocaleString('en-US', {
+                $
+                {parseFloat(formatValue(portfolioValue)).toLocaleString('en-US', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
@@ -170,27 +171,30 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="text-center p-4 rounded-lg bg-muted/50">
                 <div className="text-2xl font-semibold text-green-600">
-                  ${parseFloat(formatValue(availableBalance)).toLocaleString('en-US', {
+                  $
+                  {parseFloat(formatValue(availableBalance)).toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
                 </div>
                 <p className="text-sm text-muted-foreground">Available</p>
               </div>
-              
+
               <div className="text-center p-4 rounded-lg bg-muted/50">
                 <div className="text-2xl font-semibold text-blue-600">
-                  ${parseFloat(formatValue(savingsAmount)).toLocaleString('en-US', {
+                  $
+                  {parseFloat(formatValue(savingsAmount)).toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
                 </div>
                 <p className="text-sm text-muted-foreground">In Savings</p>
               </div>
-              
+
               <div className="text-center p-4 rounded-lg bg-muted/50">
                 <div className="text-2xl font-semibold text-orange-600">
-                  ${parseFloat(formatValue(lockedTotal as bigint)).toLocaleString('en-US', {
+                  $
+                  {parseFloat(formatValue(lockedTotal as bigint)).toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
