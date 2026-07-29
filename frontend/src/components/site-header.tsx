@@ -1,34 +1,28 @@
 'use client';
 
 import Link from 'next/link';
-import { useAccount } from 'wagmi';
 import { useEffect, useState } from 'react';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 import { ThemeToggle } from '@/components/theme-toggle';
 
 /**
- * App-wide header hosting the theme toggle so theme changes are reachable and
- * apply across every page without a reload (Req 19.2). The inner container is
- * width-constrained and horizontally padded to avoid overflow at the smallest
- * supported viewport (320px, Req 19.5).
- *
- * Enhanced accessibility features:
- * - Skip to main content link for screen readers (Req 19.7)
- * - Proper landmark roles and ARIA labels (Req 19.7)
- * - Keyboard-accessible navigation (Req 19.6)
+ * App-wide sticky header with navigation, wallet connection, and theme toggle.
+ * Always visible with blur backdrop on scroll.
  */
 export function SiteHeader() {
-  const { isConnected } = useAccount();
   const [mounted, setMounted] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  // Prevent hydration mismatch by only showing navigation after mount
   useEffect(() => {
     setMounted(true);
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
     <>
-      {/* Skip to main content link for accessibility */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
@@ -37,70 +31,54 @@ export function SiteHeader() {
       </a>
 
       <header
-        className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        className={`sticky top-0 z-40 w-full border-b transition-all duration-200 ${
+          scrolled
+            ? 'border-border/60 bg-background/80 backdrop-blur-xl shadow-sm'
+            : 'border-transparent bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'
+        }`}
         role="banner"
       >
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-4 px-4">
           <div className="flex items-center gap-6">
             <Link
               href="/"
-              className="flex items-center gap-2 rounded-md text-sm font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="flex items-center gap-2 rounded-md text-sm font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Bonitah Financial Network - Go to homepage"
             >
-              <img src="/logo.png" alt="BFN Logo" width={32} height={32} className="rounded-md" />
-              <span className="hidden sm:inline">BFN</span>
+              <div className="h-7 w-7 rounded bg-gradient-to-br from-blue-600 to-emerald-500" />
+              <span className="hidden sm:inline font-semibold">BFN</span>
             </Link>
 
-            {/* Navigation links - only show when authenticated and mounted */}
-            {mounted && isConnected && (
-              <nav
-                className="hidden sm:flex items-center gap-4"
-                role="navigation"
-                aria-label="Main navigation"
-              >
+            <nav
+              className="hidden md:flex items-center gap-1"
+              role="navigation"
+              aria-label="Main navigation"
+            >
+              {[
+                { href: '/#features', label: 'Features' },
+                { href: '/community', label: 'Community' },
+                { href: '/ai', label: 'AI Assistant' },
+                { href: '/dashboard', label: 'Dashboard' },
+              ].map((link) => (
                 <Link
-                  href="/dashboard"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground rounded-md px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  Dashboard
+                  {link.label}
                 </Link>
-                <Link
-                  href="/savings"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
-                >
-                  Savings
-                </Link>
-                <Link
-                  href="/community"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
-                >
-                  Community
-                </Link>
-                <Link
-                  href="/ai"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
-                >
-                  AI Assistant
-                </Link>
-                <Link
-                  href="/profile"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
-                >
-                  Profile
-                </Link>
-                <Link
-                  href="/settings"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm px-2 py-1"
-                >
-                  Settings
-                </Link>
-              </nav>
-            )}
+              ))}
+            </nav>
           </div>
 
-          <nav role="navigation" aria-label="Theme settings">
+          <div className="flex items-center gap-3">
             <ThemeToggle />
-          </nav>
+            {mounted && (
+              <div className="hidden sm:block [&_button]:!rounded-full [&_button]:!text-xs [&_button]:!h-8 [&_button]:!px-3">
+                <ConnectButton accountStatus="avatar" chainStatus="icon" showBalance={false} />
+              </div>
+            )}
+          </div>
         </div>
       </header>
     </>

@@ -579,6 +579,102 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* AI Section */}
+      <section className="px-4 py-24">
+        <div className="mx-auto max-w-5xl">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+          >
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <p className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-3">AI Financial Coach</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
+                Personalized guidance, powered by AI
+              </h2>
+              <p className="mt-4 text-gray-600 max-w-xl mx-auto">
+                Get real-time financial advice tailored to your portfolio, goals, and spending patterns.
+              </p>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { icon: '💡', title: 'Budget Advice', desc: 'Smart spending recommendations' },
+                { icon: '📈', title: 'Savings Suggestions', desc: 'Optimal deposit strategies' },
+                { icon: '🎯', title: 'Portfolio Insights', desc: 'Performance analysis' },
+                { icon: '📚', title: 'Learning Paths', desc: 'Personalized education' },
+              ].map((item, i) => (
+                <div key={i} className="rounded-xl border border-gray-200 bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all">
+                  <span className="text-2xl mb-3 block">{item.icon}</span>
+                  <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
+                  <p className="text-xs text-gray-500 mt-1">{item.desc}</p>
+                </div>
+              ))}
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="mt-6 text-center">
+              <Link href="/ai" className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                Try the AI Assistant <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Community & Education */}
+      <section className="px-4 py-24 bg-gray-50/50 border-y border-gray-100">
+        <div className="mx-auto max-w-5xl">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+            className="grid md:grid-cols-2 gap-8"
+          >
+            {/* Community */}
+            <motion.div variants={fadeUp} className="rounded-2xl border border-gray-200 bg-white p-6">
+              <div className="inline-flex rounded-xl p-3 mb-4 bg-emerald-50">
+                <Users className="h-6 w-6 text-emerald-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Community Treasury</h3>
+              <p className="text-sm text-gray-600 mb-4">Pool resources, vote on proposals, and grow together.</p>
+              <div className="space-y-2">
+                {['Savings Circles', 'Treasury Voting', 'Shared Goals', 'Contribution Tracking'].map((item) => (
+                  <div key={item} className="flex items-center gap-2 text-sm text-gray-700">
+                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <Link href="/community" className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 mt-4 transition-colors">
+                Explore Community <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </motion.div>
+
+            {/* Education */}
+            <motion.div variants={fadeUp} className="rounded-2xl border border-gray-200 bg-white p-6">
+              <div className="inline-flex rounded-xl p-3 mb-4 bg-purple-50">
+                <GraduationCap className="h-6 w-6 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Financial Education</h3>
+              <p className="text-sm text-gray-600 mb-4">Learn DeFi, earn certificates, build your reputation.</p>
+              <div className="space-y-2">
+                {['Interactive Courses', 'Learning Streaks', 'Blockchain Certificates', 'Reputation Rewards'].map((item) => (
+                  <div key={item} className="flex items-center gap-2 text-sm text-gray-700">
+                    <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <Link href="/ai" className="inline-flex items-center gap-2 text-sm font-medium text-purple-600 hover:text-purple-700 mt-4 transition-colors">
+                Start Learning <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="px-4 py-24 sm:py-32">
         <div className="mx-auto max-w-3xl text-center">
@@ -613,28 +709,48 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white px-4 py-12">
+      <footer className="border-t border-gray-200 bg-white px-4 py-16">
         <div className="mx-auto max-w-6xl">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-12">
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Platform</p>
+              <div className="space-y-2.5">
+                <Link href="/dashboard" className="block text-sm text-gray-600 hover:text-gray-900 transition-colors">Dashboard</Link>
+                <Link href="/savings" className="block text-sm text-gray-600 hover:text-gray-900 transition-colors">Savings</Link>
+                <Link href="/community" className="block text-sm text-gray-600 hover:text-gray-900 transition-colors">Community</Link>
+                <Link href="/ai" className="block text-sm text-gray-600 hover:text-gray-900 transition-colors">AI Assistant</Link>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Learn</p>
+              <div className="space-y-2.5">
+                <Link href="/profile" className="block text-sm text-gray-600 hover:text-gray-900 transition-colors">Profile</Link>
+                <Link href="/settings" className="block text-sm text-gray-600 hover:text-gray-900 transition-colors">Settings</Link>
+                <a href="https://sepolia.basescan.org" target="_blank" rel="noopener noreferrer" className="block text-sm text-gray-600 hover:text-gray-900 transition-colors">Block Explorer</a>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Network</p>
+              <div className="space-y-2.5">
+                <p className="text-sm text-gray-600">Base Sepolia</p>
+                <p className="text-sm text-gray-600">Chain ID: 84532</p>
+                <p className="text-sm text-gray-600">USDC Stablecoin</p>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Connect</p>
+              <div className="space-y-2.5">
+                <a href="https://github.com/hassanmubiru/Bonitah" target="_blank" rel="noopener noreferrer" className="block text-sm text-gray-600 hover:text-gray-900 transition-colors">GitHub</a>
+                <a href="https://base.org" target="_blank" rel="noopener noreferrer" className="block text-sm text-gray-600 hover:text-gray-900 transition-colors">Base</a>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-gray-100">
             <div className="flex items-center gap-3">
-              <div className="h-7 w-7 rounded bg-gradient-to-br from-blue-600 to-emerald-500" />
-              <span className="font-semibold text-gray-900">Bonitah Financial Network</span>
+              <div className="h-6 w-6 rounded bg-gradient-to-br from-blue-600 to-emerald-500" />
+              <span className="text-sm font-semibold text-gray-900">Bonitah Financial Network</span>
             </div>
-            <div className="flex items-center gap-6 text-sm text-gray-500">
-              <Link href="/dashboard" className="hover:text-gray-900 transition-colors">Dashboard</Link>
-              <Link href="/savings" className="hover:text-gray-900 transition-colors">Savings</Link>
-              <Link href="/ai" className="hover:text-gray-900 transition-colors">AI Assistant</Link>
-              <Link href="/profile" className="hover:text-gray-900 transition-colors">Profile</Link>
-              <a
-                href="https://sepolia.basescan.org"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gray-900 transition-colors"
-              >
-                Explorer
-              </a>
-            </div>
-            <p className="text-xs text-gray-400">Built on Base · 2026</p>
+            <p className="text-xs text-gray-400">Built on Base · Powered by AI · 2026</p>
           </div>
         </div>
       </footer>
