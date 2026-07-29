@@ -337,7 +337,7 @@ export default function ProfilePage() {
 
               {/* Document List */}
               <div className="space-y-3">
-                {profile?.documents?.map((doc: any) => (
+                {profile?.documents?.map((doc: { id: string; name: string; url: string; size: string; uploadedAt: string }) => (
                   <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className="h-8 w-8 rounded bg-primary/10 flex items-center justify-center">
@@ -391,50 +391,73 @@ export default function ProfilePage() {
             <CardContent className="space-y-6">
               <div className="text-center space-y-4">
                 <div className="text-4xl font-bold text-primary">
-                  {reputation || 0}
+                  {reputation !== undefined ? Number(reputation) : '—'}
                 </div>
                 <p className="text-muted-foreground">Total Reputation Points</p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-semibold">12</div>
-                    <p className="text-sm text-muted-foreground">Transactions</p>
+                {reputation !== undefined && Number(reputation) > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div className="text-center">
+                      <div className="text-2xl font-semibold">{getReputationLevel(Number(reputation))}</div>
+                      <p className="text-sm text-muted-foreground">Level</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-semibold">{getNextThreshold(Number(reputation))}</div>
+                      <p className="text-sm text-muted-foreground">Next Level At</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-semibold">
+                        {Math.min(100, Math.round((Number(reputation) / getNextThreshold(Number(reputation))) * 100))}%
+                      </div>
+                      <p className="text-sm text-muted-foreground">Progress</p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-semibold">3</div>
-                    <p className="text-sm text-muted-foreground">Goals Completed</p>
+                )}
+
+                {(reputation === undefined || Number(reputation) === 0) && (
+                  <div className="py-4">
+                    <p className="text-sm text-muted-foreground">
+                      Start participating to earn reputation points. Deposit savings, complete courses, and vote on proposals.
+                    </p>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-semibold">7</div>
-                    <p className="text-sm text-muted-foreground">Community Actions</p>
-                  </div>
-                </div>
+                )}
               </div>
 
-              {/* Reputation History */}
+              {/* How to Earn */}
               <div className="space-y-3">
-                <h4 className="font-semibold">Recent Activity</h4>
+                <h4 className="font-semibold">How to Earn Reputation</h4>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                     <div className="flex items-center space-x-3">
                       <Award className="h-5 w-5 text-primary" />
                       <div>
-                        <p className="font-medium">Goal Achievement</p>
-                        <p className="text-sm text-muted-foreground">Completed savings goal</p>
+                        <p className="font-medium">Savings Deposits</p>
+                        <p className="text-sm text-muted-foreground">Deposit into SavingsVault</p>
                       </div>
                     </div>
-                    <Badge variant="default">+50 Rep</Badge>
+                    <Badge variant="secondary">+10 Rep</Badge>
                   </div>
                   
                   <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                     <div className="flex items-center space-x-3">
                       <Award className="h-5 w-5 text-primary" />
                       <div>
-                        <p className="font-medium">Community Participation</p>
-                        <p className="text-sm text-muted-foreground">Voted on proposal</p>
+                        <p className="font-medium">Complete Courses</p>
+                        <p className="text-sm text-muted-foreground">Finish education modules</p>
                       </div>
                     </div>
-                    <Badge variant="default">+10 Rep</Badge>
+                    <Badge variant="secondary">+25 Rep</Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Award className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="font-medium">Governance Voting</p>
+                        <p className="text-sm text-muted-foreground">Vote on community proposals</p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">+5 Rep</Badge>
                   </div>
                 </div>
               </div>
@@ -497,4 +520,21 @@ export default function ProfilePage() {
       </Tabs>
     </div>
   );
+}
+
+
+function getReputationLevel(score: number): string {
+  if (score >= 2000) return 'Leader';
+  if (score >= 1000) return 'Expert';
+  if (score >= 500) return 'Trusted';
+  if (score >= 100) return 'Member';
+  return 'Newcomer';
+}
+
+function getNextThreshold(score: number): number {
+  if (score < 100) return 100;
+  if (score < 500) return 500;
+  if (score < 1000) return 1000;
+  if (score < 2000) return 2000;
+  return 5000;
 }

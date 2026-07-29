@@ -86,10 +86,10 @@ export function useContractRead({
       const readPromise = readContract(publicClient, {
         address,
         abi,
-        functionName: functionName as any,
-        args: args as any,
+        functionName,
+        args,
         chainId: BASE_SEPOLIA_CHAIN_ID,
-      } as any);
+      } as Parameters<typeof readContract>[1]);
 
       try {
         // Race between read and timeout
@@ -214,7 +214,7 @@ export function useReputationScore(
   return useContractRead({
     address: contractAddress,
     abi,
-    functionName: 'getReputationScore',
+    functionName: 'reputationOf',
     args: userAddress ? [userAddress] : [],
     enabled: enabled && !!userAddress,
     queryKey: ['reputation', userAddress || ''],
