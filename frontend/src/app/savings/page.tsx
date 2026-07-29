@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Loader2, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
+import { useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
 
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import {
@@ -12,11 +13,23 @@ import {
   formatTokenAmount,
   validateAmount,
 } from '@/hooks/useSavingsVault';
+import { getContractAddress, BASE_SEPOLIA_CHAIN_ID } from '@/lib/shared';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+// Registry ABI for register()
+const REGISTRY_ABI = [
+  { name: 'register', type: 'function', stateMutability: 'nonpayable', inputs: [], outputs: [] },
+  { name: 'isRegistered', type: 'function', stateMutability: 'view', inputs: [{ name: 'user', type: 'address' }], outputs: [{ name: '', type: 'bool' }] },
+] as const;
+
+// USDC ABI for approve
+const USDC_ABI = [
+  { name: 'approve', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'spender', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }] },
+] as const;
 
 /**
  * Savings page implementing full SavingsVault integration.
