@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Loader2, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
-import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useWriteContract, useWaitForTransactionReceipt, useAccount, useReadContract } from 'wagmi';
 
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import {
@@ -142,25 +142,8 @@ export default function SavingsPage() {
           </p>
         </div>
 
-        {/* Registration & Approval Steps */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-lg">Setup Required</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">Complete these steps before depositing:</p>
-            <div className="space-y-3">
-              <RegistrationStep />
-              <ApprovalStep />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Need test USDC? Get from{' '}
-              <a href="https://faucet.circle.com/" target="_blank" rel="noopener noreferrer" className="underline text-blue-600">
-                Circle Faucet
-              </a>
-            </p>
-          </CardContent>
-        </Card>
+        {/* Registration & Approval Steps - only show if needed */}
+        <SetupCard />
 
         {/* Contract Deployment Warning */}
         {!contractsDeployed && (
