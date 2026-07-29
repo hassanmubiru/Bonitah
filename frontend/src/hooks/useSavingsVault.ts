@@ -165,13 +165,16 @@ export function useSavingsVaultDeposit() {
         throw new Error('Invalid amount');
       }
 
-      const amountWei = parseUnits(amount, 18); // Assuming 18 decimals for stablecoin
+      // USDC uses 6 decimals
+      const amountUsdc = parseUnits(amount, 6);
 
+      // First need to approve USDC spending, then deposit
+      // For now, call deposit directly (user must approve USDC separately)
       writeContract({
         address: contractAddress,
         abi: SAVINGS_VAULT_ABI,
         functionName: 'deposit',
-        args: [amountWei],
+        args: [amountUsdc],
       });
     },
     [writeContract, contractAddress],
