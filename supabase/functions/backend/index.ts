@@ -37,7 +37,7 @@ const publicClient = createPublicClient({
 // Initialize Supabase client
 const supabase = createClient(env.supabaseUrl!, env.supabaseAnonKey!)
 
-console.log('BFN Backend Edge Function starting...')
+console.log('BFN Backend Edge Function starting...', new Date().toISOString())
 
 serve(async (req: Request) => {
   const corsHeaders = {
