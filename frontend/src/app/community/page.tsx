@@ -279,3 +279,60 @@ function VoteCard() {
     </Card>
   );
 }
+
+
+function YourCircles() {
+  const { address } = useAccount();
+
+  let treasuryAddress: `0x${string}`;
+  try {
+    treasuryAddress = getContractAddress('CommunityTreasury', BASE_SEPOLIA_CHAIN_ID) as `0x${string}`;
+  } catch {
+    treasuryAddress = '0x0000000000000000000000000000000000000000';
+  }
+
+  // Check ownership shares for pool IDs 0-4 to detect membership
+  const poolIds = [0, 1, 2, 3, 4];
+  const contracts = poolIds.map((id) => ({
+    address: treasuryAddress,
+    abi: [{ name: 'ownershipShare', type: 'function', stateMutability: 'view', inputs: [{ name: 'poolId', type: 'uint256' }, { name: 'member', type: 'address' }], outputs: [{ name: 'sharePpm', type: 'uint256' }] }] as const,
+    functionName: 'ownershipShare' as const,
+    args: [BigInt(id), address!] as const,
+  }));
+
+  const { data: results, isLoading } = useReadContracts({
+    contracts: address ? contracts : [],
+    query: { enabled: !!address },
+  });
+
+  const memberCircles = results
+    ?.map((r, i) => ({ poolId: poolIds[i], share: r.result as bigint | undefined }))
+    .filter((r) => r.share && r.share > BigInt(0)) || [];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Your Circles</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span className="text-sm">Checking memberships...</span></div>
+        ) : memberCircles.length > 0 ? (
+          <div className="space-y-3">
+            {memberCircles.map((circle) => (
+              <div key={circle.poolId} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                <div>
+                  <p className="text-sm font-medium">Circle #{circle.poolId}</p>
+                  <p className="text-xs text-muted-foreground">Ownership: {Number(circle.share) / 10000}%</p>
+                </div>
+                <Users className="h-4 w-4 text-emerald-600" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No circle memberships found. Create or join a circle above.</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
