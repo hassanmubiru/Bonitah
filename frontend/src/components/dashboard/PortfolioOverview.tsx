@@ -27,7 +27,7 @@ export function PortfolioOverview({ userAddress }: PortfolioOverviewProps) {
   // Get contract addresses - disable direct contract reads as the proxy doesn't expose standard functions
   let savingsVaultAddress: Address;
   let savingsVaultAbi;
-  const contractsDeployed = true; // Contracts are deployed
+   // Contracts are deployed
 
   try {
     savingsVaultAddress = getContractAddress('SavingsVault', BASE_SEPOLIA_CHAIN_ID);

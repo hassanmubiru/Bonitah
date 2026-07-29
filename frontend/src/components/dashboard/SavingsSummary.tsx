@@ -40,7 +40,7 @@ export function SavingsSummary({ userAddress: _userAddress }: SavingsSummaryProp
   // Contract variables commented out as they're not currently used
   // let savingsVaultAddress: Address;
   // let savingsVaultAbi;
-  let contractsDeployed = true;
+  
   
   // Prevent hydration mismatch with time-based calculations
   useEffect(() => {
