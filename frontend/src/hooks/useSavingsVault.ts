@@ -59,7 +59,7 @@ const SAVINGS_VAULT_ABI = [
  * Implements Requirements 4.2, 4.3 for live balance reads.
  */
 export function useSavingsVaultBalances() {
-  const { } = useAccount();
+  const { address: userAddress } = useAccount();
 
   // Safely get contract address
   const contractAddress = useMemo(() => {
@@ -70,22 +70,42 @@ export function useSavingsVaultBalances() {
     }
   }, []);
 
-  // Contract reads are disabled because the proxy doesn't expose balanceOf properly.
-  // Return zeros - actual balances would come from the backend API after deposits.
+  // Available balance from contract
+  const availableBalance = useContractRead({
+    address: contractAddress || '0x0000000000000000000000000000000000000000',
+    abi: SAVINGS_VAULT_ABI,
+    functionName: 'availableBalance',
+    args: userAddress ? [userAddress] : [],
+    enabled: !!userAddress && !!contractAddress,
+    queryKey: ['savings-available-balance', userAddress || '', contractAddress || ''],
+  });
+
+  // Total portfolio value from contract
+  const portfolioValue = useContractRead({
+    address: contractAddress || '0x0000000000000000000000000000000000000000',
+    abi: SAVINGS_VAULT_ABI,
+    functionName: 'portfolioValue',
+    args: userAddress ? [userAddress] : [],
+    enabled: !!userAddress && !!contractAddress,
+    queryKey: ['savings-portfolio-value', userAddress || '', contractAddress || ''],
+  });
+
+  if (!contractAddress) {
+    return {
+      availableBalance: { data: BigInt(0), isLoading: false, isError: false, error: null, refetch: () => {} },
+      portfolioValue: { data: BigInt(0), isLoading: false, isError: false, error: null, refetch: () => {} },
+      contractAddress: null,
+    };
+  }
+
   return {
     availableBalance: {
-      data: BigInt(0),
-      isLoading: false,
-      isError: false,
-      error: null,
-      refetch: () => {},
+      ...availableBalance,
+      data: (availableBalance.data as bigint | undefined) || BigInt(0),
     },
     portfolioValue: {
-      data: BigInt(0),
-      isLoading: false,
-      isError: false,
-      error: null,
-      refetch: () => {},
+      ...portfolioValue,
+      data: (portfolioValue.data as bigint | undefined) || BigInt(0),
     },
     contractAddress,
   };
