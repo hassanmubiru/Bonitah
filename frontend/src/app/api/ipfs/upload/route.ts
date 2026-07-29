@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * API route for uploading documents to IPFS via Pinata.
- * Accepts an array of documents and returns their CIDs.
+ * API route for uploading documents to IPFS via the backend service.
+ * Accepts FormData with file(s) and forwards to the backend IPFS endpoint.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -11,30 +11,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Authorization required' }, { status: 401 });
     }
 
-    const { documents } = await request.json();
+    const formData = await request.formData();
+    const files = formData.getAll('files') as File[];
 
-    if (!documents || !Array.isArray(documents) || documents.length === 0) {
-      return NextResponse.json({ message: 'No documents provided' }, { status: 400 });
+    if (!files || files.length === 0) {
+      return NextResponse.json({ message: 'No files provided' }, { status: 400 });
     }
 
     const backendUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001';
     const cids: string[] = [];
 
-    for (const doc of documents) {
-      const content = typeof doc.content === 'string' ? JSON.parse(doc.content) : doc.content;
+    for (const file of files) {
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        return NextResponse.json(
+          { message: `File "${file.name}" exceeds 10MB limit` },
+          { status: 400 },
+        );
+      }
 
-      const response = await fetch(`${backendUrl}/ipfs/profile-metadata`, {
+      // Forward each file to backend IPFS service
+      const uploadForm = new FormData();
+      uploadForm.append('file', file);
+
+      const response = await fetch(`${backendUrl}/ipfs/profile-docs`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: authorization,
         },
-        body: JSON.stringify(content),
+        body: uploadForm,
       });
 
       if (!response.ok) {
-        const err = await response.text();
-        return NextResponse.json({ message: `Upload failed: ${err}` }, { status: 500 });
+        const err = await response.text().catch(() => 'Upload failed');
+        return NextResponse.json(
+          { message: `Upload failed for "${file.name}": ${err}` },
+          { status: response.status },
+        );
       }
 
       const data = await response.json();

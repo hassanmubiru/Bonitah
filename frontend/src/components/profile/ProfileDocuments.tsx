@@ -19,6 +19,7 @@ export interface UploadedDocument {
   name: string;
   size: number;
   type: string;
+  file: File;
   cid?: string;
   error?: string;
 }
@@ -39,6 +40,7 @@ export function ProfileDocuments({
       name: file.name,
       size: file.size,
       type: file.type,
+      file,
     }));
 
     setDocuments((prev) => [...prev, ...newDocuments]);
@@ -65,14 +67,9 @@ export function ProfileDocuments({
   const handleUpload = async () => {
     if (documents.length === 0) return;
 
-    const files = documents.map((doc) => {
-      // Convert document back to File object for upload
-      return new (globalThis as any).File([''], doc.name, { type: doc.type }) as File;
-    });
-
     try {
-      // Upload files one by one since we only have uploadDocument (singular)
-      const cids = await Promise.all(files.map(file => uploadDocument(file)));
+      // Upload actual files one by one
+      const cids = await Promise.all(documents.map((doc) => uploadDocument(doc.file)));
 
       // Update documents with CIDs
       setDocuments((prev) =>
