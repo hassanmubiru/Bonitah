@@ -1,14 +1,7 @@
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-
-  // Pin the file-tracing root to the monorepo root so Next does not misinfer it
-  outputFileTracingRoot: join(__dirname, '..'),
+  output: 'export',
 
   // Transpile the shared workspace package
   transpilePackages: ['@bfn/shared'],

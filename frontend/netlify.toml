@@ -1,6 +1,6 @@
 [build]
   command = "npm run build"
-  publish = ".next"
+  publish = "out"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -13,9 +13,6 @@
   NEXT_PUBLIC_EDUCATION_ADDRESS = "0x5A63Da81A04BE39d5469B8BD9281CbD3332b51ac"
   NEXT_PUBLIC_GOVERNANCE_ADDRESS = "0x13B14D148E3369dCC448006494810A95928eEEB4"
   NEXT_PUBLIC_USDC_ADDRESS = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
 
 [[headers]]
   for = "/*"
