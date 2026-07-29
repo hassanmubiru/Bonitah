@@ -195,7 +195,7 @@ export function usePortfolioValue(
   return useContractRead({
     address: contractAddress,
     abi,
-    functionName: 'portfolioValue',
+    functionName: 'balanceOf',
     args: userAddress ? [userAddress] : [],
     enabled: enabled && !!userAddress,
     queryKey: ['portfolio', userAddress || ''],
