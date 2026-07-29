@@ -379,7 +379,8 @@ async function handleAI(req: Request, path: string, corsHeaders: Record<string, 
       answer,
       conversationId: crypto.randomUUID(),
       provider,
-      userAddress
+      userAddress,
+      debug: { ollamaAvailable: !!ollamaKey, deepseekAvailable: !!deepseekKey }
     }, corsHeaders)
   }
 
